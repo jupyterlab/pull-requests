@@ -1,0 +1,101 @@
+/*-----------------------------------------------------------------------------
+| Jupyter Pull Requests Style
+|----------------------------------------------------------------------------*/
+
+[data-theme-light='true'] .jp-PullRequest-icon {
+  background-image: url(pullrequest-light.svg);
+}
+
+[data-theme-light='false'] .jp-PullRequest-icon {
+  background-image: url(pullrequest-dark.svg);
+}
+
+.jp-Refresh-icon {
+  background-image: var(--jp-icon-refresh);
+}
+
+.jp-PullRequestBrowser {
+  background-color: var(--jp-layout-color1);
+  margin: 0;
+  height: 100vh;
+  font-size: var(--jp-ui-font-size1);
+}
+
+.jp-PullRequestBrowser ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.jp-PullRequestBrowser .jp-PullRequestBrowserItem header {
+  flex: 0 0 auto;
+  align-items: center;
+  height: 28px;
+  display: flex;
+  border-bottom: var(--jp-border-width) solid var(--jp-border-color2);
+  padding-top: 8px;
+}
+
+.jp-PullRequestBrowser .jp-PullRequestBrowserItem header h2 {
+  font-size: var(--jp-ui-font-size0);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--jp-ui-font-color1);
+  padding: 8px 8px 8px 12px;
+  margin: 0;
+}
+
+.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserItemListItem {
+  font-size: var(--jp-ui-font-size1);
+  color: var(--jp-ui-font-color1);
+  font-weight: 400;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: flex;
+  padding: 4px 12px 4px 16px;
+}
+
+.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserItemListItem:hover {
+  background-color: var(--jp-layout-color2);
+}
+
+.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemError {
+  font-size: var(--jp-ui-font-size0);
+  font-weight: 400;
+  letter-spacing: 1px;
+  padding: 4px 12px 4px 16px;
+  margin: 0;
+  line-height: normal;
+  background: var(--jp-rendermime-error-background);
+  color: #e75c58;
+}
+
+.jp-PullRequestToolbar {
+  /* border-bottom: var(--jp-border-width) solid var(--jp-border-color2); */
+  border-bottom: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.jp-PullRequestToolbar .jp-PullRequestToolbarHeader {
+  padding: 0;
+}
+
+.jp-PullRequestToolbar .jp-PullRequestToolbarHeader h2 {
+  font-size: var(--jp-ui-font-size0);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--jp-ui-font-color1);
+  padding: 8px 12px;
+  margin: 0;
+  line-height: normal;
+}
+
+.jp-PullRequestToolbar .jp-PullRequestToolbarItem {
+  flex: 1;
+  justify-content: flex-end;
+  padding: 2px 5px;
+}

@@ -1,19 +1,29 @@
 import {
-  JupyterLab, JupyterLabPlugin
-} from '@jupyterlab/application';
+  ILayoutRestorer,
+  JupyterLab,
+  JupyterLabPlugin
+} from "@jupyterlab/application";
+import { ISettingRegistry } from "@jupyterlab/coreutils";
+import "../style/index.css";
+import { PullRequestPanel } from "./components/PullRequestPanel";
 
-import '../style/index.css';
+const NAMESPACE = "pullrequests";
+const PLUGIN_ID = "@jupyterlab/pullrequests";
 
-
-/**
- * Initialization data for the jupyterlab-pullrequests extension.
- */
-const extension: JupyterLabPlugin<void> = {
-  id: 'jupyterlab-pullrequests',
-  autoStart: true,
-  activate: (app: JupyterLab) => {
-    console.log('JupyterLab extension jupyterlab-pullrequests is activated!');
-  }
+// JupyterLab plugin props
+const pullRequestPlugin: JupyterLabPlugin<void> = {
+  id: PLUGIN_ID,
+  requires: [ILayoutRestorer, ISettingRegistry],
+  activate: activate,
+  autoStart: true
 };
 
-export default extension;
+// Master extension activate
+function activate(app: JupyterLab, restorer: ILayoutRestorer): void {
+  const prPanel = new PullRequestPanel(app);
+  restorer.add(prPanel, NAMESPACE);
+  app.shell.addToLeftArea(prPanel, { rank: 200 }); // rank chosen from similar open source extensions
+  return;
+}
+
+export default pullRequestPlugin;
