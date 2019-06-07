@@ -12,7 +12,8 @@
     "strictNullChecks": false,
     "target": "es2015",
     "types": [],
-    "jsx": "react"
+    "jsx": "react",
+    "resolveJsonModule": true
   },
   "include": ["src/*"]
 }

@@ -2,8 +2,8 @@ import { shallow } from 'enzyme';
 import 'jest';
 import * as React from 'react';
 import { IPullRequestBrowserItemProps, PullRequestBrowserItem } from '../../components/browser/PullRequestBrowserItem';
-import { PullRequestItem } from '../../utils';
-import { SAMPLE_PR_JSON } from '../testutils';
+import { PullRequestItemFile } from '../../utils';
+import { SAMPLE_PR_JSON, SAMPLE_FILE_JSON } from '../testutils';
 
 // Unit tests for PullRequestBrowserItem
 describe('PullRequestBrowserItem', () => {
@@ -11,7 +11,7 @@ describe('PullRequestBrowserItem', () => {
     let props: IPullRequestBrowserItemProps = {
         header: 'Created by Me',
         filter: 'created',
-        showTab: async (data: PullRequestItem) => {
+        showTab: async (data: PullRequestItemFile) => {
             console.log('Show tab test.')
         }
     };
@@ -46,6 +46,21 @@ describe('PullRequestBrowserItem', () => {
         it('should load list item if nonempty api response', () => {
             component.setState({data: JSON.parse(SAMPLE_PR_JSON)});
             expect(component.find('.jp-PullRequestBrowserItemListItem')).toHaveLength(1);
+        })
+        it('should load list item files if nonempty api response and expanded', () => {
+            let _data = JSON.parse(SAMPLE_PR_JSON);
+            _data[0].isExpanded = true;
+            _data[0].files = [];
+            _data[0].files.push(new PullRequestItemFile(SAMPLE_FILE_JSON, _data[0]));
+            component.setState({data:_data})
+            expect(component.find('.jp-PullRequestBrowserItemFileList')).toHaveLength(1);
+            expect(component.find('.jp-PullRequestBrowserItemFileItem')).toHaveLength(1);
+        })
+        it('should not load list item files if nonempty api response and unexpanded', () => {
+            let _data = JSON.parse(SAMPLE_PR_JSON);
+            _data[0].isExpanded = false;
+            component.setState({data:_data})
+            expect(component.find('.jp-PullRequestBrowserItemFileList')).toHaveLength(0);
         })
         it('should have a sublist if there is not an error', () => {
             component.setState({data: [], isLoading: false, error: null});

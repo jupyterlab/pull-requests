@@ -1,15 +1,15 @@
 import { Widget } from "@phosphor/widgets";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { PullRequestItem } from "../../utils";
+import { PullRequestItemFile } from "../../utils";
 import { PullRequestTab } from "./PullRequestTab";
 
 // Assumes valid json
 export class PullRequestTabWidget extends Widget {
-  constructor(data: PullRequestItem) {
+  constructor(data: PullRequestItemFile) {
     super();
-    this.id = data.id;
-    this.title.label = data.title;
+    this.id = data.id; // IDs in format 123456-README.md
+    this.title.label = data.name;
     this.title.closable = true;
     ReactDOM.render(<PullRequestTab data={data} />, this.node);
   }

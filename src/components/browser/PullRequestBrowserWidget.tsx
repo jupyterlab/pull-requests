@@ -1,13 +1,13 @@
 import { Widget } from "@phosphor/widgets";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { PullRequestItem } from "../../utils";
+import { PullRequestItemFile } from "../../utils";
 import { PullRequestBrowser } from "./PullRequestBrowser";
 
 export class PullRequestBrowserWidget extends Widget {
-  private _showTab: (data: PullRequestItem) => Promise<void>;
+  private _showTab: (data: PullRequestItemFile) => Promise<void>;
 
-  constructor(showTab: (data: PullRequestItem) => Promise<void>) {
+  constructor(showTab: (data: PullRequestItemFile) => Promise<void>) {
     super();
     this._showTab = showTab;
     ReactDOM.render(<PullRequestBrowser showTab={this._showTab} />, this.node);

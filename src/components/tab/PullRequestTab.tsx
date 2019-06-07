@@ -1,10 +1,10 @@
 import * as React from "react";
-import { PullRequestItem } from "../../utils";
+import { PullRequestItemFile } from "../../utils";
 
 export interface IPullRequestTabState {}
 
 export interface IPullRequestTabProps {
-  data: PullRequestItem;
+  data: PullRequestItemFile;
 }
 
 export class PullRequestTab extends React.Component<
@@ -18,8 +18,8 @@ export class PullRequestTab extends React.Component<
   render() {
     return (
       <div className="jp-PullRequestTab">
-        <h1>{this.props.data.title}</h1>
-        <p>{this.props.data.body}</p>
+        <h1>{this.props.data.name}</h1>
+        <p>{this.props.data.status}</p>
       </div>
     );
   }
