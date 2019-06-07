@@ -7,24 +7,11 @@ from http import HTTPStatus
 import tornado.gen as gen
 from jupyterlab_pullrequests.base import HTTPError, PullRequestsAPIHandler
 from notebook.utils import url_escape, url_path_join
-from tornado.httpclient import AsyncHTTPClient, HTTPRequest
+from tornado.httpclient import AsyncHTTPClient, HTTPRequest, HTTPClientError
 from tornado.httputil import url_concat
 from tornado.web import MissingArgumentError
-from traitlets import Bool, Unicode
-from traitlets.config import Configurable
 
 GITHUB_API_BASE_URL = "https://api.github.com"
-
-
-class GitHubConfig(Configurable):
-    """
-    Allows configuration of Github Personal Access Tokens via jupyter_notebook_config.py
-    """
-
-    access_token = Unicode(
-        "", config=True, help=("A personal access token for GitHub.")
-    )
-
 
 class ListPullRequestsGithubUserHandler(PullRequestsAPIHandler):
     """
@@ -33,10 +20,6 @@ class ListPullRequestsGithubUserHandler(PullRequestsAPIHandler):
         - 'created' returns all PRs authenticated user has created
         - 'assigned' returns all PRs assigned to authenticated user
     """
-
-    def get_access_token(self):
-        c = GitHubConfig(config=self.config)
-        return c.access_token
 
     # Returns search filter if valid, else throws error
     def validate_request(self):
@@ -47,60 +30,13 @@ class ListPullRequestsGithubUserHandler(PullRequestsAPIHandler):
         except MissingArgumentError as e:
             raise HTTPError(
                 status_code=HTTPStatus.BAD_REQUEST,
-                reason="Missing argument 'filter'. Expected 'filter' with value 'created' or 'assigned'.",
-                error_code=400
+                reason="Missing argument 'filter'. Expected 'filter' with value 'created' or 'assigned'."
             )
 
         if not (param_filter == "created" or param_filter == "assigned"):
             raise HTTPError(
                 status_code=HTTPStatus.BAD_REQUEST, 
-                reason=f"Invalid parameter 'filter'. Expected value 'created' or 'assigned', received '{param_filter}'.", 
-                error_code=400
-            )
-
-    @gen.coroutine
-    def list_prs(self, access_token=None, current_user=None):
-
-        param_filter = self.get_argument("filter")
-        if param_filter == "created":
-            search_filter = "+author:"
-        elif param_filter == "assigned":
-            search_filter = "+assignee:"
-
-        search_filter += current_user
-
-        # Use search API to find matching PRs and return
-        api_path = url_path_join(
-            GITHUB_API_BASE_URL, "/search/issues?q=+state:open+type:pr" + search_filter
-        )
-        params = {
-            "Accept": "application/vnd.github.v3+json",
-            "access_token": access_token,
-        }
-        url = url_concat(api_path, params)
-        client = AsyncHTTPClient()
-        request = HTTPRequest(
-            url, validate_cert=True, user_agent="JupyterLab Pull Requests"
-        )
-        try:
-            response = yield client.fetch(request)
-        except Exception as e:
-            raise HTTPError(
-                status_code=HTTPStatus.SERVICE_UNAVAILABLE,
-                reason=f"Received error from Github /search: '{str(e)}'",
-                error_code=503
-            )
-        
-        data = json.loads(response.body.decode("utf-8"))
-
-        # TODO pagination
-        if "items" in data and data["items"] is not None:
-            return data["items"]
-        else:
-            raise HTTPError(
-                status_code=HTTPStatus.SERVICE_UNAVAILABLE,
-                reason="Received malformed Github response, please contact the developer.",
-                error_code=503
+                reason=f"Invalid parameter 'filter'. Expected value 'created' or 'assigned', received '{param_filter}'."
             )
 
     @gen.coroutine
@@ -108,14 +44,36 @@ class ListPullRequestsGithubUserHandler(PullRequestsAPIHandler):
 
         # Ensure the user has an access token
         self.validate_request()
-        access_token = self.get_access_token()
-        current_user = yield get_current_user(access_token=access_token)
+        current_user = yield get_current_user(client=self.client, access_token=self.access_token)
+        param_filter = self.get_argument("filter")
+        search_filter = get_search_filter(param_filter=param_filter, username=current_user)
 
-        prs = yield self.list_prs(
-            access_token=access_token, current_user=current_user
+        prs = yield list_prs(
+            client=self.client, access_token=self.access_token, search_filter=search_filter
         )
         self.finish(json.dumps(prs))
 
+class ListPullRequestsGithubFilesHandler(PullRequestsAPIHandler):
+    """
+    Returns array of a Github PR's files
+    Takes parameter 'id' with the id of the PR
+    """
+
+    def validate_request(self):
+        try:
+            pr_id = self.get_argument("id")
+        except MissingArgumentError as e:
+            raise HTTPError(
+                status_code=HTTPStatus.BAD_REQUEST,
+                reason="Missing argument 'id'. Expected 'id' with id of PR."
+            )
+
+    @gen.coroutine
+    def get(self):
+        self.validate_request()
+        pr_id = self.get_argument("id")
+        files = yield list_files(self.client, self.access_token, pr_id)
+        self.finish(json.dumps(files))
 
 # -----------------------------------------------------------------------------
 # Handler utilities
@@ -123,51 +81,116 @@ class ListPullRequestsGithubUserHandler(PullRequestsAPIHandler):
 
 
 @gen.coroutine
-def get_current_user(access_token=None):
+def get_current_user(client=None, access_token=None):
 
     if (not access_token) or (access_token == ""):
         raise HTTPError(
             status_code=HTTPStatus.BAD_REQUEST,
-            reason="No Github access token specified.",
-            error_code=400
+            reason="No Github access token specified."
         )
 
     # Get the username of the authenticated user
     api_path = url_path_join(GITHUB_API_BASE_URL, url_escape("/user"))
     params = {"Accept": "application/vnd.github.v3+json", "access_token": access_token}
     url = url_concat(api_path, params)
-    client = AsyncHTTPClient()
     # User agents required for Github API, see https://developer.github.com/v3/#user-agent-required
     request = HTTPRequest(
         url, validate_cert=True, user_agent="JupyterLab Pull Requests"
     )
     try:
         response = yield client.fetch(request)
+        data = json.loads(response.body.decode("utf-8"))
+        return data["login"]
+    except HTTPClientError as e:
+        raise HTTPError(
+            status_code=e.code,
+            reason=f"Invalid Github access token specified: '{str(e)}''"
+        )
     except Exception as e:
         raise HTTPError(
             status_code=HTTPStatus.SERVICE_UNAVAILABLE,
-            reason=f"Received error from Github /user: '{str(e)}'",
-            error_code=503
+            reason=f"Get current user error: '{str(e)}''"
         )
-    data = json.loads(response.body.decode("utf-8"))
 
-    # Make sure Github response is properly formatted, otherwise throw error
-    if "login" in data:
-        return data["login"]
-    else:
+@gen.coroutine
+def list_prs(client=None, access_token=None, search_filter=None):
+
+    # Use search API to find matching PRs and return
+    api_path = url_path_join(
+        GITHUB_API_BASE_URL, "/search/issues?q=+state:open+type:pr" + search_filter
+    )
+    params = {
+        "Accept": "application/vnd.github.v3+json",
+        "access_token": access_token,
+    }
+    url = url_concat(api_path, params)
+    request = HTTPRequest(
+        url, validate_cert=True, user_agent="JupyterLab Pull Requests"
+    )
+    try:
+        response = yield client.fetch(request)
+        data = json.loads(response.body.decode("utf-8"))
+        return data["items"]
+    except HTTPClientError as e:
+        raise HTTPError(
+            status_code=e.code,
+            reason=f"Received error from Github /search: '{str(e)}'"
+        )
+    except Exception as e:
+        raise HTTPError(
+            status_code=HTTPStatus.SERVICE_UNAVAILABLE,
+            reason=f"List PRs error: '{str(e)}''"
+        )
+
+def get_search_filter(param_filter=None, username=None):
+        
+        if param_filter == "created":
+            search_filter = "+author:"
+        elif param_filter == "assigned":
+            search_filter = "+assignee:"
+
+        return search_filter + username
+
+@gen.coroutine
+def list_files(client=None, access_token=None, pr_id=None):
+
+    # Use search API to find matching PRs and return
+    api_path = url_path_join(
+        pr_id, "/files"
+    )
+    params = {
+        "Accept": "application/vnd.github.v3+json",
+        "access_token": access_token,
+    }
+    url = url_concat(api_path, params)
+    request = HTTPRequest(
+        url, validate_cert=True, user_agent="JupyterLab Pull Requests"
+    )
+    try:
+        response = yield client.fetch(request)
+        return json.loads(response.body.decode("utf-8"))
+    except HTTPClientError as e:
+        raise HTTPError(
+            status_code=e.code,
+            reason=f"Invalid parameter 'id': '{str(e)}'"
+        )
+    except ValueError as e:
         raise HTTPError(
             status_code=HTTPStatus.BAD_REQUEST,
-            reason="Invalid Github access token specified.",
-            error_code=400
+            reason=f"Invalid parameter 'id': '{str(e)}'"
         )
-
+    except Exception as e:
+        raise HTTPError(
+            status_code=HTTPStatus.SERVICE_UNAVAILABLE,
+            reason=f"List files error: '{str(e)}''"
+        )
 
 # -----------------------------------------------------------------------------
 # URL to handler mappings
 # -----------------------------------------------------------------------------
 
-default_handlers = [("/pullrequests/prs/user", ListPullRequestsGithubUserHandler)]
-
+default_handlers = [("/pullrequests/prs/user", ListPullRequestsGithubUserHandler),
+                    ("/pullrequests/prs/files", ListPullRequestsGithubFilesHandler)]
 
 def load_jupyter_server_extension(nbapp):
     webapp = nbapp.web_app

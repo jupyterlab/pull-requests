@@ -1,10 +1,22 @@
 import json
 import traceback
 
+import tornado.gen as gen
 from notebook.base.handlers import APIHandler
 from tornado import web
-import tornado.gen as gen
+from tornado.httpclient import AsyncHTTPClient
+from traitlets import Bool, Unicode
+from traitlets.config import Configurable
 
+
+class GitHubConfig(Configurable):
+    """
+    Allows configuration of Github Personal Access Tokens via jupyter_notebook_config.py
+    """
+
+    access_token = Unicode(
+        "", config=True, help=("A personal access token for GitHub.")
+    )
 
 class PullRequestsAPIHandler(APIHandler):
     """
@@ -18,6 +30,14 @@ class PullRequestsAPIHandler(APIHandler):
     4) Handling unintentional errors thrown by handlers and returning 500 with the details of the error
     5) Providing abstraction to add request validation before beginning processing
     """
+
+    def initialize(self):
+        self.client = AsyncHTTPClient()
+        self.access_token = self.get_access_token()
+
+    def get_access_token(self):
+        c = GitHubConfig(config=self.config)
+        return c.access_token
 
     def write_error(self, status_code, **kwargs):
         """
