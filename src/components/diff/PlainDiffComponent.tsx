@@ -13,7 +13,7 @@ export interface IPlainDiffComponentState {
 }
 
 export interface IPlainDiffComponentProps {
-  data: PullRequestFileModel;
+  file: PullRequestFileModel;
   themeManager: IThemeManager;
 }
 
@@ -40,7 +40,7 @@ export class PlainDiffComponent extends React.Component<
     return (
       <div style={{ height: "100%", width: "100%" }}>
         <div
-          id={`monacocontainer-${this.props.data.id}`}
+          id={`monacocontainer-${this.props.file.id}`}
           style={{ height: "100%", width: "100%" }}
         />
         <ReactResizeDetector handleWidth={true} handleHeight={true} onResize={this.onResize} />
@@ -99,18 +99,19 @@ export class PlainDiffComponent extends React.Component<
       selectionHighlight: false,
       scrollBeyondLastLine: false,
       renderLineHighlight: "gutter",
-      glyphMargin: false
+      glyphMargin: false,
+      renderFinalNewline: false
       // renderSideBySide: false
     };
 
-    const language = this.getLanguage(this.props.data.extension);
-    let baseModel = monaco.editor.createModel(this.props.data.basecontent, language);
-    let headModel = monaco.editor.createModel(this.props.data.headcontent, language);
+    const language = this.getLanguage(this.props.file.extension);
+    let baseModel = monaco.editor.createModel(this.props.file.basecontent, language);
+    let headModel = monaco.editor.createModel(this.props.file.headcontent, language);
     this.updateTheme();
     monaco.editor.setTheme("PlainDiffComponent");
 
     let diffEditor = monaco.editor.createDiffEditor(
-      document.getElementById(`monacocontainer-${this.props.data.id}`),
+      document.getElementById(`monacocontainer-${this.props.file.id}`),
       options
     );
     diffEditor.setModel({
@@ -127,9 +128,9 @@ export class PlainDiffComponent extends React.Component<
 
   private initComments() {
     let pdcomments: PullRequestPlainDiffCommentThreadModel[] = [];
-    for (let comment of this.props.data.comments) {
+    for (let thread of this.props.file.comments) {
       const pdcomment = new PullRequestPlainDiffCommentThreadModel(
-        new PullRequestCommentThreadModel(this.props.data, comment),
+        new PullRequestCommentThreadModel(this.props.file, thread.comment),
         this
       );
       pdcomments.push(pdcomment);
@@ -168,7 +169,7 @@ export class PlainDiffComponent extends React.Component<
       if (e.target["element"]["classList"].contains("jp-PullRequestCommentDecoration")) {
         this.addComment(new PullRequestPlainDiffCommentThreadModel(
           new PullRequestCommentThreadModel(
-            this.props.data,
+            this.props.file,
             parseInt(e.target["element"]["parentElement"]["innerText"])
           ),
           this

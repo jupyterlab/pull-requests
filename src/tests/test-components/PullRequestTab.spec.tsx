@@ -2,14 +2,15 @@ import { shallow } from 'enzyme';
 import 'jest';
 import * as React from 'react';
 import { IPullRequestTabProps, PullRequestTab } from '../../components/tab/PullRequestTab';
-import { SamplePullRequestFileItem } from '../testutils';
+import { SamplePullRequestIpynbFileItem, SamplePullRequestPlainFileItem } from '../testutils';
 
 // Unit tests for PullRequestTab
 describe('PullRequestTab', () => {
     
     let props: IPullRequestTabProps = {
-        data: SamplePullRequestFileItem,
-        themeManager: null
+        file: SamplePullRequestIpynbFileItem,
+        themeManager: null,
+        renderMime: null
     };
 
     // Test constructor
@@ -27,17 +28,35 @@ describe('PullRequestTab', () => {
             expect(component.find('div')).toHaveLength(1);
             expect(component.find('.jp-PullRequestTab')).toHaveLength(1);
         });
+        it('should show NBDiff if loaded', () => {
+            component.setState({file: SamplePullRequestIpynbFileItem, isLoading: false, error: null});
+            expect(component.find('NBDiff')).toHaveLength(1);
+            expect(component.find('PlainDiffComponent')).toHaveLength(0);
+        });
+        it('should not show NBDiff if not loaded', () => {
+            component.setState({file: SamplePullRequestIpynbFileItem, isLoading: true, error: null});
+            expect(component.find('NBDiff')).toHaveLength(0);
+            expect(component.find('PlainDiffComponent')).toHaveLength(0);
+        });
+        it('should not show NBDiff if error', () => {
+            component.setState({file: SamplePullRequestIpynbFileItem, isLoading: false, error: "error"});
+            expect(component.find('NBDiff')).toHaveLength(0);
+            expect(component.find('PlainDiffComponent')).toHaveLength(0);
+        });
         it('should show PlainDiffComponent if loaded', () => {
-            component.setState({data: props.data, isLoading: false, error: null});
+            component.setState({file: SamplePullRequestPlainFileItem, isLoading: false, error: null});
             expect(component.find('PlainDiffComponent')).toHaveLength(1);
+            expect(component.find('NBDiff')).toHaveLength(0);
         });
         it('should not show PlainDiffComponent if not loaded', () => {
-            component.setState({data: props.data, isLoading: true, error: null});
+            component.setState({file: SamplePullRequestPlainFileItem, isLoading: true, error: null});
             expect(component.find('PlainDiffComponent')).toHaveLength(0);
+            expect(component.find('NBDiff')).toHaveLength(0);
         });
         it('should not show PlainDiffComponent if error', () => {
-            component.setState({data: props.data, isLoading: false, error: "error"});
+            component.setState({file: SamplePullRequestPlainFileItem, isLoading: false, error: "error"});
             expect(component.find('PlainDiffComponent')).toHaveLength(0);
+            expect(component.find('NBDiff')).toHaveLength(0);
         });
     });
 });

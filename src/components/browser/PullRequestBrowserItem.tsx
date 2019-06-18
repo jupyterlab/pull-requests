@@ -24,8 +24,8 @@ export class PullRequestBrowserItem extends React.Component<
     this.state = { data: [], isLoading: true, error: null };
   }
 
-  componentDidMount() {
-    this.fetchPRs();
+  async componentDidMount() {
+    await this.fetchPRs();
   }
 
   private async fetchPRs() {
@@ -40,8 +40,10 @@ export class PullRequestBrowserItem extends React.Component<
           jsonresult["internal_id"]
         ));
       }
-      this.setState({ data: results, isLoading: true, error: null }); // render PRs while files load
-      this.fetchFiles(results);
+      // render PRs while files load
+      this.setState({ data: results, isLoading: true, error: null }, () => {
+        this.fetchFiles(results);
+      });
     } catch (err) {
       let msg = "Unknown Error";
         if (
@@ -56,16 +58,16 @@ export class PullRequestBrowserItem extends React.Component<
   }
 
   private async fetchFiles(items: PullRequestModel[]) {
-    for (let i in items) {
-      try {
-        await items[i].getFiles();
-      } catch (e) {
-        const msg = `Get Files Error (${e})`;
-        this.setState({ data: [], isLoading: false, error: msg });
-        return;
-      }
-    }
-    this.setState({ data: items, isLoading: false, error: null });
+    Promise.all(
+      items.map(async item => {
+        await item.getFiles();
+      })
+    ).then(() => {
+      this.setState({ data: items, isLoading: false, error: null });
+    }).catch((e) => {
+      const msg = `Get Files Error (${e})`;
+      this.setState({ data: [], isLoading: false, error: msg });
+    });
   }
 
   // This makes a shallow copy of data[i], the data[i].files are not copied

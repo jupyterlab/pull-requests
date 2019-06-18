@@ -15,15 +15,14 @@ function httpRequest(
   return ServerConnection.makeRequest(fullUrl, fullRequest, setting);
 }
 
-export async function doRequest (url: string, method: string, request?: object): Promise<any> {
+export async function doRequest (url: string, method: string, request?: object): Promise<any>  {
   try {
     let response = await httpRequest(url, method, request);
     if (response.status !== 200) {
-      const data = await response.json();
-      throw new ServerConnection.ResponseError(response, data.message);
+      throw new ServerConnection.ResponseError(response);
     }
     return response.json();
   } catch (err) {
-    throw ServerConnection.NetworkError;
+    throw err;
   }
 }

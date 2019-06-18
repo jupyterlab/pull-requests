@@ -7,11 +7,12 @@ export interface IPullRequestCommentThreadState {
   isExpanded: boolean;
   isInput: boolean;
   inputText: string;
-  comments: PullRequestCommentModel;
+  thread: PullRequestCommentThreadModel;
 }
 
 export interface IPullRequestCommentThreadProps {
   thread: PullRequestCommentThreadModel;
+  handleRemove: () => void;
   plainDiff?: PullRequestPlainDiffCommentThreadModel;
 }
 
@@ -24,9 +25,9 @@ export class PullRequestCommentThread extends React.Component<
     super(props);
     this.state = {
       isExpanded: true,
-      isInput: isNull(this.props.thread.comments) ? true : false,
+      isInput: isNull(this.props.thread.comment) ? true : false,
       inputText: '',
-      comments: this.props.thread.comments
+      thread: this.props.thread
     };
   }
 
@@ -50,23 +51,21 @@ export class PullRequestCommentThread extends React.Component<
   async handleSubmit() {
     let _thread = this.props.thread;
     let payload;
-    if (!isNull(this.state.comments)) {
+    if (!isNull(this.state.thread.comment)) {
       payload = _thread.getCommentReplyBody(this.state.inputText);
     } else {
       payload = _thread.getCommentNewBody(this.state.inputText);
     }
     await _thread.postComment(payload);
-    this.setState({comments: _thread.comments, isInput: false});
+    this.setState({thread: _thread, isInput: false});
     this.setState({inputText: ""});
   }
 
   handleCancel() {
     // If no other comments, canceling should remove this thread
-    if (isNull(this.state.comments)) {
-      if (!isUndefined(this.props.plainDiff)) {
-        this.props.plainDiff.plainDiff.removeComment(this.props.plainDiff);
-        return;
-      }
+    console.log(this.state.thread.comment);
+    if (isNull(this.state.thread.comment)) {
+      this.props.handleRemove(); // for component specific remove methods
     }
     this.setState({isInput: false});
   }
@@ -74,11 +73,9 @@ export class PullRequestCommentThread extends React.Component<
   getCommentItemDom(item: PullRequestCommentModel) {
     return (
       <div className="jp-PullRequestCommentItem">
-        {!isUndefined(item.userpic) && (
-          <div className="jp-PullRequestCommentItemImg">
-            <img src={item.userpic}></img>
-          </div>
-        )}
+        <div className="jp-PullRequestCommentItemImg">
+          <img src={item.userpic}></img>
+        </div>
         <div className="jp-PullRequestCommentItemContent">
           <h2>{item.username}</h2>
           <p>{item.text}</p>
@@ -91,8 +88,8 @@ export class PullRequestCommentThread extends React.Component<
     return (
       <div className="jp-PullRequestComment">
         <div className="jp-PullRequestCommentHeader">
-          {!this.state.isExpanded && !isNull(this.state.comments) &&
-            <p>{this.state.comments.username}: {this.state.comments.text}</p>
+          {!this.state.isExpanded && !isNull(this.state.thread.comment) &&
+            <p>{this.state.thread.comment.username}: {this.state.thread.comment.text}</p>
           }
           <span
             className={
@@ -106,11 +103,11 @@ export class PullRequestCommentThread extends React.Component<
         </div>
         {this.state.isExpanded &&
           <div>
-            {!isNull(this.state.comments) &&
+            {!isNull(this.state.thread.comment) &&
             <div>
-              {this.getCommentItemDom(this.state.comments)}
+              {this.getCommentItemDom(this.state.thread.comment)}
               <div>
-                {this.state.comments.replies.map((reply, i) => (
+                {this.state.thread.replies.map((reply, i) => (
                   <div key={i}>
                     {this.getCommentItemDom(reply)}
                   </div>

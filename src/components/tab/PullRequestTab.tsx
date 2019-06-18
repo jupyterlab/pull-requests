@@ -1,18 +1,22 @@
 import { IThemeManager } from "@jupyterlab/apputils";
+import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { isNull } from "lodash";
 import * as React from "react";
 import { RingLoader } from "react-spinners";
 import { PullRequestFileModel } from "../../models";
+import { NBDiff } from "../diff/NBDiff";
 import { PlainDiffComponent } from "../diff/PlainDiffComponent";
 
 export interface IPullRequestTabState {
-  data: PullRequestFileModel;
+  file: PullRequestFileModel;
   isLoading: boolean;
   error: string;
 }
 
 export interface IPullRequestTabProps {
-  data: PullRequestFileModel;
+  file: PullRequestFileModel;
   themeManager: IThemeManager;
+  renderMime: IRenderMimeRegistry;
 }
 
 export class PullRequestTab extends React.Component<
@@ -21,7 +25,7 @@ export class PullRequestTab extends React.Component<
 > {
   constructor(props: IPullRequestTabProps) {
     super(props);
-    this.state = { data: null, isLoading: true, error: null };
+    this.state = { file: null, isLoading: true, error: null };
   }
 
   componentDidMount() {
@@ -29,27 +33,34 @@ export class PullRequestTab extends React.Component<
   }
 
   private async loadDiff() {
-    let _data = this.props.data;
+    let _data = this.props.file;
     try {
       await _data.loadFile();
       await _data.loadComments();
     } catch (e) {
       const msg = `Load File Error (${e.message})`;
-      this.setState({ data: null, isLoading: false, error: msg });
+      this.setState({ file: null, isLoading: false, error: msg });
       return;
     }
-    this.setState({ data: _data, isLoading: false, error: null });
+    this.setState({ file: _data, isLoading: false, error: null });
   }
 
   render() {
     return (
       <div className="jp-PullRequestTab">
         {!this.state.isLoading ? (
-          (this.state.error == null ? (
-            <PlainDiffComponent
-              data={this.state.data}
-              themeManager={this.props.themeManager}
-            />
+          (isNull(this.state.error) && !isNull(this.state.file) ? (
+            (this.state.file.extension === ".ipynb" ? (
+              <NBDiff
+                file={this.state.file}
+                renderMime={this.props.renderMime}
+              />
+            ) : (
+              <PlainDiffComponent
+                file={this.state.file}
+                themeManager={this.props.themeManager}
+              />
+            ))
           ) : (
             <h2 className="jp-PullRequestTabError">
               <span style={{ color: "var(--jp-ui-font-color1)" }}>

@@ -5,6 +5,7 @@ import { PullRequestFileModel } from "../../models";
 import { PullRequestBrowser } from "./PullRequestBrowser";
 
 export class PullRequestBrowserWidget extends Widget {
+  
   private _showTab: (data: PullRequestFileModel) => Promise<void>;
 
   constructor(showTab: (data: PullRequestFileModel) => Promise<void>) {

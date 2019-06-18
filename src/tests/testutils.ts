@@ -10,8 +10,14 @@ export let SamplePullRequestItem = new PullRequestModel(
     "457075994"
 );
 
-export let SamplePullRequestFileItem = new PullRequestFileModel(
+export let SamplePullRequestIpynbFileItem = new PullRequestFileModel(
     "test.ipynb",
+    "modified",
+    SamplePullRequestItem
+);
+
+export let SamplePullRequestPlainFileItem = new PullRequestFileModel(
+    "test.js",
     "modified",
     SamplePullRequestItem
 );
@@ -21,16 +27,15 @@ export let SamplePullRequestCommentItem: PullRequestCommentModel = {
     text: "too boring",
     lineNumber: 9,
     username: "timnlupo",
-    userpic: "https://avatars1.githubusercontent.com/u/9003282?v=4",
-    replies: []
+    userpic: "https://avatars1.githubusercontent.com/u/9003282?v=4"
 }
 
 export let SamplePullRequestCommentThreadItemNew = new PullRequestCommentThreadModel(
-    SamplePullRequestFileItem,
+    SamplePullRequestIpynbFileItem,
     3
 );
 
 export let SamplePullRequestCommentThreadItemReply = new PullRequestCommentThreadModel(
-    SamplePullRequestFileItem,
+    SamplePullRequestIpynbFileItem,
     SamplePullRequestCommentItem
 );

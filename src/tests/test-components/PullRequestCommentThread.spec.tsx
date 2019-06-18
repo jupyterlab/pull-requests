@@ -8,11 +8,13 @@ import { SamplePullRequestCommentThreadItemNew, SamplePullRequestCommentThreadIt
 describe('PullRequestBrowserItem', () => {
     
     let newProps: IPullRequestCommentThreadProps = {
-        thread: SamplePullRequestCommentThreadItemNew
+        thread: SamplePullRequestCommentThreadItemNew,
+        handleRemove: () => {}
     };
 
     let replyProps: IPullRequestCommentThreadProps = {
-        thread: SamplePullRequestCommentThreadItemReply
+        thread: SamplePullRequestCommentThreadItemReply,
+        handleRemove: () => {}
     };
 
     // Test constructor

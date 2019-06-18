@@ -68,20 +68,21 @@ export class PullRequestFileModel {
 
   async loadComments() {
     let jsonresults = await doRequest(`pullrequests/files/comments?id=${this.pr.id}&filename=${this.name}`, "GET");
-    let results: PullRequestCommentModel[] = [];
+    let results: PullRequestCommentThreadModel[] = [];
     for (let jsonresult of jsonresults) {
-      const item: PullRequestCommentModel = {
-        id: jsonresult["id"],
-        text: jsonresult["text"],
-        lineNumber: jsonresult["line_number"],
-        username: jsonresult["user_name"],
-        userpic: jsonresult["user_pic"],
-        replies: []
-      };
+      const item = new PullRequestCommentThreadModel(
+        this, {
+          id: jsonresult["id"],
+          text: jsonresult["text"],
+          lineNumber: jsonresult["line_number"],
+          username: jsonresult["user_name"],
+          userpic: jsonresult["user_pic"]
+        }
+      );
       if (!isUndefined(jsonresult["in_reply_to_id"])) {
         for (let result of results) {
           if (result.id == jsonresult["in_reply_to_id"]) {
-            result.replies.push(item);
+            result.replies.push(item.comment);
           }
         }
       } else {
@@ -106,7 +107,7 @@ export class PullRequestFileModel {
   basecontent: string;
   headcontent: string;
   pr: PullRequestModel;
-  comments: PullRequestCommentModel[];
+  comments: PullRequestCommentThreadModel[];
 }
 
 
@@ -120,29 +121,29 @@ export interface PullRequestCommentModel {
   text: string;
   username: string;
   userpic?: string;
-  replies: PullRequestCommentModel[];
 }
 
 export class PullRequestCommentThreadModel {
 
+  // .id, this.props.data.pr.id, this.props.data.name
   constructor(file: PullRequestFileModel, given: number | PullRequestCommentModel) {
-    this.prid = file.pr.id;
-    this.filename = file.name;
+    this.file = file;
+    this.replies = [];
     this.commitId = file.commitId;
+    this.id = file.id + "-" + this.lineNumber;
     if (typeof(given) === "number") {
       this.lineNumber = given;
-      this.comments = null;
+      this.comment = null;
     } else {
       this.lineNumber = given.lineNumber;
-      this.comments = given;
+      this.comment = given;
     }
-    this.id = file.id + "-" + this.lineNumber;
   }
 
   getCommentReplyBody(text: string): any {
     const request = {
       "text": text,
-      "in_reply_to": this.comments.id
+      "in_reply_to": this.comment.id
     };
     return request;
   }
@@ -150,7 +151,7 @@ export class PullRequestCommentThreadModel {
   getCommentNewBody(text: string): any {
     const request = {
       "text": text,
-      "filename": this.filename,
+      "filename": this.file.name,
       "position": this.lineNumber,
       "commit_id": this.commitId
     };
@@ -158,38 +159,39 @@ export class PullRequestCommentThreadModel {
   }
 
   async postComment(body: any) {
-    let jsonresult = await doRequest(`pullrequests/files/comments?id=${this.prid}&filename=${this.filename}`, "POST", body);
-    const item: PullRequestCommentModel = {
-      id: jsonresult["id"],
-      text: jsonresult["text"],
-      lineNumber: jsonresult["line_number"],
-      username: jsonresult["user_name"],
-      userpic: jsonresult["user_pic"],
-      replies: []
-    };
-    if (this.comments == null) {
-      this.comments = item;
+    let jsonresult = await doRequest(`pullrequests/files/comments?id=${this.file.pr.id}&filename=${this.file.name}`, "POST", body);
+    const item = new PullRequestCommentThreadModel(
+      this.file, {
+        id: jsonresult["id"],
+        text: jsonresult["text"],
+        lineNumber: jsonresult["line_number"],
+        username: jsonresult["user_name"],
+        userpic: jsonresult["user_pic"]
+    });
+    if (this.comment == null) {
+      this.comment = item.comment;
     } else {
-      this.comments.replies.push(item);
+      this.replies.push(item.comment);
     }
   }
 
   id: string;
-  prid: string;
-  filename: string;
+  file: PullRequestFileModel;
   commitId: string;
   lineNumber: number;
-  comments: PullRequestCommentModel;
+  comment: PullRequestCommentModel;
+  replies: PullRequestCommentModel[];
 }
 
-/**
- * A Monaco plain diff specific implementation of comments
- * @remarks
- * Uses trick from https://github.com/microsoft/monaco-editor/issues/373 (used for Monaco error overlays)
- * 1) Insert a view zone to reserve a vertical gap in the text
- * 2) Inserts an overlay widget that is kept position-wise in sync with the view zone
- */
+// A Monaco plain diff specific implementation of comments
 export class PullRequestPlainDiffCommentThreadModel {
+
+  /**
+  * @remarks
+  * Uses trick from https://github.com/microsoft/monaco-editor/issues/373 (used for Monaco error overlays)
+  * 1) Insert a view zone to reserve a vertical gap in the text
+  * 2) Inserts an overlay widget that is kept position-wise in sync with the view zone
+  */
 
   constructor(thread: PullRequestCommentThreadModel, plainDiff: PlainDiffComponent) {
     this.thread = thread;
@@ -211,20 +213,20 @@ export class PullRequestPlainDiffCommentThreadModel {
     };
     this.plainDiff.state.diffEditor.getModifiedEditor().addOverlayWidget(overlayWidget);
 
-    ReactDOM.render(<PullRequestCommentThread thread={this.thread}  plainDiff={this} />, overlayDom, () => {
+    ReactDOM.render(<PullRequestCommentThread thread={this.thread} handleRemove={() => this.plainDiff.removeComment(this)}  plainDiff={this} />, overlayDom, () => {
       this.domNode = overlayDom;
       setTimeout(() => this.addToEditor(), 0);
     });
   }
 
-  deleteComment() {
-    this.removeFromEditor();
-    this.domNode.remove();
-  }
-
   toggleUpdate() {
     this.removeFromEditor();
     this.addToEditor();
+  }
+
+  deleteComment() {
+    this.removeFromEditor();
+    this.domNode.remove();
   }
 
   private addToEditor() {
@@ -246,7 +248,7 @@ export class PullRequestPlainDiffCommentThreadModel {
     });
   }
 
-  private removeFromEditor() {
+  removeFromEditor() {
     const tempViewZoneId = this.viewZoneId;
     this.plainDiff.state.diffEditor.getModifiedEditor().changeViewZones(function(changeAccessor) {
       changeAccessor.removeZone(tempViewZoneId);
