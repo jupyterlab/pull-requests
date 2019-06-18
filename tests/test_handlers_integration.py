@@ -239,3 +239,31 @@ class TestPostPullRequestsCommentsHandler(TestPullRequest):
         response = self.fetch(f'/pullrequests/files/comments?id={valid_prid}&filename={valid_prfilename}', method="POST", body='{"in_repl_to": 123, "text": "test"}')
         self.assertEqual(response.code, 400)
         self.assertIn("Missing POST key", response.reason)
+
+# Test get PR comments
+@patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager(valid_access_token)))
+class TestPostPullRequestsNBDiffHandler(TestPullRequest):
+
+    # Test empty body
+    def test_body_empty(self):
+        response = self.fetch('/pullrequests/files/nbdiff', method="POST", body="")
+        self.assertEqual(response.code, 400)
+        self.assertIn("Invalid POST body", response.reason)
+
+    # Test invalid body JSON
+    def test_body_invalid(self):
+        response = self.fetch('/pullrequests/files/nbdiff', method="POST", body="{)")
+        self.assertEqual(response.code, 400)
+        self.assertIn("Invalid POST body", response.reason)
+    
+    # Test invalid body JSON
+    def test_body_missingkey(self):
+        response = self.fetch('/pullrequests/files/nbdiff', method="POST", body='{"body": 123, "remote_content": "test"}')
+        self.assertEqual(response.code, 400)
+        self.assertIn("Missing POST key", response.reason)
+
+    # Test invalid body JSON
+    def test_body_invalid(self):
+        response = self.fetch('/pullrequests/files/nbdiff', method="POST", body='{"base_content": "bad", "remote_content": "bad"}')
+        self.assertEqual(response.code, 500)
+        self.assertIn("Error diffing content", response.reason)

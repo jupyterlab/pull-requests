@@ -103,10 +103,36 @@ class PullRequestsFileCommentsHandler(PullRequestsAPIHandler):
         except KeyError as e:
             raise HTTPError(
                 status_code=HTTPStatus.BAD_REQUEST,
-                reason=f"Missing POST key: {str(e)}"
+                reason=f"Missing POST key: {e}"
             )
         result = yield self.manager.post_file_comment(pr_id, filename, body)
         self.finish(json.dumps(result))
+
+class PullRequestsFileNBDiffHandler(PullRequestsAPIHandler):
+    """
+    Returns nbdime diff of given ipynb base content and remote content
+    """
+
+    @gen.coroutine
+    def post(self):
+        data = get_body_value(self)
+        try:
+            base_content = data["base_content"]
+            remote_content = data["remote_content"]
+        except KeyError as e:
+            raise HTTPError(
+                status_code=HTTPStatus.BAD_REQUEST,
+                reason=f"Missing POST key: {e}"
+            )
+        try:
+            content = yield self.manager.get_file_nbdiff(base_content, remote_content)
+        except Exception as e:
+            raise HTTPError(
+                status_code=HTTPStatus.INTERNAL_SERVER_ERROR, 
+                reason=f"Error diffing content: {e}."
+            )
+        self.finish(json.dumps(content))
+
 
 # -----------------------------------------------------------------------------
 # Handler utilities
@@ -137,7 +163,7 @@ def get_body_value(handler):
     except ValueError as e:
         raise HTTPError(
             status_code=HTTPStatus.BAD_REQUEST,
-            reason=f"Invalid POST body: {str(e)}"
+            reason=f"Invalid POST body: {e}"
         )
 
 # -----------------------------------------------------------------------------
@@ -147,7 +173,8 @@ def get_body_value(handler):
 default_handlers = [("/pullrequests/prs/user", ListPullRequestsUserHandler),
                     ("/pullrequests/prs/files", ListPullRequestsFilesHandler),
                     ("/pullrequests/files/content", PullRequestsFileContentHandler),
-                    ("/pullrequests/files/comments", PullRequestsFileCommentsHandler)]
+                    ("/pullrequests/files/comments", PullRequestsFileCommentsHandler),
+                    ("/pullrequests/files/nbdiff", PullRequestsFileNBDiffHandler)]
 
 def load_jupyter_server_extension(nbapp):
     webapp = nbapp.web_app

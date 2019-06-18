@@ -200,6 +200,20 @@ class TestPostFileComments(TestCase):
         assert result == expected_result
 
 # -----------------------------------------------------------------------------
+# /pullrequests/files/nbdiff Handler
+# -----------------------------------------------------------------------------
+
+class TestPostFileNBDiff(TestCase):
+
+    async def test_valid(self):
+        manager = PullRequestsGithubManager("valid-pat")
+        base_content = json.dumps(read_sample_response("ipynb_base.json"))
+        remote_content = json.dumps(read_sample_response("ipynb_remote.json"))
+        result = await manager.get_file_nbdiff(base_content, remote_content)
+        expected_result = read_sample_response("ipynb_nbdiff.json")
+        assert result == expected_result
+
+# -----------------------------------------------------------------------------
 # Github Utilities
 # -----------------------------------------------------------------------------
 

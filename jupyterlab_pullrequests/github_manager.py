@@ -184,7 +184,7 @@ class PullRequestsGithubManager(PullRequestsManager):
         except:
             HTTPError(
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-                reason=f"Invalid call_github '{method}': '{str(e)}'"
+                reason=f"Invalid call_github '{method}': {e}"
             )
 
         try:
@@ -197,15 +197,15 @@ class PullRequestsGithubManager(PullRequestsManager):
         except HTTPClientError as e:
             raise HTTPError(
                 status_code=e.code,
-                reason=f"Invalid response in '{git_url}': '{str(e)}'"
+                reason=f"Invalid response in '{git_url}': {e}"
             )
         except ValueError as e:
             raise HTTPError(
                 status_code=HTTPStatus.BAD_REQUEST,
-                reason=f"Invalid response in '{git_url}': '{str(e)}'"
+                reason=f"Invalid response in '{git_url}': {e}"
             )
         except Exception as e:
             raise HTTPError(
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-                reason=f"Unknown error in '{git_url}': {str(e)}"
+                reason=f"Unknown error in '{git_url}': {e}"
             )

@@ -94,7 +94,6 @@ export class PlainDiffComponent extends React.Component<
   }
 
   private addMonacoEditor() {
-
     const options: monaco.editor.IDiffEditorConstructionOptions = {
       readOnly: true,
       selectionHighlight: false,
