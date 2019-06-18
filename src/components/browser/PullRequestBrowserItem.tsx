@@ -1,9 +1,10 @@
 import * as React from "react";
 import { BeatLoader } from "react-spinners";
-import { apiRequest, PullRequestItem, PullRequestItemFile } from "../../utils";
+import { PullRequestFileModel, PullRequestModel } from "../../models";
+import { doRequest } from "../../utils";
 
 export interface IPullRequestBrowserItemState {
-  data: PullRequestItem[];
+  data: PullRequestModel[];
   isLoading: boolean;
   error: string;
 }
@@ -11,7 +12,7 @@ export interface IPullRequestBrowserItemState {
 export interface IPullRequestBrowserItemProps {
   header: string;
   filter: string;
-  showTab: (data: PullRequestItemFile) => Promise<void>;
+  showTab: (data: PullRequestFileModel) => Promise<void>;
 }
 
 export class PullRequestBrowserItem extends React.Component<
@@ -20,23 +21,29 @@ export class PullRequestBrowserItem extends React.Component<
 > {
   constructor(props: IPullRequestBrowserItemProps) {
     super(props);
-    this.state = { data: [], isLoading: false, error: null };
+    this.state = { data: [], isLoading: true, error: null };
   }
 
   componentDidMount() {
-    this.setState({ isLoading: true });
-    apiRequest("/pullrequests/prs/user?filter=" + this.props.filter)
-      .then(data => {
-        let jsonresults = JSON.parse(JSON.stringify(data));
-        let results: PullRequestItem[] = [];
-        for (let i in jsonresults) {
-          results.push(new PullRequestItem(JSON.stringify(jsonresults[i])));
-        }
-        this.setState({ data: results, isLoading: true, error: null }); // render PRs while files load
-        this.fetchFiles(results);
-      })
-      .catch(err => {
-        let msg = "UNKNOWN ERROR";
+    this.fetchPRs();
+  }
+
+  private async fetchPRs() {
+    try {
+      let jsonresults = await doRequest("pullrequests/prs/user?filter=" + this.props.filter, "GET")
+      let results: PullRequestModel[] = [];
+      for (let jsonresult of jsonresults) {
+        results.push(new PullRequestModel(
+          jsonresult["id"],
+          jsonresult["title"],
+          jsonresult["body"],
+          jsonresult["internal_id"]
+        ));
+      }
+      this.setState({ data: results, isLoading: true, error: null }); // render PRs while files load
+      this.fetchFiles(results);
+    } catch (err) {
+      let msg = "Unknown Error";
         if (
           err.response != null &&
           err.response.status != null &&
@@ -45,15 +52,15 @@ export class PullRequestBrowserItem extends React.Component<
           msg = `${err.response.status} (${err.message})`;
         }
         this.setState({ data: [], isLoading: false, error: msg });
-      });
+    }
   }
 
-  private async fetchFiles(items: PullRequestItem[]) {
+  private async fetchFiles(items: PullRequestModel[]) {
     for (let i in items) {
       try {
         await items[i].getFiles();
       } catch (e) {
-        const msg = `Get Files Error (${e.message})`;
+        const msg = `Get Files Error (${e})`;
         this.setState({ data: [], isLoading: false, error: msg });
         return;
       }

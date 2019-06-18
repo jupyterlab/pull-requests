@@ -1,17 +1,17 @@
 import { IThemeManager } from "@jupyterlab/apputils";
 import * as React from "react";
 import { RingLoader } from "react-spinners";
-import { PullRequestItemFile } from "../../utils";
+import { PullRequestFileModel } from "../../models";
 import { PlainDiffComponent } from "../diff/PlainDiffComponent";
 
 export interface IPullRequestTabState {
-  data: PullRequestItemFile;
+  data: PullRequestFileModel;
   isLoading: boolean;
   error: string;
 }
 
 export interface IPullRequestTabProps {
-  data: PullRequestItemFile;
+  data: PullRequestFileModel;
   themeManager: IThemeManager;
 }
 
@@ -22,14 +22,17 @@ export class PullRequestTab extends React.Component<
   constructor(props: IPullRequestTabProps) {
     super(props);
     this.state = { data: null, isLoading: true, error: null };
+  }
+
+  componentDidMount() {
     this.loadDiff();
   }
 
-  // TODO error handling
   private async loadDiff() {
     let _data = this.props.data;
     try {
       await _data.loadFile();
+      await _data.loadComments();
     } catch (e) {
       const msg = `Load File Error (${e.message})`;
       this.setState({ data: null, isLoading: false, error: msg });
@@ -44,10 +47,7 @@ export class PullRequestTab extends React.Component<
         {!this.state.isLoading ? (
           (this.state.error == null ? (
             <PlainDiffComponent
-              id={this.state.data.id}
-              extension={this.state.data.extension}
-              baseValue={this.state.data.basecontent}
-              headValue={this.state.data.headcontent}
+              data={this.state.data}
               themeManager={this.props.themeManager}
             />
           ) : (

@@ -2,8 +2,8 @@ import { shallow } from 'enzyme';
 import 'jest';
 import * as React from 'react';
 import { IPullRequestBrowserItemProps, PullRequestBrowserItem } from '../../components/browser/PullRequestBrowserItem';
-import { PullRequestItemFile } from '../../utils';
-import { SAMPLE_PR_JSON, SAMPLE_FILE_JSON } from '../testutils';
+import { PullRequestFileModel } from '../../models';
+import { SAMPLE_PR_JSON } from '../testutils';
 
 // Unit tests for PullRequestBrowserItem
 describe('PullRequestBrowserItem', () => {
@@ -11,7 +11,7 @@ describe('PullRequestBrowserItem', () => {
     let props: IPullRequestBrowserItemProps = {
         header: 'Created by Me',
         filter: 'created',
-        showTab: async (data: PullRequestItemFile) => {
+        showTab: async (data: PullRequestFileModel) => {
             console.log('Show tab test.')
         }
     };
@@ -51,7 +51,7 @@ describe('PullRequestBrowserItem', () => {
             let _data = JSON.parse(SAMPLE_PR_JSON);
             _data[0].isExpanded = true;
             _data[0].files = [];
-            _data[0].files.push(new PullRequestItemFile(JSON.stringify(JSON.parse(SAMPLE_FILE_JSON)[0]), _data[0]));
+            _data[0].files.push(new PullRequestFileModel("test.ipynb", "modified", _data[0]));
             component.setState({data:_data})
             expect(component.find('.jp-PullRequestBrowserItemFileList')).toHaveLength(1);
             expect(component.find('.jp-PullRequestBrowserItemFileItem')).toHaveLength(1);

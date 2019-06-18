@@ -2,14 +2,13 @@ import { shallow } from 'enzyme';
 import 'jest';
 import * as React from 'react';
 import { IPullRequestTabProps, PullRequestTab } from '../../components/tab/PullRequestTab';
-import { PullRequestItemFile, PullRequestItem } from '../../utils';
-import { SAMPLE_FILE_JSON, SAMPLE_PR_JSON } from '../testutils';
+import { SamplePullRequestFileItem } from '../testutils';
 
 // Unit tests for PullRequestTab
 describe('PullRequestTab', () => {
     
     let props: IPullRequestTabProps = {
-        data: new PullRequestItemFile(JSON.stringify(JSON.parse(SAMPLE_FILE_JSON)[0]), new PullRequestItem(JSON.stringify(JSON.parse(SAMPLE_PR_JSON)[0]))),
+        data: SamplePullRequestFileItem,
         themeManager: null
     };
 
@@ -29,15 +28,15 @@ describe('PullRequestTab', () => {
             expect(component.find('.jp-PullRequestTab')).toHaveLength(1);
         });
         it('should show PlainDiffComponent if loaded', () => {
-            let _data = props.data;
-            _data.isLoaded = true;
-            component.setState({data: _data});
+            component.setState({data: props.data, isLoading: false, error: null});
             expect(component.find('PlainDiffComponent')).toHaveLength(1);
         });
         it('should not show PlainDiffComponent if not loaded', () => {
-            let _data = props.data;
-            _data.isLoaded = false;
-            component.setState({data: _data});
+            component.setState({data: props.data, isLoading: true, error: null});
+            expect(component.find('PlainDiffComponent')).toHaveLength(0);
+        });
+        it('should not show PlainDiffComponent if error', () => {
+            component.setState({data: props.data, isLoading: false, error: "error"});
             expect(component.find('PlainDiffComponent')).toHaveLength(0);
         });
     });

@@ -57,8 +57,8 @@
 .jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserItemListItem {
   display: flex;
   overflow: hidden;
-  white-space: nowrap;
   text-overflow: ellipsis;
+  white-space: nowrap;
   margin: auto;
 }
 
@@ -90,8 +90,8 @@
   color: var(--jp-ui-font-color1);
   font-weight: 400;
   overflow: hidden;
-  white-space: nowrap;
   text-overflow: ellipsis;
+  white-space: nowrap;
   display: flex;
   padding: 4px 12px 4px 20px;
 }
@@ -162,4 +162,113 @@
   background: var(--jp-rendermime-error-background);
   text-align: center;
   color: #e75c58;
+}
+
+.jp-PullRequestTab .jp-PullRequestComment {
+  background-color: var(--jp-layout-color1);
+  padding: 4px;
+  border-top: var(--jp-border-width) solid var(--jp-border-color0);
+  border-bottom: var(--jp-border-width) solid var(--jp-border-color0);
+}
+
+.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestCommentHeader {
+  display: flex;
+  flex: 1;
+}
+
+.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestCommentHeader p {
+  font-size: var(--jp-ui-font-size0);
+  color: var(--jp-ui-font-color1);
+  font-weight: 400;
+  margin: 0;
+  padding-left: 4px;
+  line-height: 20px;
+}
+
+.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestCommentHeader span {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+
+.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestInputContainer {
+  display: flex;
+  flex: 1;
+  padding: 8px 16px;
+  font-size: var(--jp-ui-font-size0);
+  font-weight: 400;
+}
+
+.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestInputContainer input {
+  width: 100%;
+  background-color: var(--jp-layout-color1);
+  box-sizing : border-box;
+  border: var(--jp-border-width) solid var(--jp-border-color0);
+  border-radius: 3px;
+  padding: 4px;
+  color: var(--jp-ui-font-color0);
+  font-size: var(--jp-ui-font-size0);
+  font-weight: 400;
+}
+
+.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestInputContainer button {
+  box-sizing : border-box;
+  margin: 4px;
+  border-radius: 3px;
+  border: none;
+  background-color: var(--jp-inverse-layout-color1);
+  color: var(--jp-ui-inverse-font-color0);
+  font-size: var(--jp-ui-font-size0);
+  font-weight: 600;
+}
+
+.jp-PullRequestCommentItem {
+  display: flex;
+  margin: 0;
+  padding: 8px 16px;
+}
+
+.jp-PullRequestCommentItem .jp-PullRequestCommentItemContent {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 16px;
+}
+
+.jp-PullRequestCommentItem .jp-PullRequestCommentItemContent h2 {
+  font-size: var(--jp-ui-font-size0);
+  color: var(--jp-ui-font-color0);
+  font-weight: 600;
+  margin: 0;
+}
+
+.jp-PullRequestCommentItem .jp-PullRequestCommentItemContent p {
+  font-size: var(--jp-ui-font-size0);
+  color: var(--jp-ui-font-color1);
+  font-weight: 400;
+  padding-top: 4px;
+  margin: 0;
+}
+
+.jp-PullRequestCommentItem .jp-PullRequestCommentItemImg img {
+  height: 28px;
+  width: 28px;
+  border-radius: 3px;
+}
+
+.jp-PullRequestCommentGlyph {
+  background: var(--jp-inverse-layout-color3);
+  width: 4px !important;
+	margin-left: -8px;
+}
+
+.jp-PullRequestTab .monaco-editor .margin-view-overlays .line-numbers {
+  text-align: center !important;
+}
+
+[data-theme-light='true'] .jp-PullRequestTab .monaco-editor .current-line ~ .line-numbers {
+  color: var(--jp-ui-font-color0);
+}
+
+[data-theme-light='false'] .jp-PullRequestTab .monaco-editor .current-line ~ .line-numbers {
+  color: var(--jp-ui-font-color2);
 }

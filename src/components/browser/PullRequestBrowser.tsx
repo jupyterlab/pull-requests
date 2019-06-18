@@ -1,11 +1,11 @@
 import * as React from "react";
-import { PullRequestItemFile } from "../../utils";
+import { PullRequestFileModel } from "../../models";
 import { PullRequestBrowserItem } from "./PullRequestBrowserItem";
 
 export interface IPullRequestBrowserState {}
 
 export interface IPullRequestBrowserProps {
-  showTab: (data: PullRequestItemFile) => Promise<void>;
+  showTab: (data: PullRequestFileModel) => Promise<void>;
 }
 
 export class PullRequestBrowser extends React.Component<

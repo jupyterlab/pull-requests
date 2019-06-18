@@ -1,7 +1,7 @@
 import { JupyterLab } from "@jupyterlab/application";
 import { IThemeManager, Toolbar } from "@jupyterlab/apputils";
 import { PanelLayout, Widget } from "@phosphor/widgets";
-import { PullRequestItemFile } from "../utils";
+import { PullRequestFileModel } from "../models";
 import { PullRequestBrowserWidget } from "./browser/PullRequestBrowserWidget";
 import { PullRequestToolbar } from "./PullRequestToolbar";
 import { PullRequestTabWidget } from "./tab/PullRequestTabWidget";
@@ -34,7 +34,7 @@ export class PullRequestPanel extends Widget {
   }
 
   // Show tab window for specific PR
-  showTab = async (data: PullRequestItemFile) => {
+  showTab = async (data: PullRequestFileModel) => {
     let tab = this.getTab(data.id);
     if (tab == null) {
       tab = new PullRequestTabWidget(data, this._themeManager);

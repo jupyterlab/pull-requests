@@ -10,7 +10,7 @@ module.exports = {
   },
   testRegex: 'src/tests/test-.*/.*.spec.ts[x]?$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  testPathIgnorePatterns: ['/dev_mode/', '/lib/', '/node_modules/'],
+  testPathIgnorePatterns: ['/dev_mode/', '/lib/', '/node_modules/', ".*\\.d\\.ts$"],
   automock: false,
   setupFiles: ['./setupJest.js']
 };

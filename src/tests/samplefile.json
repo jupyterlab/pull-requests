@@ -1,1 +1,6 @@
-[{"sha":"eef0d082dedfc1fd00bb5763b51bc647df73d8bf","filename":".ipynb_checkpoints/test-checkpoint.ipynb","status":"modified","additions":23,"deletions":3,"changes":26,"blob_url":"https://github.com/timnlupo/jupyterlab-playground/blob/82d558f101aa11a1f6d336bc863b02020068f47b/.ipynb_checkpoints/test-checkpoint.ipynb","raw_url":"https://github.com/timnlupo/jupyterlab-playground/raw/82d558f101aa11a1f6d336bc863b02020068f47b/.ipynb_checkpoints/test-checkpoint.ipynb","contents_url":"https://api.github.com/repos/timnlupo/jupyterlab-playground/contents/.ipynb_checkpoints/test-checkpoint.ipynb?ref=82d558f101aa11a1f6d336bc863b02020068f47b"}]
+[
+    {
+        "name": "test.ipynb",
+        "status": "modified"
+    }
+]
