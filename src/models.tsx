@@ -1,8 +1,8 @@
 import { isUndefined } from "lodash";
-import * as monaco from "monaco-editor";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { PullRequestCommentThread } from "./components/diff/PullRequestCommentThread";
+import { PlainDiffComponent } from "./components/diff/PlainDiffComponent";
 import { doRequest } from "./utils";
 
 // -----------------------------------------------------------------------------
@@ -61,6 +61,7 @@ export class PullRequestFileModel {
 
   async loadFile(): Promise<void> {
     let jsonresults = await doRequest(`pullrequests/files/content?id=${this.pr.id}&filename=${this.name}`, "GET");
+    this.commitId = jsonresults["commit_id"];
     this.basecontent = jsonresults["base_content"];
     this.headcontent = jsonresults["head_content"];
   }
@@ -100,6 +101,7 @@ export class PullRequestFileModel {
   id: string;
   name: string;
   status: string;
+  commitId: string;
   extension: string;
   basecontent: string;
   headcontent: string;
@@ -126,6 +128,7 @@ export class PullRequestCommentThreadModel {
   constructor(file: PullRequestFileModel, given: number | PullRequestCommentModel) {
     this.prid = file.pr.id;
     this.filename = file.name;
+    this.commitId = file.commitId;
     if (typeof(given) === "number") {
       this.lineNumber = given;
       this.comments = null;
@@ -149,7 +152,7 @@ export class PullRequestCommentThreadModel {
       "text": text,
       "filename": this.filename,
       "position": this.lineNumber,
-      "commit_id": "" // TODO
+      "commit_id": this.commitId
     };
     return request;
   }
@@ -174,6 +177,7 @@ export class PullRequestCommentThreadModel {
   id: string;
   prid: string;
   filename: string;
+  commitId: string;
   lineNumber: number;
   comments: PullRequestCommentModel;
 }
@@ -187,16 +191,15 @@ export class PullRequestCommentThreadModel {
  */
 export class PullRequestPlainDiffCommentThreadModel {
 
-  constructor(thread: PullRequestCommentThreadModel, diffEditor: monaco.editor.IStandaloneDiffEditor) {
+  constructor(thread: PullRequestCommentThreadModel, plainDiff: PlainDiffComponent) {
     this.thread = thread;
-    this.diffEditor = diffEditor;
+    this.plainDiff = plainDiff;
     this.viewZoneId = null;
     this.domNode = null;
     this.initComment();
   }
 
   initComment() {
-
     let overlayDom = document.createElement('div');
     overlayDom.style.width = '100%';
     overlayDom.style.visibility = 'visible';
@@ -206,12 +209,17 @@ export class PullRequestPlainDiffCommentThreadModel {
       getDomNode: () => overlayDom,
       getPosition: (): any => null
     };
-    this.diffEditor.getModifiedEditor().addOverlayWidget(overlayWidget);
+    this.plainDiff.state.diffEditor.getModifiedEditor().addOverlayWidget(overlayWidget);
 
-    ReactDOM.render(<PullRequestCommentThread thread={this.thread}  plaindiff={this} />, overlayDom, () => {
+    ReactDOM.render(<PullRequestCommentThread thread={this.thread}  plainDiff={this} />, overlayDom, () => {
       this.domNode = overlayDom;
       setTimeout(() => this.addToEditor(), 0);
     });
+  }
+
+  deleteComment() {
+    this.removeFromEditor();
+    this.domNode.remove();
   }
 
   toggleUpdate() {
@@ -220,12 +228,11 @@ export class PullRequestPlainDiffCommentThreadModel {
   }
 
   private addToEditor() {
-    this.lockComment();
     let zoneNode = document.createElement('div');
     zoneNode.id = this.thread.id;
     let marginZoneNode = document.createElement('div');
 
-    this.diffEditor.getModifiedEditor().changeViewZones((changeAccessor) => {
+    this.plainDiff.state.diffEditor.getModifiedEditor().changeViewZones((changeAccessor) => {
       this.viewZoneId = changeAccessor.addZone({
         afterLineNumber: this.thread.lineNumber,
         heightInPx: this.domNode.clientHeight,
@@ -240,41 +247,15 @@ export class PullRequestPlainDiffCommentThreadModel {
   }
 
   private removeFromEditor() {
-    this.unlockComment();
     const tempViewZoneId = this.viewZoneId;
-    this.diffEditor.getModifiedEditor().changeViewZones(function(changeAccessor) {
+    this.plainDiff.state.diffEditor.getModifiedEditor().changeViewZones(function(changeAccessor) {
       changeAccessor.removeZone(tempViewZoneId);
     });
     this.viewZoneId = null;
   }
 
-  // viewZone will not resize with width so lock overlay height to prevent overflow
-  private lockComment() {
-    this.domNode.style.minHeight = this.domNode.clientHeight + "px";
-    this.domNode.style.maxHeight = this.domNode.clientHeight + "px";
-    var nodes = this.domNode.getElementsByTagName('*');
-    for (var i=0; i<nodes.length; ++i) {
-      if (nodes[i].tagName == "DIV") {
-        var nodestyle = window.getComputedStyle(nodes[i]);
-        const h = nodes[i].clientHeight - parseInt(nodestyle.getPropertyValue('padding-top')) - parseInt(nodestyle.getPropertyValue('padding-bottom'));
-        nodes[i].setAttribute("style", "min-height: " + h + "px; max-height: " + h + "px;");
-      }
-    }
-  }
-
-  private unlockComment() {
-    this.domNode.style.minHeight = "0";
-    this.domNode.style.maxHeight = "none";
-    var nodes = this.domNode.getElementsByTagName('*');
-    for (var i=0; i<nodes.length; ++i) {
-      if (nodes[i].tagName == "DIV") {
-        nodes[i].setAttribute("style", "min-height: 0; max-height: none;");
-      }
-    }
-  }
-
   viewZoneId: number;
   domNode: HTMLElement;
-  diffEditor: monaco.editor.IStandaloneDiffEditor;
+  plainDiff: PlainDiffComponent;
   thread: PullRequestCommentThreadModel;
 }

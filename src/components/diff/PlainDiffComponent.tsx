@@ -1,13 +1,15 @@
 import { IThemeManager } from "@jupyterlab/apputils";
 import * as d3 from "d3-color";
-import { isUndefined } from "lodash";
+import { isNull, isUndefined } from "lodash";
 import * as monaco from "monaco-editor";
 import * as React from "react";
+import ReactResizeDetector from 'react-resize-detector';
 import { PullRequestCommentThreadModel, PullRequestFileModel, PullRequestPlainDiffCommentThreadModel } from "../../models";
 
 export interface IPlainDiffComponentState {
   diffEditor: monaco.editor.IStandaloneDiffEditor;
   comments: PullRequestPlainDiffCommentThreadModel[];
+  decorations: string[];
 }
 
 export interface IPlainDiffComponentProps {
@@ -21,8 +23,34 @@ export class PlainDiffComponent extends React.Component<
 > {
   constructor(props: IPlainDiffComponentProps) {
     super(props);
-    this.state = { diffEditor: null, comments: null };
+    this.state = { diffEditor: null, comments: [], decorations: [] };
   }
+
+  componentDidMount() {
+    this.addMonacoEditor();
+  }
+
+  onResize = () => {
+    if (!isNull(this.state.diffEditor)) {
+      this.state.diffEditor.layout();
+    }
+  }
+
+  render() {
+    return (
+      <div style={{ height: "100%", width: "100%" }}>
+        <div
+          id={`monacocontainer-${this.props.data.id}`}
+          style={{ height: "100%", width: "100%" }}
+        />
+        <ReactResizeDetector handleWidth={true} handleHeight={true} onResize={this.onResize} />
+      </div>
+    );
+  }
+
+  // -----------------------------------------------------------------------------
+  // Monaco
+  // -----------------------------------------------------------------------------
 
   private getLanguage(ext: string): string {
     const langs = monaco.languages.getLanguages();
@@ -66,13 +94,11 @@ export class PlainDiffComponent extends React.Component<
   }
 
   private addMonacoEditor() {
-    // automaticLayout may not be optimal, see https://github.com/Microsoft/monaco-editor/issues/28
-    // Perhaps add div resize listener? See http://marcj.github.io/css-element-queries/
+
     const options: monaco.editor.IDiffEditorConstructionOptions = {
       readOnly: true,
       selectionHighlight: false,
       scrollBeyondLastLine: false,
-      automaticLayout: true,
       renderLineHighlight: "gutter",
       glyphMargin: false
       // renderSideBySide: false
@@ -94,31 +120,81 @@ export class PlainDiffComponent extends React.Component<
     });
 
     this.props.themeManager.themeChanged.connect(() => this.updateTheme());
-    this.setState({diffEditor: diffEditor}, () => { this.addComments(diffEditor) });
+    this.setState({diffEditor: diffEditor}, () => {
+      this.initComments();
+      this.handleMouseEvents();
+    });
   }
 
-  private addComments(diffEditor: monaco.editor.IStandaloneDiffEditor) {
+  private initComments() {
     let pdcomments: PullRequestPlainDiffCommentThreadModel[] = [];
     for (let comment of this.props.data.comments) {
       const pdcomment = new PullRequestPlainDiffCommentThreadModel(
         new PullRequestCommentThreadModel(this.props.data, comment),
-        diffEditor
+        this
       );
       pdcomments.push(pdcomment);
     }
     this.setState({comments: pdcomments});
   }
 
-  componentDidMount() {
-    this.addMonacoEditor();
+  private addComment(commentToAdd: PullRequestPlainDiffCommentThreadModel) {
+    this.setState(prevState => ({
+      comments: [...prevState.comments, commentToAdd]
+    }))
   }
 
-  render() {
-    return (
-      <div
-        id={`monacocontainer-${this.props.data.id}`}
-        style={{ height: "100%", width: "100%" }}
-      />
-    );
+  removeComment(commentToRemove: PullRequestPlainDiffCommentThreadModel) {
+    this.setState(prevState => ({
+      comments: [...prevState.comments.filter(comment => comment !== commentToRemove)]
+    }), () => {
+      commentToRemove.deleteComment();
+    });
+  }
+
+  private handleMouseEvents() {
+    // Show add comment decoration on mouse move
+    this.state.diffEditor.getModifiedEditor().onMouseMove((e) => {
+      if (!isNull(e.target["position"])) {
+        this.updateCommentDecoration(e.target["position"]["lineNumber"]);
+      } else if (this.state.decorations.length > 0 && e.target["type"] == 12) {
+        this.removeCommentDecoration();
+      }
+    });
+    // Remove add comment decoration if mouse leaves
+    this.state.diffEditor.getModifiedEditor().onMouseLeave((e) => {
+      this.removeCommentDecoration();
+    });
+    this.state.diffEditor.getModifiedEditor().onMouseDown((e) => {
+      if (e.target["element"]["classList"].contains("jp-PullRequestCommentDecoration")) {
+        this.addComment(new PullRequestPlainDiffCommentThreadModel(
+          new PullRequestCommentThreadModel(
+            this.props.data,
+            parseInt(e.target["element"]["parentElement"]["innerText"])
+          ),
+          this
+        ))
+      }
+    });
+  }
+
+  private updateCommentDecoration(lineNumber: number) {
+    let newDecorations = this.state.diffEditor.getModifiedEditor().deltaDecorations(this.state.decorations, [
+      {
+        range: new monaco.Range(lineNumber,1,lineNumber,1),
+        options: {
+          isWholeLine: true,
+          linesDecorationsClassName: 'jp-PullRequestCommentDecoration'
+        }
+      },
+    ])
+    this.setState({decorations: newDecorations});
+  }
+
+  private removeCommentDecoration() {
+    if (this.state.decorations.length > 0) {
+      let newDecorations = this.state.diffEditor.getModifiedEditor().deltaDecorations(this.state.decorations, []);
+      this.setState({decorations: newDecorations});
+    }
   }
 }

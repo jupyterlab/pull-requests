@@ -43,5 +43,25 @@ describe('PullRequestBrowserItem', () => {
             expect(newComponent.find('.jp-PullRequestCommentHeader')).toHaveLength(1);
             expect(replyComponent.find('.jp-PullRequestCommentHeader')).toHaveLength(1);
         });
+        it('should init with input if new, init without input if reply', () => {
+            expect(newComponent.find('.jp-PullRequestInputFormTextArea')).toHaveLength(1);
+            expect(newComponent.find('.jp-PullRequestInputButtonContainer')).toHaveLength(1);
+            expect(newComponent.find('.jp-PullRequestInputFormButton')).toHaveLength(0);
+            expect(replyComponent.find('.jp-PullRequestInputFormTextArea')).toHaveLength(0);
+            expect(replyComponent.find('.jp-PullRequestInputButtonContainer')).toHaveLength(0);
+            expect(replyComponent.find('.jp-PullRequestInputFormButton')).toHaveLength(1);
+        });
+        it('should show input if isInput is true', () => {
+            newComponent.setState({isInput: true})
+            expect(newComponent.find('.jp-PullRequestInputFormTextArea')).toHaveLength(1);
+            expect(newComponent.find('.jp-PullRequestInputButtonContainer')).toHaveLength(1);
+            expect(newComponent.find('.jp-PullRequestInputFormButton')).toHaveLength(0);
+        });
+        it('should show not input if isInput is false', () => {
+            newComponent.setState({isInput: false})
+            expect(newComponent.find('.jp-PullRequestInputFormTextArea')).toHaveLength(0);
+            expect(newComponent.find('.jp-PullRequestInputButtonContainer')).toHaveLength(0);
+            expect(newComponent.find('.jp-PullRequestInputFormButton')).toHaveLength(1);
+        });
     });
 });

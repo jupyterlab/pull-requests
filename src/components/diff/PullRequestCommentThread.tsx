@@ -1,16 +1,18 @@
 import { isNull, isUndefined } from "lodash";
 import * as React from "react";
+import ReactResizeDetector from 'react-resize-detector';
 import { PullRequestCommentModel, PullRequestCommentThreadModel, PullRequestPlainDiffCommentThreadModel } from "../../models";
 
 export interface IPullRequestCommentThreadState {
   isExpanded: boolean;
+  isInput: boolean;
   inputText: string;
   comments: PullRequestCommentModel;
 }
 
 export interface IPullRequestCommentThreadProps {
   thread: PullRequestCommentThreadModel;
-  plaindiff?: PullRequestPlainDiffCommentThreadModel;
+  plainDiff?: PullRequestPlainDiffCommentThreadModel;
 }
 
 export class PullRequestCommentThread extends React.Component<
@@ -20,7 +22,12 @@ export class PullRequestCommentThread extends React.Component<
 
   constructor(props: IPullRequestCommentThreadProps) {
     super(props);
-    this.state = { isExpanded: true, inputText: '', comments: this.props.thread.comments };
+    this.state = {
+      isExpanded: true,
+      isInput: isNull(this.props.thread.comments) ? true : false,
+      inputText: '',
+      comments: this.props.thread.comments
+    };
   }
 
   componentDidUpdate(prevProps: IPullRequestCommentThreadProps, prevState: IPullRequestCommentThreadState) {
@@ -28,14 +35,17 @@ export class PullRequestCommentThread extends React.Component<
     if (this.state.inputText != prevState.inputText) {
       return;
     }
-    if (!isUndefined(this.props.plaindiff)) {
-      this.props.plaindiff.toggleUpdate();
-    }
   }
 
   handleInputChange = (event: any) => {
     this.setState({ inputText: event.target.value });
   };
+
+  onResize = () => {
+    if (!isUndefined(this.props.plainDiff)) {
+      this.props.plainDiff.toggleUpdate();
+    }
+  }
 
   async handleSubmit() {
     let _thread = this.props.thread;
@@ -46,8 +56,19 @@ export class PullRequestCommentThread extends React.Component<
       payload = _thread.getCommentNewBody(this.state.inputText);
     }
     await _thread.postComment(payload);
-    this.setState({comments: _thread.comments});
+    this.setState({comments: _thread.comments, isInput: false});
     this.setState({inputText: ""});
+  }
+
+  handleCancel() {
+    // If no other comments, canceling should remove this thread
+    if (isNull(this.state.comments)) {
+      if (!isUndefined(this.props.plainDiff)) {
+        this.props.plainDiff.plainDiff.removeComment(this.props.plainDiff);
+        return;
+      }
+    }
+    this.setState({isInput: false});
   }
 
   getCommentItemDom(item: PullRequestCommentModel) {
@@ -98,15 +119,37 @@ export class PullRequestCommentThread extends React.Component<
             </div>
             }
             <div className="jp-PullRequestInputContainer">
-              <input 
-                placeholder="Leave a comment"
-                value={this.state.inputText}
-                onChange={this.handleInputChange}
-              />
-              <button onClick={() => this.handleSubmit()} disabled={this.state.inputText == ""}>Comment</button>
+            {this.state.isInput ? (
+              <div>
+                <textarea
+                  className="jp-PullRequestInputForm jp-PullRequestInputFormTextArea"
+                  placeholder="Leave a comment"
+                  value={this.state.inputText}
+                  onChange={this.handleInputChange} 
+                />
+                <div className="jp-PullRequestInputButtonContainer">
+                  <button
+                    onClick={() => this.handleSubmit()}
+                    disabled={this.state.inputText == ""}
+                    className="jp-Button-flat jp-mod-styled jp-mod-accept"
+                  >
+                    Comment
+                  </button>
+                  <button
+                    onClick={() => this.handleCancel()}
+                    className="jp-Button-flat jp-mod-styled jp-mod-reject"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => this.setState({isInput: true})} className="jp-PullRequestInputForm jp-PullRequestInputFormButton">Reply...</button>
+            )}
             </div>
           </div>
         }
+        <ReactResizeDetector handleHeight={true} onResize={this.onResize} />
       </div>
     );
   }
