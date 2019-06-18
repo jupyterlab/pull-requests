@@ -51,7 +51,7 @@ describe('PullRequestBrowserItem', () => {
             let _data = JSON.parse(SAMPLE_PR_JSON);
             _data[0].isExpanded = true;
             _data[0].files = [];
-            _data[0].files.push(new PullRequestItemFile(SAMPLE_FILE_JSON, _data[0]));
+            _data[0].files.push(new PullRequestItemFile(JSON.stringify(JSON.parse(SAMPLE_FILE_JSON)[0]), _data[0]));
             component.setState({data:_data})
             expect(component.find('.jp-PullRequestBrowserItemFileList')).toHaveLength(1);
             expect(component.find('.jp-PullRequestBrowserItemFileItem')).toHaveLength(1);

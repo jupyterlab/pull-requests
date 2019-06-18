@@ -1,5 +1,5 @@
 import { JupyterLab } from "@jupyterlab/application";
-import { Toolbar } from "@jupyterlab/apputils";
+import { IThemeManager, Toolbar } from "@jupyterlab/apputils";
 import { PanelLayout, Widget } from "@phosphor/widgets";
 import { PullRequestItemFile } from "../utils";
 import { PullRequestBrowserWidget } from "./browser/PullRequestBrowserWidget";
@@ -8,11 +8,12 @@ import { PullRequestTabWidget } from "./tab/PullRequestTabWidget";
 
 export class PullRequestPanel extends Widget {
   private _app: JupyterLab;
+  private _themeManager: IThemeManager;
   private _toolbar: Toolbar;
   private _browser: PullRequestBrowserWidget;
   private _tabs: PullRequestTabWidget[];
 
-  constructor(app: JupyterLab) {
+  constructor(app: JupyterLab, themeManager: IThemeManager) {
     super();
     this.addClass("jp-PullRequestPanel");
     this.layout = new PanelLayout();
@@ -22,6 +23,7 @@ export class PullRequestPanel extends Widget {
     this.id = "pullrequests";
 
     this._app = app;
+    this._themeManager = themeManager;
     this._tabs = [];
     this._browser = new PullRequestBrowserWidget(this.showTab);
     this._toolbar = new PullRequestToolbar(this._browser);
@@ -35,7 +37,7 @@ export class PullRequestPanel extends Widget {
   showTab = async (data: PullRequestItemFile) => {
     let tab = this.getTab(data.id);
     if (tab == null) {
-      tab = new PullRequestTabWidget(data);
+      tab = new PullRequestTabWidget(data, this._themeManager);
       tab.update();
       this._tabs.push(tab);
     }
@@ -48,9 +50,9 @@ export class PullRequestPanel extends Widget {
   };
 
   private getTab(id: string) {
-    for (let i in this._tabs) {
-      if (this._tabs[i].id.toString() === id.toString()) {
-        return this._tabs[i];
+    for (let tab of this._tabs) {
+      if (tab.id.toString() === id.toString()) {
+        return tab;
       }
     }
     return null;

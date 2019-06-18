@@ -9,7 +9,8 @@ import { SAMPLE_FILE_JSON, SAMPLE_PR_JSON } from '../testutils';
 describe('PullRequestTab', () => {
     
     let props: IPullRequestTabProps = {
-        data: new PullRequestItemFile(JSON.stringify(JSON.parse(SAMPLE_FILE_JSON)[0]), new PullRequestItem(JSON.stringify(JSON.parse(SAMPLE_PR_JSON)[0])))
+        data: new PullRequestItemFile(JSON.stringify(JSON.parse(SAMPLE_FILE_JSON)[0]), new PullRequestItem(JSON.stringify(JSON.parse(SAMPLE_PR_JSON)[0]))),
+        themeManager: null
     };
 
     // Test constructor
@@ -27,13 +28,17 @@ describe('PullRequestTab', () => {
             expect(component.find('div')).toHaveLength(1);
             expect(component.find('.jp-PullRequestTab')).toHaveLength(1);
         });
-        it('should have a header', () => {
-            expect(component.find('h1')).toHaveLength(1);
-            expect(component.contains([<h1>{props.data.name}</h1>])).toEqual(true);
+        it('should show PlainDiffComponent if loaded', () => {
+            let _data = props.data;
+            _data.isLoaded = true;
+            component.setState({data: _data});
+            expect(component.find('PlainDiffComponent')).toHaveLength(1);
         });
-        it('should have a header', () => {
-            expect(component.find('p')).toHaveLength(1);
-            expect(component.contains([<p>{props.data.status}</p>])).toEqual(true);
+        it('should not show PlainDiffComponent if not loaded', () => {
+            let _data = props.data;
+            _data.isLoaded = false;
+            component.setState({data: _data});
+            expect(component.find('PlainDiffComponent')).toHaveLength(0);
         });
     });
 });
