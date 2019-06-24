@@ -1,3 +1,69 @@
+# Endpoint Documentation
+
+## List Pull Requests
+
+`GET /pullrequests/prs/user`
+
+Lists the user's pull requests.
+
+Arguments: 
+
+* `filter` with value `created` or `assigned`
+
+Returns:
+
+```
+{
+    'id': String, // PR ID (url for Github)
+    'title': String,
+    'body': String,
+    'internal_id': Number
+}
+```
+
+## List PR Files
+
+`GET /pullrequests/prs/files`
+
+Lists the changed files in a given pull request.
+
+Arguments:
+
+* `id` with value of PR ID
+    * For Github, `id` is the PR url
+
+Returns:
+
+```
+{
+    'name': String,
+    'status': String
+}
+```
+
+## List File Content
+
+`GET /pullrequests/files/content`
+
+Lists the changed files in a given pull request.
+
+Arguments:
+
+* `id` with value of PR ID
+    * For Github, `id` is the PR url
+* `filename` with name of file
+
+Returns:
+
+```
+{
+    'base_content': String,
+    'head_content': String
+}
+```
+
+# Development Notes
+
 ## Concerns About Current Design
 
 1) Requires two API calls to list user's PR

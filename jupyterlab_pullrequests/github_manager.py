@@ -1,0 +1,163 @@
+import json
+from http import HTTPStatus
+
+import tornado.gen as gen
+from jupyterlab_pullrequests.manager import PullRequestsManager
+from notebook.utils import url_path_join
+from tornado.httpclient import AsyncHTTPClient, HTTPClientError, HTTPRequest
+from tornado.httputil import url_concat
+from tornado.web import HTTPError
+
+GITHUB_API_BASE_URL = "https://api.github.com"
+
+class PullRequestsGithubManager(PullRequestsManager):
+
+    # -----------------------------------------------------------------------------
+    # /pullrequests/prs/user Handler
+    # -----------------------------------------------------------------------------
+
+    @gen.coroutine
+    def get_current_user(self):
+
+        if not self.access_token:
+            raise HTTPError(
+                status_code=HTTPStatus.BAD_REQUEST,
+                reason="No Github access token specified."
+            )
+
+        git_url = url_path_join(GITHUB_API_BASE_URL, "user")
+        data = yield self.call_github(git_url)
+        
+        return {'username': data["login"]}
+
+    def get_search_filter(self, username, pr_filter):
+
+        if pr_filter == "created":
+            search_filter = "+author:"
+        elif pr_filter == "assigned":
+            search_filter = "+assignee:"
+
+        return search_filter + username
+
+    @gen.coroutine
+    def list_prs(self, username, pr_filter):
+
+        search_filter = self.get_search_filter(username, pr_filter)
+
+        # Use search API to find matching PRs and return
+        git_url = url_path_join(
+            GITHUB_API_BASE_URL, "/search/issues?q=+state:open+type:pr" + search_filter
+        )
+
+        results = yield self.call_github(git_url)
+
+        data = []
+        for result in results["items"]:
+            data.append({
+                'id': result["pull_request"]["url"],
+                'title': result["title"],
+                'body': result["body"],
+                'internal_id': result["id"]
+            })
+
+        return data
+
+    # -----------------------------------------------------------------------------
+    # /pullrequests/prs/files Handler
+    # -----------------------------------------------------------------------------
+
+    @gen.coroutine
+    def list_files(self, pr_id):
+
+        git_url = url_path_join(pr_id, "/files")
+        results = yield self.call_github(git_url)
+
+        data = []
+        for result in results:
+            data.append({
+                'name': result["filename"],
+                'status': result["status"]
+            })
+
+        return data
+
+    # -----------------------------------------------------------------------------
+    # /pullrequests/files/content Handler
+    # -----------------------------------------------------------------------------
+
+    @gen.coroutine
+    def get_pr_links(self, pr_id, filename):
+
+        data = yield self.call_github(pr_id)
+        base_url = url_concat(url_path_join(data["base"]["repo"]["url"],"contents",filename), {"ref": data["base"]["ref"]})
+        head_url = url_concat(url_path_join(data["head"]["repo"]["url"],"contents",filename), {"ref": data["head"]["ref"]})
+        return {'base_url':base_url, 'head_url':head_url}
+
+    @gen.coroutine
+    def validate_pr_link(self, link):
+        try:
+            data = yield self.call_github(link)
+            return data["download_url"]
+        except HTTPError as e:
+            if e.status_code == 404:
+                return ""
+            else:
+                raise e
+
+    @gen.coroutine
+    def get_file_content(self, file_url):
+
+        if file_url == "":
+            return ""
+        result = yield self.call_github(file_url, False)
+        return result
+
+    @gen.coroutine
+    def get_pr_content(self, pr_id, filename):
+
+        links = yield self.get_pr_links(pr_id, filename)
+
+        base_raw_url = yield self.validate_pr_link(links["base_url"])
+        head_raw_url = yield self.validate_pr_link(links["head_url"])
+
+        base_content = yield self.get_file_content(base_raw_url)
+        head_content = yield self.get_file_content(head_raw_url)
+        
+        return {'base_content':base_content, 'head_content':head_content}
+
+    # -----------------------------------------------------------------------------
+    # Handler utilities
+    # -----------------------------------------------------------------------------
+
+    @gen.coroutine
+    def call_github(self, git_url, load_json=True):
+
+        params = {"Accept": "application/vnd.github.v3+json", "access_token": self.access_token}
+
+        # User agents required for Github API, see https://developer.github.com/v3/#user-agent-required
+        request = HTTPRequest(
+            url_concat(git_url, params), validate_cert=True, user_agent="JupyterLab Pull Requests"
+        )
+
+        try:
+            response = yield self.client.fetch(request)
+            result = response.body.decode("utf-8")
+            if load_json:
+                return json.loads(result)
+            else:
+                return result
+        except HTTPClientError as e:
+            raise HTTPError(
+                status_code=e.code,
+                reason=f"Invalid response in '{git_url}': '{str(e)}'"
+            )
+        except ValueError as e:
+            raise HTTPError(
+                status_code=HTTPStatus.BAD_REQUEST,
+                reason=f"Invalid response in '{git_url}': '{str(e)}'"
+            )
+        except Exception as e:
+            raise HTTPError(
+                status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                reason=f"Unknown error in '{git_url}': {str(e)}"
+            )

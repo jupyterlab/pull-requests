@@ -1,6 +1,7 @@
 import jupyterlab_pullrequests.handlers
 import tornado.web
 from asynctest import Mock, patch
+from jupyterlab_pullrequests.github_manager import PullRequestsGithubManager
 from tornado.testing import AsyncHTTPTestCase, ExpectLog
 
 import test_config
@@ -21,34 +22,34 @@ class TestPullRequest(AsyncHTTPTestCase):
 class TestListPullRequestsGithubUserHandlerPAT(TestPullRequest):
 
     # Test no PAT
-    @patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_access_token",Mock(return_value=None))
+    @patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager(None)))
     def test_pat_none(self):
         response = self.fetch('/pullrequests/prs/user?filter=created')
         self.assertEqual(response.code, 400)
         self.assertIn("No Github access token specified", response.reason)
 
     # Test empty PAT
-    @patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_access_token",Mock(return_value=""))
+    @patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager("")))
     def test_pat_empty(self):
         response = self.fetch('/pullrequests/prs/user?filter=created')
         self.assertEqual(response.code, 400)
         self.assertIn("No Github access token specified", response.reason)
 
     # Test invalid PAT
-    @patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_access_token",Mock(return_value="invalid"))
+    @patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager("invalid")))
     def test_pat_invalid(self):
         response = self.fetch('/pullrequests/prs/user?filter=created')
         self.assertEqual(response.code, 401)
-        self.assertIn("Invalid Github access token specified", response.reason)
+        self.assertIn("Invalid response in", response.reason)
 
     # Test valid parameter and PAT
-    @patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_access_token",Mock(return_value=valid_access_token))
+    @patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager(valid_access_token)))
     def test_pat_valid(self):
         response = self.fetch('/pullrequests/prs/user?filter=created')
         self.assertEqual(response.code, 200)
 
 # Test list pull requests params
-@patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_access_token",Mock(return_value=valid_access_token))
+@patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager(valid_access_token)))
 class TestListPullRequestsGithubUserHandlerParam(TestPullRequest):
 
     # Test missing parameter
@@ -75,7 +76,7 @@ class TestListPullRequestsGithubUserHandlerParam(TestPullRequest):
         self.assertEqual(response.code, 200)
 
 # Test list files
-@patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_access_token",Mock(return_value=valid_access_token))
+@patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager(valid_access_token)))
 class TestListPullRequestsGithubFilesHandler(TestPullRequest):
 
     # Test missing id
@@ -102,7 +103,7 @@ class TestListPullRequestsGithubFilesHandler(TestPullRequest):
         self.assertEqual(response.code, 200)
 
 # Test get file links
-@patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_access_token",Mock(return_value=valid_access_token))
+@patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager(valid_access_token)))
 class TestGetPullRequestsGithubFileLinksHandler(TestPullRequest):
 
     # Test missing id
