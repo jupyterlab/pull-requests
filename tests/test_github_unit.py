@@ -1,4 +1,5 @@
 import json
+from collections import namedtuple
 from http import HTTPStatus
 
 import pytest
@@ -96,11 +97,11 @@ class TestListFiles(TestCase):
 # -----------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-class TestGetPRContent(TestCase):
+class TestGetFileContent(TestCase):
 
     @patch("jupyterlab_pullrequests.github_manager.PullRequestsGithubManager.call_github", new_callable=CoroutineMock)
     @pytest.mark.asyncio
-    async def test_get_pr_content(self, mock_call_github):
+    async def test_get_file_content(self, mock_call_github):
         manager = PullRequestsGithubManager("valid-pat")
         mock_call_github.side_effect = [
             read_sample_response('github_pr_links.json'),
@@ -109,27 +110,94 @@ class TestGetPRContent(TestCase):
             'test code content',
             'test new code content'
         ]
-        result = await manager.get_pr_content("valid-prid", "valid-filename")
+        result = await manager.get_file_content("valid-prid", "valid-filename")
         assert mock_call_github.call_count == 5
-        assert result == {'base_content': 'test code content', 'head_content': 'test new code content'}
+        assert result == {'base_content': 'test code content', 'head_content': 'test new code content', 'commit_id': '02fb374e022fbe7aaa4cd69c0dc3928e6422dfaa' }
 
 
-    @patch("jupyterlab_pullrequests.github_manager.PullRequestsGithubManager.get_file_content", new_callable=CoroutineMock)
+    @patch("jupyterlab_pullrequests.github_manager.PullRequestsGithubManager.get_link_content", new_callable=CoroutineMock)
     @patch("jupyterlab_pullrequests.github_manager.PullRequestsGithubManager.validate_pr_link", new_callable=CoroutineMock)
     @patch("jupyterlab_pullrequests.github_manager.PullRequestsGithubManager.get_pr_links", new_callable=CoroutineMock)
     @pytest.mark.asyncio
-    async def test_get_pr_content_calls(self, mock_get_pr_links, mock_validate_pr_link, mock_get_file_content):
+    async def test_get_file_content_calls(self, mock_get_pr_links, mock_validate_pr_link, mock_get_single_content):
         manager = PullRequestsGithubManager("valid-pat")
-        mock_get_pr_links.return_value = {'base_url':'http://base_url.com', 'head_url':'http://head_url.com'}
+        mock_get_pr_links.return_value = {'base_url':'http://base_url.com', 'head_url':'http://head_url.com', 'commit_id':'123sha'}
         mock_validate_pr_link.side_effect = ['http://base_url_download.com', 'http://head_url_download.com']
-        mock_get_file_content.side_effect = ['base content', 'head content']
-        result = await manager.get_pr_content("valid-prid", "valid-filename")
+        mock_get_single_content.side_effect = ['base content', 'head content']
+        result = await manager.get_file_content("valid-prid", "valid-filename")
         mock_get_pr_links.assert_called_once_with("valid-prid", "valid-filename")
         assert mock_validate_pr_link.call_count == 2
         mock_validate_pr_link.assert_has_calls([call("http://base_url.com"), call("http://head_url.com")], any_order=True)
-        assert mock_get_file_content.call_count == 2
-        mock_get_file_content.assert_has_calls([call("http://base_url_download.com"), call("http://head_url_download.com")], any_order=True)
-        assert result == {'base_content': 'base content', 'head_content': 'head content'}
+        assert mock_get_single_content.call_count == 2
+        mock_get_single_content.assert_has_calls([call("http://base_url_download.com"), call("http://head_url_download.com")], any_order=True)
+        assert result == {'base_content': 'base content', 'head_content': 'head content', 'commit_id': '123sha'}
+
+# -----------------------------------------------------------------------------
+# /pullrequests/files/comments Handler
+# -----------------------------------------------------------------------------
+
+class TestGetFileComments(TestCase):
+
+    @patch("jupyterlab_pullrequests.github_manager.PullRequestsGithubManager.call_github", new_callable=CoroutineMock)
+    async def test_call(self, mock_call_github):
+        manager = PullRequestsGithubManager("valid-pat")
+        mock_call_github.return_value = read_sample_response('github_comments_get.json')
+        result = await manager.get_file_comments("https://api.github.com/repos/octocat/repo/pulls/1", "test.ipynb")
+        mock_call_github.assert_called_with('https://api.github.com/repos/octocat/repo/pulls/1/comments')
+        expected_result = [{  
+            "id":296364299,
+            "line_number":9,
+            "text":"too boring",
+            "user_name":"timnlupo",
+            "user_pic":"https://avatars1.githubusercontent.com/u/9003282?v=4"
+        }]
+        assert result == expected_result
+
+class TestPostFileComments(TestCase):
+
+    @patch("jupyterlab_pullrequests.github_manager.PullRequestsGithubManager.call_github", new_callable=CoroutineMock)
+    async def test_valid_reply(self, mock_call_github):
+        manager = PullRequestsGithubManager("valid-pat")
+        mock_call_github.return_value = read_sample_response('github_comments_post.json')
+        PRCommentReply = namedtuple("PRCommentReply", ["text", "in_reply_to"])
+        body = PRCommentReply("test text", 123)
+        result = await manager.post_file_comment("https://api.github.com/repos/octocat/repo/pulls/1", "test.ipynb", body)
+        expected_result = {
+            'id': 299659626,
+            'line_number': 9,
+            'text': 'test',
+            'user_name': 'timnlupo',
+            'user_pic': 'https://avatars1.githubusercontent.com/u/9003282?v=4',
+            'in_reply_to_id': 296364299
+        }
+        mock_call_github.assert_called_with(
+            'https://api.github.com/repos/octocat/repo/pulls/1/comments',
+            body={'body': 'test text', 'in_reply_to': 123},
+            method='POST'
+        )
+        assert result == expected_result
+
+    @patch("jupyterlab_pullrequests.github_manager.PullRequestsGithubManager.call_github", new_callable=CoroutineMock)
+    async def test_valid_new(self, mock_call_github):
+        manager = PullRequestsGithubManager("valid-pat")
+        mock_call_github.return_value = read_sample_response('github_comments_post.json')
+        PRCommentNew = namedtuple("PRCommentNew", ["text", "commit_id", "filename", "position"])
+        body = PRCommentNew("test text", 123, "test.ipynb", 3)
+        result = await manager.post_file_comment("https://api.github.com/repos/octocat/repo/pulls/1", "test.ipynb", body)
+        expected_result = {
+            'id': 299659626,
+            'line_number': 9,
+            'text': 'test',
+            'user_name': 'timnlupo',
+            'user_pic': 'https://avatars1.githubusercontent.com/u/9003282?v=4',
+            'in_reply_to_id': 296364299
+        }
+        mock_call_github.assert_called_with(
+            'https://api.github.com/repos/octocat/repo/pulls/1/comments',
+            body={'body': 'test text', 'commit_id': 123, 'path': 'test.ipynb', 'position': 3},
+            method='POST'
+        )
+        assert result == expected_result
 
 # -----------------------------------------------------------------------------
 # Github Utilities

@@ -2,6 +2,7 @@ import jupyterlab_pullrequests.handlers
 import tornado.web
 from asynctest import Mock, patch
 from jupyterlab_pullrequests.github_manager import PullRequestsGithubManager
+from tornado.httpclient import HTTPClient, HTTPRequest
 from tornado.testing import AsyncHTTPTestCase, ExpectLog
 
 import test_config
@@ -142,3 +143,99 @@ class TestGetPullRequestsGithubFileLinksHandler(TestPullRequest):
         self.assertEqual(response.code, 200)
         self.assertIn("base_content", str(response.body))
         self.assertIn("head_content", str(response.body))
+
+# Test get PR comments
+@patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager(valid_access_token)))
+class TestGetPullRequestsCommentsHandler(TestPullRequest):
+
+    # Test missing id
+    def test_id_missing(self):
+        response = self.fetch(f'/pullrequests/files/comments?filename={valid_prfilename}')
+        self.assertEqual(response.code, 400)
+        self.assertIn("Missing argument 'id'", response.reason)
+
+    # Test no id
+    def test_id_none(self):
+        response = self.fetch(f'/pullrequests/files/comments?filename={valid_prfilename}&id=')
+        self.assertEqual(response.code, 400)
+        self.assertIn("Invalid argument 'id'", response.reason)
+
+    # Test invalid id
+    def test_id_invalid(self):
+        response = self.fetch(f'/pullrequests/files/comments?filename={valid_prfilename}&id=google.com')
+        self.assertEqual(response.code, 400)
+        self.assertIn("Invalid response", response.reason)
+
+    # Test missing id
+    def test_filename_missing(self):
+        response = self.fetch(f'/pullrequests/files/comments?id={valid_prid}')
+        self.assertEqual(response.code, 400)
+        self.assertIn("Missing argument 'filename'", response.reason)
+
+    # Test no id
+    def test_filename_none(self):
+        response = self.fetch(f'/pullrequests/files/comments?id={valid_prid}&filename=')
+        self.assertEqual(response.code, 400)
+        self.assertIn("Invalid argument 'filename'", response.reason)
+
+    # Test valid params
+    def test_params_valid(self):
+        response = self.fetch(f'/pullrequests/files/comments?filename={valid_prfilename}&id={valid_prid}')
+        self.assertEqual(response.code, 200)
+        self.assertIn("id", str(response.body))
+        self.assertIn("line_number", str(response.body))
+        self.assertIn("text", str(response.body))
+        self.assertIn("user_name", str(response.body))
+        self.assertIn("user_pic", str(response.body))
+
+# Test get PR comments
+@patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager(valid_access_token)))
+class TestPostPullRequestsCommentsHandler(TestPullRequest):
+
+    # Test missing id
+    def test_id_missing(self):
+        response = self.fetch(f"/pullrequests/files/comments?filename={valid_prfilename}", method="POST", body="{}")
+        self.assertEqual(response.code, 400)
+        self.assertIn("Missing argument 'id'", response.reason)
+
+    # Test no id
+    def test_id_none(self):
+        response = self.fetch(f'/pullrequests/files/comments?filename={valid_prfilename}&id=', method="POST", body="{}")
+        self.assertEqual(response.code, 400)
+        self.assertIn("Invalid argument 'id'", response.reason)
+
+    # Test invalid id
+    def test_id_invalid(self):
+        response = self.fetch(f'/pullrequests/files/comments?filename={valid_prfilename}&id=google.com', method="POST", body='{"in_reply_to": 123, "text": "test"}')
+        self.assertEqual(response.code, 400)
+        self.assertIn("Invalid response", response.reason)
+
+    # Test missing id
+    def test_filename_missing(self):
+        response = self.fetch(f'/pullrequests/files/comments?id={valid_prid}', method="POST", body="{}")
+        self.assertEqual(response.code, 400)
+        self.assertIn("Missing argument 'filename'", response.reason)
+
+    # Test no id
+    def test_filename_none(self):
+        response = self.fetch(f'/pullrequests/files/comments?id={valid_prid}&filename=', method="POST", body="{}")
+        self.assertEqual(response.code, 400)
+        self.assertIn("Invalid argument 'filename'", response.reason)
+
+    # Test empty body
+    def test_body_empty(self):
+        response = self.fetch(f'/pullrequests/files/comments?id={valid_prid}&filename={valid_prfilename}', method="POST", body="")
+        self.assertEqual(response.code, 400)
+        self.assertIn("Invalid POST body", response.reason)
+
+    # Test invalid body JSON
+    def test_body_invalid(self):
+        response = self.fetch(f'/pullrequests/files/comments?id={valid_prid}&filename={valid_prfilename}', method="POST", body="{)")
+        self.assertEqual(response.code, 400)
+        self.assertIn("Invalid POST body", response.reason)
+    
+    # Test invalid body JSON
+    def test_body_missingkey(self):
+        response = self.fetch(f'/pullrequests/files/comments?id={valid_prid}&filename={valid_prfilename}', method="POST", body='{"in_repl_to": 123, "text": "test"}')
+        self.assertEqual(response.code, 400)
+        self.assertIn("Missing POST key", response.reason)

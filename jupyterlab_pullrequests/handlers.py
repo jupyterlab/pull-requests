@@ -2,8 +2,10 @@
 Module with all of the individual handlers, which return the results to the frontend.
 """
 import json
+from collections import namedtuple
 from http import HTTPStatus
 
+import tornado.escape as escape
 import tornado.gen as gen
 from jupyterlab_pullrequests.base import PullRequestsAPIHandler
 from notebook.utils import url_path_join
@@ -31,7 +33,7 @@ class ListPullRequestsUserHandler(PullRequestsAPIHandler):
     @gen.coroutine
     def get(self):
 
-        pr_filter = validate_request(self, "filter")
+        pr_filter = get_request_attr_value(self, "filter")
         self.validate_request(pr_filter) # handler specific validation
         
         current_user = yield self.manager.get_current_user()
@@ -50,7 +52,7 @@ class ListPullRequestsFilesHandler(PullRequestsAPIHandler):
 
     @gen.coroutine
     def get(self):
-        pr_id = validate_request(self, "id")
+        pr_id = get_request_attr_value(self, "id")
         files = yield self.manager.list_files(pr_id)
         self.finish(json.dumps(files))
 
@@ -65,30 +67,77 @@ class PullRequestsFileContentHandler(PullRequestsAPIHandler):
 
     @gen.coroutine
     def get(self):
-        pr_id = validate_request(self, "id")
-        filename = validate_request(self, "filename")
-        content = yield self.manager.get_pr_content(pr_id, filename)
+        pr_id = get_request_attr_value(self, "id")
+        filename = get_request_attr_value(self, "filename")
+        content = yield self.manager.get_file_content(pr_id, filename)
         self.finish(json.dumps(content))
+
+# -----------------------------------------------------------------------------
+# /pullrequests/files/comments Handler
+# -----------------------------------------------------------------------------
+
+class PullRequestsFileCommentsHandler(PullRequestsAPIHandler):
+    """
+    Returns file comments
+    """
+
+    @gen.coroutine
+    def get(self):
+        pr_id = get_request_attr_value(self, "id")
+        filename = get_request_attr_value(self, "filename")
+        content = yield self.manager.get_file_comments(pr_id, filename)
+        self.finish(json.dumps(content))
+
+    @gen.coroutine
+    def post(self):
+        pr_id = get_request_attr_value(self, "id")
+        filename = get_request_attr_value(self, "filename")
+        data = get_body_value(self)
+        try:
+            if 'in_reply_to' in data:
+                PRCommentReply = namedtuple("PRCommentReply", ["text", "in_reply_to"])
+                body = PRCommentReply(data["text"], data["in_reply_to"])
+            else:
+                PRCommentNew = namedtuple("PRCommentNew", ["text", "commit_id", "filename", "position"])
+                body = PRCommentNew(data["text"], data["commit_id"], data["filename"], data["position"])
+        except KeyError as e:
+            raise HTTPError(
+                status_code=HTTPStatus.BAD_REQUEST,
+                reason=f"Missing POST key: {str(e)}"
+            )
+        result = yield self.manager.post_file_comment(pr_id, filename, body)
+        self.finish(json.dumps(result))
 
 # -----------------------------------------------------------------------------
 # Handler utilities
 # -----------------------------------------------------------------------------
 
-def validate_request(handler, arg):
+def get_request_attr_value(handler, arg):
     try:
         param = handler.get_argument(arg)
         if not param:
             raise ValueError()
         return param
-    except MissingArgumentError as e:
+    except MissingArgumentError:
         raise HTTPError(
             status_code=HTTPStatus.BAD_REQUEST,
             reason=f"Missing argument '{arg}'."
         )
-    except ValueError as e:
+    except ValueError:
         raise HTTPError(
             status_code=HTTPStatus.BAD_REQUEST,
             reason=f"Invalid argument '{arg}', cannot be blank."
+        )
+
+def get_body_value(handler):
+    try:
+        if not handler.request.body:
+            raise ValueError()
+        return escape.json_decode(handler.request.body)
+    except ValueError as e:
+        raise HTTPError(
+            status_code=HTTPStatus.BAD_REQUEST,
+            reason=f"Invalid POST body: {str(e)}"
         )
 
 # -----------------------------------------------------------------------------
@@ -97,7 +146,8 @@ def validate_request(handler, arg):
 
 default_handlers = [("/pullrequests/prs/user", ListPullRequestsUserHandler),
                     ("/pullrequests/prs/files", ListPullRequestsFilesHandler),
-                    ("/pullrequests/files/content", PullRequestsFileContentHandler)]
+                    ("/pullrequests/files/content", PullRequestsFileContentHandler),
+                    ("/pullrequests/files/comments", PullRequestsFileCommentsHandler)]
 
 def load_jupyter_server_extension(nbapp):
     webapp = nbapp.web_app

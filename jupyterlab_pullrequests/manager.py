@@ -21,5 +21,13 @@ class PullRequestsManager():
         raise NotImplementedError()
 
     @gen.coroutine
-    def get_pr_content(self, pr_id, filename):
+    def get_file_content(self, pr_id, filename):
+        raise NotImplementedError()
+
+    @gen.coroutine
+    def get_file_comments(self, pr_id, filename):
+        raise NotImplementedError()
+
+    @gen.coroutine
+    def post_file_comment(self, pr_id, filename, body):
         raise NotImplementedError()

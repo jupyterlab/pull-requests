@@ -91,7 +91,8 @@ class PullRequestsGithubManager(PullRequestsManager):
         data = yield self.call_github(pr_id)
         base_url = url_concat(url_path_join(data["base"]["repo"]["url"],"contents",filename), {"ref": data["base"]["ref"]})
         head_url = url_concat(url_path_join(data["head"]["repo"]["url"],"contents",filename), {"ref": data["head"]["ref"]})
-        return {'base_url':base_url, 'head_url':head_url}
+        commit_id = data["head"]["sha"]
+        return {'base_url':base_url, 'head_url':head_url, 'commit_id':commit_id}
 
     @gen.coroutine
     def validate_pr_link(self, link):
@@ -105,39 +106,86 @@ class PullRequestsGithubManager(PullRequestsManager):
                 raise e
 
     @gen.coroutine
-    def get_file_content(self, file_url):
+    def get_link_content(self, file_url):
 
-        if file_url == "":
+        if (file_url == ""):
             return ""
         result = yield self.call_github(file_url, False)
         return result
 
     @gen.coroutine
-    def get_pr_content(self, pr_id, filename):
+    def get_file_content(self, pr_id, filename):
 
         links = yield self.get_pr_links(pr_id, filename)
 
         base_raw_url = yield self.validate_pr_link(links["base_url"])
         head_raw_url = yield self.validate_pr_link(links["head_url"])
 
-        base_content = yield self.get_file_content(base_raw_url)
-        head_content = yield self.get_file_content(head_raw_url)
+        base_content = yield self.get_link_content(base_raw_url)
+        head_content = yield self.get_link_content(head_raw_url)
         
-        return {'base_content':base_content, 'head_content':head_content}
+        return {'base_content':base_content, 'head_content':head_content, 'commit_id':links["commit_id"]}
+
+    # -----------------------------------------------------------------------------
+    # /pullrequests/files/comments Handler
+    # -----------------------------------------------------------------------------
+
+    def file_comment_response(self, result):
+        data = {
+            'id': result["id"],
+            'line_number': result["position"],
+            'text': result["body"],
+            'user_name': result["user"]["login"],
+            'user_pic': result["user"]["avatar_url"]
+        }
+        if 'in_reply_to_id' in result:
+            data['in_reply_to_id'] = result["in_reply_to_id"]
+        return data
+
+    @gen.coroutine
+    def get_file_comments(self, pr_id, filename):
+
+        git_url = url_path_join(pr_id, "/comments")
+        results = yield self.call_github(git_url)
+        return [self.file_comment_response(result) for result in results if result["path"] == filename]
+
+    @gen.coroutine
+    def post_file_comment(self, pr_id, filename, body):
+
+        if type(body).__name__ == 'PRCommentReply':
+            body = {"body": body.text, "in_reply_to": body.in_reply_to}
+        else:
+            body = {"body": body.text, "commit_id": body.commit_id, "path": body.filename, "position": body.position}
+        git_url = url_path_join(pr_id,"comments")
+        response = yield self.call_github(git_url, method="POST", body=body)
+        return self.file_comment_response(response)
 
     # -----------------------------------------------------------------------------
     # Handler utilities
     # -----------------------------------------------------------------------------
 
     @gen.coroutine
-    def call_github(self, git_url, load_json=True):
+    def call_github(self, git_url, load_json=True, method="GET", body=None):
 
         params = {"Accept": "application/vnd.github.v3+json", "access_token": self.access_token}
 
         # User agents required for Github API, see https://developer.github.com/v3/#user-agent-required
-        request = HTTPRequest(
-            url_concat(git_url, params), validate_cert=True, user_agent="JupyterLab Pull Requests"
-        )
+        try:
+            if method.lower() == "get":
+                request = HTTPRequest(
+                    url_concat(git_url, params), validate_cert=True, user_agent="JupyterLab Pull Requests"
+                )
+            elif method.lower() == "post":
+                request = HTTPRequest(
+                    url_concat(git_url, params), validate_cert=True, user_agent="JupyterLab Pull Requests", method="POST", body=json.dumps(body)
+                )
+            else:
+                raise ValueError()
+        except:
+            HTTPError(
+                status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                reason=f"Invalid call_github '{method}': '{str(e)}'"
+            )
 
         try:
             response = yield self.client.fetch(request)
