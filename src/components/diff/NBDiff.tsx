@@ -1,4 +1,6 @@
 import { nbformat } from '@jupyterlab/coreutils';
+import { RenderMimeProvider } from '@jupyterlab/git/lib/components/diff/Diff';
+import { CellDiff } from "@jupyterlab/git/lib/components/diff/NbDiff";
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { isNull, isUndefined } from "lodash";
 import { IDiffEntry } from 'nbdime/lib/diff/diffentries';
@@ -7,9 +9,6 @@ import * as React from 'react';
 import { PullRequestCommentThreadModel, PullRequestFileModel } from '../../models';
 import { doRequest } from '../../utils';
 import { PullRequestCommentThread } from './PullRequestCommentThread';
-
-// will be replaced with jupyter-git dependency
-import { CellDiff } from './CellDiff'; 
 
 export interface IDiffProps {
   file: PullRequestFileModel;
@@ -47,40 +46,43 @@ export class NBDiff extends React.Component<IDiffProps, INBDiffState> {
     } else if (!isUndefined(this.state.nbdModel) && !isUndefined(this.state.prChunks)) {
       const cellComponents = this.state.prChunks.map(
         (prChunk, index) => (
-          <div key={index}>
+          <div className="jp-PullRequestNBDiff" key={index}>
             <div className="jp-PullRequestCellDiff">
               <div className="jp-PullRequestCellDiffContent">
                 <CellDiff
                   cellChunk={prChunk.chunk}
-                  renderMime={this.props.renderMime}
                   mimeType={this.state.nbdModel.mimetype}
                 />
               </div>
-              {!isUndefined(prChunk.lineNumber.lineNumberStart) &&
-                <div className="jp-PullRequestCellDiffComment" onClick={() => this.addComment(index)}>
-                  <div className="jp-PullRequestCommentDecoration"></div>
-                </div>
-              }
+              <div className="jp-PullRequestCellDiffCommentContainer">
+                {!isUndefined(prChunk.lineNumber.lineNumberStart) &&
+                  <div className="jp-PullRequestCellDiffComment" onClick={() => this.addComment(index)}>
+                    <div className="jp-PullRequestCommentDecoration"></div>
+                  </div>
+                }
+              </div>
             </div>
-          {!isUndefined(prChunk.comments) && prChunk.comments.map((comment, i) => (
-            <PullRequestCommentThread
-              key={i}
-              thread={comment}
-              handleRemove={() => this.removeComment(index, comment)}
-            />
-          ))}
+            {!isUndefined(prChunk.comments) && prChunk.comments.map((comment, i) => (
+              <PullRequestCommentThread
+                key={i}
+                thread={comment}
+                handleRemove={() => this.removeComment(index, comment)}
+              />
+            ))}
           </div>
         )
       );
       return (
-        <div className="jp-git-diff-Widget">
-          <div className="jp-git-diff-root jp-mod-hideunchanged">
-            <div className="jp-git-Notebook-diff">
-              {/* Header goes here */}
-              {cellComponents}
+        <RenderMimeProvider value={this.props.renderMime}>
+          <div className="jp-git-diff-Widget">
+            <div className="jp-git-diff-root jp-mod-hideunchanged">
+              <div className="jp-git-Notebook-diff">
+                {/* Header goes here */}
+                {cellComponents}
+              </div>
             </div>
           </div>
-        </div>
+        </RenderMimeProvider>
       );
     } else {
       return null;
@@ -90,8 +92,8 @@ export class NBDiff extends React.Component<IDiffProps, INBDiffState> {
   private async performDiff() {
     try {
       let jsonresults = await doRequest("pullrequests/files/nbdiff", "POST", {
-        base_content: this.props.file.basecontent,
-        remote_content: this.props.file.headcontent
+        prev_content: this.props.file.basecontent,
+        curr_content: this.props.file.headcontent
       });
       let base = jsonresults['base'] as nbformat.INotebookContent;
       let diff = (jsonresults['diff'] as any) as IDiffEntry[];
@@ -147,6 +149,13 @@ export class NBDiff extends React.Component<IDiffProps, INBDiffState> {
   }
 
   private addComment(i: number) {
+
+    for (let comment of this.state.prChunks[i].comments) {
+      if (isNull(comment.comment)) {
+        return;
+      }
+    }
+
     let commentToAdd: PullRequestCommentThreadModel = new PullRequestCommentThreadModel(
       this.props.file,
       this.state.prChunks[i].lineNumber.lineNumberStart

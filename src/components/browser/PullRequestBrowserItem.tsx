@@ -2,6 +2,7 @@ import * as React from "react";
 import { BeatLoader } from "react-spinners";
 import { PullRequestFileModel, PullRequestModel } from "../../models";
 import { doRequest } from "../../utils";
+import { PullRequestBrowserFileItem } from "./PullRequestBrowserFileItem";
 
 export interface IPullRequestBrowserItemState {
   data: PullRequestModel[];
@@ -12,7 +13,7 @@ export interface IPullRequestBrowserItemState {
 export interface IPullRequestBrowserItemProps {
   header: string;
   filter: string;
-  showTab: (data: PullRequestFileModel) => Promise<void>;
+  showTab: (data: PullRequestFileModel | PullRequestModel) => Promise<void>;
 }
 
 export class PullRequestBrowserItem extends React.Component<
@@ -37,6 +38,7 @@ export class PullRequestBrowserItem extends React.Component<
           jsonresult["id"],
           jsonresult["title"],
           jsonresult["body"],
+          jsonresult["url"],
           jsonresult["internal_id"]
         ));
       }
@@ -72,12 +74,23 @@ export class PullRequestBrowserItem extends React.Component<
 
   // This makes a shallow copy of data[i], the data[i].files are not copied
   // If files need to be mutated, will need to restructure props / deep copy
-  private toggleFilesExpanded(i: number) {
+  private toggleFilesExpanded(e: React.MouseEvent<HTMLSpanElement, MouseEvent>, i: number) {
+    e.stopPropagation();
     let data = [...this.state.data];
     let item = Object.assign({}, data[i]);
     item.isExpanded = !item.isExpanded;
     data[i] = item;
     this.setState({data});
+  }
+
+  private openLink (e: React.MouseEvent<HTMLSpanElement, MouseEvent>, link: string) {
+    e.stopPropagation();
+    window.open(link, "_blank");
+  }
+
+  private showFileTab(e: React.MouseEvent<HTMLSpanElement, MouseEvent>, file: PullRequestFileModel) {
+    e.stopPropagation();
+    this.props.showTab(file);
   }
 
   render() {
@@ -102,10 +115,16 @@ export class PullRequestBrowserItem extends React.Component<
         ) : (
           <ul className="jp-PullRequestBrowserItemList">
             {this.state.data.map((result, i) => (
-              <div key={i}>
+              <div 
+                key={i} 
+                onClick={() => this.props.showTab(result)}>
                 <li className="jp-PullRequestBrowserItemListItem">
                   <h2>{result.title}</h2>
                   <div className="jp-PullRequestBrowserItemListItemIconWrapper">
+                    <span
+                      className="jp-Icon jp-Icon-16 jp-LinkIcon"
+                      onClick={(e) => this.openLink(e, result.link) }
+                    />
                     <span
                       className={
                         "jp-Icon jp-Icon-16 " +
@@ -113,20 +132,19 @@ export class PullRequestBrowserItem extends React.Component<
                           ? "jp-CaretUp-icon"
                           : "jp-CaretDown-icon")
                       }
-                      onClick={() => this.toggleFilesExpanded(i)}
+                      onClick={(e) => this.toggleFilesExpanded(e, i)}
                     />
                   </div>
                 </li>
                 {result.isExpanded && (
                   <ul className="jp-PullRequestBrowserItemFileList">
                     {result.files != null &&
-                      result.files.map((fresult, k) => (
+                      result.files.map((file, k) => (
                         <li
                           key={k}
-                          className="jp-PullRequestBrowserItemFileItem"
-                          onClick={() => this.props.showTab(fresult)}
+                          onClick={(e) => this.showFileTab(e, file) }
                         >
-                          {fresult.name}
+                          <PullRequestBrowserFileItem file={file} />
                         </li>
                       ))}
                   </ul>

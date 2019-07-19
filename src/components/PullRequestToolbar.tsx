@@ -1,11 +1,12 @@
 import { Toolbar, ToolbarButton } from "@jupyterlab/apputils";
 import { Widget } from "@phosphor/widgets";
-import { PullRequestBrowserWidget } from "./browser/PullRequestBrowserWidget";
+import { PullRequestPanel } from "./PullRequestPanel";
 
 export class PullRequestToolbar extends Toolbar {
+
   private _openRefreshButton: ToolbarButton;
 
-  constructor(browser: PullRequestBrowserWidget) {
+  constructor(panel: PullRequestPanel) {
     super();
     this.addClass("jp-PullRequestToolbar");
 
@@ -20,7 +21,7 @@ export class PullRequestToolbar extends Toolbar {
     // Add toolbar refresh button
     this._openRefreshButton = new ToolbarButton({
       onClick: () => {
-        browser.update();
+        panel.update();
       },
       iconClassName: "jp-Refresh-icon jp-Icon jp-Icon-16",
       tooltip: "Refresh"

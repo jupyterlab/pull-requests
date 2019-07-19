@@ -2,6 +2,7 @@ import { isNull, isUndefined } from "lodash";
 import * as React from "react";
 import ReactResizeDetector from 'react-resize-detector';
 import { PullRequestCommentModel, PullRequestCommentThreadModel, PullRequestPlainDiffCommentThreadModel } from "../../models";
+import * as moment from 'moment';
 
 export interface IPullRequestCommentThreadState {
   isExpanded: boolean;
@@ -44,7 +45,9 @@ export class PullRequestCommentThread extends React.Component<
 
   onResize = () => {
     if (!isUndefined(this.props.plainDiff)) {
-      this.props.plainDiff.toggleUpdate();
+      for (let comment of this.props.plainDiff.plainDiff.state.comments) {
+        comment.toggleUpdate();
+      }
     }
   }
 
@@ -63,11 +66,11 @@ export class PullRequestCommentThread extends React.Component<
 
   handleCancel() {
     // If no other comments, canceling should remove this thread
-    console.log(this.state.thread.comment);
     if (isNull(this.state.thread.comment)) {
       this.props.handleRemove(); // for component specific remove methods
+    } else {
+      this.setState({isInput: false});
     }
-    this.setState({isInput: false});
   }
 
   getCommentItemDom(item: PullRequestCommentModel) {
@@ -77,7 +80,10 @@ export class PullRequestCommentThread extends React.Component<
           <img src={item.userpic}></img>
         </div>
         <div className="jp-PullRequestCommentItemContent">
-          <h2>{item.username}</h2>
+          <div className="jp-PullRequestCommentItemContentTitle">
+            <h2>{item.username}</h2>
+            <p>{moment(item.updatedAt).fromNow()}</p>
+          </div>
           <p>{item.text}</p>
         </div>
       </div>
@@ -141,7 +147,12 @@ export class PullRequestCommentThread extends React.Component<
                 </div>
               </div>
             ) : (
-              <button onClick={() => this.setState({isInput: true})} className="jp-PullRequestInputForm jp-PullRequestInputFormButton">Reply...</button>
+              <button
+                onClick={() => this.setState({isInput: true})}
+                className="jp-PullRequestInputForm jp-PullRequestInputFormButton"
+              >
+                Reply...
+              </button>
             )}
             </div>
           </div>

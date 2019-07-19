@@ -3,13 +3,13 @@ import 'jest';
 import * as React from 'react';
 import { IPullRequestBrowserProps, PullRequestBrowser } from '../../components/browser/PullRequestBrowser';
 import { PullRequestBrowserItem } from '../../components/browser/PullRequestBrowserItem';
-import { PullRequestFileModel } from '../../models';
+import { PullRequestFileModel, PullRequestModel } from '../../models';
 
 // Unit tests for PullRequestTab
 describe('PullRequestBrowser', () => {
     
     let props: IPullRequestBrowserProps = {
-        showTab: async (data: PullRequestFileModel) => {
+        showTab: async (data: PullRequestFileModel | PullRequestModel) => {
             console.log('Show tab test.')
         }
     };

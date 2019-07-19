@@ -1,10 +1,11 @@
 import { ILayoutRestorer, JupyterLab, JupyterLabPlugin } from "@jupyterlab/application";
 import { IThemeManager } from "@jupyterlab/apputils";
-import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
-import "../style/index.css";
-// will be replaced with jupyter-git dependency
-import "../style/diff.css";
+import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
 import { PullRequestPanel } from "./components/PullRequestPanel";
+
+import "../style/index.css";
+import "@jupyterlab/git/style/diff.css";
+import "@jupyterlab/git/style/variables.css";
 
 const NAMESPACE = "pullrequests";
 const PLUGIN_ID = "@jupyterlab/pullrequests";

@@ -1,4 +1,4 @@
-import { isUndefined } from "lodash";
+import { isUndefined, uniqueId } from "lodash";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { PullRequestCommentThread } from "./components/diff/PullRequestCommentThread";
@@ -13,10 +13,11 @@ import { doRequest } from "./utils";
 // Extendable to other source control libraries (eg CodeCommit) in the future
 export class PullRequestModel {
 
-  constructor(id: string, title: string, body: string, internalId: string) {
+  constructor(id: string, title: string, body: string, link: string, internalId: string) {
     this.id = id;
     this.title = title;
     this.body = body;
+    this.link = link;
     this.internalId = internalId;
     this.isExpanded = false;
   }
@@ -28,7 +29,9 @@ export class PullRequestModel {
       results.push(
         new PullRequestFileModel(
           jsonresult["name"],
-          jsonresult["status"], 
+          jsonresult["status"],
+          jsonresult["additions"],
+          jsonresult["deletions"],
           this
         )
       );
@@ -39,6 +42,7 @@ export class PullRequestModel {
   id: string;
   title: string;
   body: string;
+  link: string;
   internalId: string;
   files: PullRequestFileModel[];
   isExpanded: boolean;
@@ -51,9 +55,11 @@ export class PullRequestModel {
 
 export class PullRequestFileModel {
 
-  constructor(name: string, status: string, pr: PullRequestModel) {
+  constructor(name: string, status: string, additions: number, deletions: number, pr: PullRequestModel) {
     this.name = name;
     this.status = status;
+    this.additions = additions;
+    this.deletions = deletions;
     this.pr = pr;
     this.id = this.pr.internalId + "-" + this.name;
     this.extension = this.getExtension(this.name);
@@ -74,6 +80,7 @@ export class PullRequestFileModel {
         this, {
           id: jsonresult["id"],
           text: jsonresult["text"],
+          updatedAt: jsonresult["updated_at"],
           lineNumber: jsonresult["line_number"],
           username: jsonresult["user_name"],
           userpic: jsonresult["user_pic"]
@@ -102,6 +109,8 @@ export class PullRequestFileModel {
   id: string;
   name: string;
   status: string;
+  additions: number;
+  deletions: number;
   commitId: string;
   extension: string;
   basecontent: string;
@@ -119,6 +128,7 @@ export interface PullRequestCommentModel {
   id: number;
   lineNumber: number;
   text: string;
+  updatedAt: string;
   username: string;
   userpic?: string;
 }
@@ -130,7 +140,7 @@ export class PullRequestCommentThreadModel {
     this.file = file;
     this.replies = [];
     this.commitId = file.commitId;
-    this.id = file.id + "-" + this.lineNumber;
+    this.id = uniqueId(file.id + "-");
     if (typeof(given) === "number") {
       this.lineNumber = given;
       this.comment = null;
@@ -164,6 +174,7 @@ export class PullRequestCommentThreadModel {
       this.file, {
         id: jsonresult["id"],
         text: jsonresult["text"],
+        updatedAt: jsonresult["updated_at"],
         lineNumber: jsonresult["line_number"],
         username: jsonresult["user_name"],
         userpic: jsonresult["user_pic"]

@@ -1,13 +1,14 @@
 import { JupyterLab } from "@jupyterlab/application";
 import { IThemeManager, Toolbar } from "@jupyterlab/apputils";
-import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
 import { PanelLayout, Widget } from "@phosphor/widgets";
-import { PullRequestFileModel } from "../models";
+import { PullRequestFileModel, PullRequestModel } from "../models";
 import { PullRequestBrowserWidget } from "./browser/PullRequestBrowserWidget";
 import { PullRequestToolbar } from "./PullRequestToolbar";
 import { PullRequestTabWidget } from "./tab/PullRequestTabWidget";
 
 export class PullRequestPanel extends Widget {
+
   private _app: JupyterLab;
   private _themeManager: IThemeManager;
   private _renderMime: IRenderMimeRegistry;
@@ -29,7 +30,7 @@ export class PullRequestPanel extends Widget {
     this._renderMime = renderMime;
     this._tabs = [];
     this._browser = new PullRequestBrowserWidget(this.showTab);
-    this._toolbar = new PullRequestToolbar(this._browser);
+    this._toolbar = new PullRequestToolbar(this);
 
     (this.layout as PanelLayout).addWidget(this._toolbar);
     this._toolbar.activate();
@@ -37,7 +38,7 @@ export class PullRequestPanel extends Widget {
   }
 
   // Show tab window for specific PR
-  showTab = async (data: PullRequestFileModel) => {
+  showTab = async (data: PullRequestFileModel | PullRequestModel) => {
     let tab = this.getTab(data.id);
     if (tab == null) {
       tab = new PullRequestTabWidget(data, this._themeManager, this._renderMime);
@@ -63,5 +64,12 @@ export class PullRequestPanel extends Widget {
 
   getApp() {
     return this._app;
+  }
+
+  onUpdateRequest(): void {
+    this._browser.update();
+    for (let tab of this._tabs) {
+      tab.update();
+    }
   }
 }

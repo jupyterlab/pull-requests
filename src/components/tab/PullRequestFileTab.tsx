@@ -1,35 +1,41 @@
-import { IThemeManager } from "@jupyterlab/apputils";
-import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { IThemeManager, Spinner } from "@jupyterlab/apputils";
+import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
 import { isNull } from "lodash";
 import * as React from "react";
-import { RingLoader } from "react-spinners";
+import { RefObject } from 'react';
 import { PullRequestFileModel } from "../../models";
 import { NBDiff } from "../diff/NBDiff";
 import { PlainDiffComponent } from "../diff/PlainDiffComponent";
 
-export interface IPullRequestTabState {
+export interface IPullRequestFileTabState {
   file: PullRequestFileModel;
   isLoading: boolean;
   error: string;
 }
 
-export interface IPullRequestTabProps {
+export interface IPullRequestFileTabProps {
   file: PullRequestFileModel;
   themeManager: IThemeManager;
-  renderMime: IRenderMimeRegistry;
+  renderMime: IRenderMimeRegistry
 }
 
-export class PullRequestTab extends React.Component<
-  IPullRequestTabProps,
-  IPullRequestTabState
+export class PullRequestFileTab extends React.Component<
+  IPullRequestFileTabProps,
+  IPullRequestFileTabState
 > {
-  constructor(props: IPullRequestTabProps) {
+
+  private spinnerContainer: RefObject<HTMLDivElement> = React.createRef<
+    HTMLDivElement
+  >();
+
+  constructor(props: IPullRequestFileTabProps) {
     super(props);
     this.state = { file: null, isLoading: true, error: null };
   }
 
-  componentDidMount() {
-    this.loadDiff();
+  async componentDidMount() {
+    this.spinnerContainer.current.appendChild((new Spinner()).node);
+    await this.loadDiff();
   }
 
   private async loadDiff() {
@@ -38,7 +44,10 @@ export class PullRequestTab extends React.Component<
       await _data.loadFile();
       await _data.loadComments();
     } catch (e) {
-      const msg = `Load File Error (${e.message})`;
+      let msg = `Load File Error (${e.message})`;
+      if (e.message.toLowerCase().includes("'utf-8' codec can't decode")) {
+        msg = `Diff for ${this.props.file.extension} files is not supported.`;
+      }
       this.setState({ file: null, isLoading: false, error: msg });
       return;
     }
@@ -71,12 +80,7 @@ export class PullRequestTab extends React.Component<
           ))
         ) : (
           <div className="jp-PullRequestTabLoadingContainer">
-            <RingLoader
-              sizeUnit={"px"}
-              size={60}
-              color={"var(--jp-ui-font-color2)"}
-              loading={this.state.isLoading}
-            />
+            <div ref={this.spinnerContainer}></div>
           </div>
         )}
       </div>

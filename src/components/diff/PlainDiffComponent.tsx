@@ -167,10 +167,16 @@ export class PlainDiffComponent extends React.Component<
     });
     this.state.diffEditor.getModifiedEditor().onMouseDown((e) => {
       if (e.target["element"]["classList"].contains("jp-PullRequestCommentDecoration")) {
+        let lineNumber = parseInt(e.target["element"]["parentElement"]["innerText"]);
+        for (let comment of this.state.comments) {
+          if (isNull(comment.thread.comment) && comment.thread.lineNumber === lineNumber) {
+            return;
+          }
+        }
         this.addComment(new PullRequestPlainDiffCommentThreadModel(
           new PullRequestCommentThreadModel(
             this.props.file,
-            parseInt(e.target["element"]["parentElement"]["innerText"])
+            lineNumber
           ),
           this
         ))

@@ -2,7 +2,7 @@ import { shallow } from 'enzyme';
 import 'jest';
 import * as React from 'react';
 import { IPullRequestBrowserItemProps, PullRequestBrowserItem } from '../../components/browser/PullRequestBrowserItem';
-import { PullRequestFileModel } from '../../models';
+import { PullRequestFileModel, PullRequestModel } from '../../models';
 import { SAMPLE_PR_JSON } from '../testutils';
 
 // Unit tests for PullRequestBrowserItem
@@ -11,7 +11,7 @@ describe('PullRequestBrowserItem', () => {
     let props: IPullRequestBrowserItemProps = {
         header: 'Created by Me',
         filter: 'created',
-        showTab: async (data: PullRequestFileModel) => {
+        showTab: async (data: PullRequestFileModel | PullRequestModel) => {
             console.log('Show tab test.')
         }
     };
@@ -51,10 +51,9 @@ describe('PullRequestBrowserItem', () => {
             let _data = JSON.parse(SAMPLE_PR_JSON);
             _data[0].isExpanded = true;
             _data[0].files = [];
-            _data[0].files.push(new PullRequestFileModel("test.ipynb", "modified", _data[0]));
+            _data[0].files.push(new PullRequestFileModel("test.ipynb", "modified", 12, 23, _data[0]));
             component.setState({data:_data})
             expect(component.find('.jp-PullRequestBrowserItemFileList')).toHaveLength(1);
-            expect(component.find('.jp-PullRequestBrowserItemFileItem')).toHaveLength(1);
         })
         it('should not load list item files if nonempty api response and unexpanded', () => {
             let _data = JSON.parse(SAMPLE_PR_JSON);
