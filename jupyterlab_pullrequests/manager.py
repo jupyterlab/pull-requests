@@ -36,12 +36,12 @@ class PullRequestsManager():
         raise NotImplementedError()
 
     @gen.coroutine
-    def get_file_nbdiff(self, base_content, remote_content):
+    def get_file_nbdiff(self, prev_content, curr_content):
         try:
-            base_nb = nbformat.reads(base_content, as_version=4)
-            remote_nb = nbformat.reads(remote_content, as_version=4)
-            thediff = diff_notebooks(base_nb, remote_nb)
+            prev_nb = nbformat.reads(prev_content, as_version=4)
+            curr_nb = nbformat.reads(curr_content, as_version=4)
+            thediff = diff_notebooks(prev_nb, curr_nb)
         except:
             raise
-        data = { 'base': base_nb, 'diff': thediff }
+        data = { 'base': prev_nb, 'diff': thediff }
         return data

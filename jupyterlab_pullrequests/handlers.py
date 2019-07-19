@@ -117,15 +117,15 @@ class PullRequestsFileNBDiffHandler(PullRequestsAPIHandler):
     def post(self):
         data = get_body_value(self)
         try:
-            base_content = data["base_content"]
-            remote_content = data["remote_content"]
+            prev_content = data["prev_content"]
+            curr_content = data["curr_content"]
         except KeyError as e:
             raise HTTPError(
                 status_code=HTTPStatus.BAD_REQUEST,
                 reason=f"Missing POST key: {e}"
             )
         try:
-            content = yield self.manager.get_file_nbdiff(base_content, remote_content)
+            content = yield self.manager.get_file_nbdiff(prev_content, curr_content)
         except Exception as e:
             raise HTTPError(
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR, 

@@ -258,12 +258,12 @@ class TestPostPullRequestsNBDiffHandler(TestPullRequest):
     
     # Test invalid body JSON
     def test_body_missingkey(self):
-        response = self.fetch('/pullrequests/files/nbdiff', method="POST", body='{"body": 123, "remote_content": "test"}')
+        response = self.fetch('/pullrequests/files/nbdiff', method="POST", body='{"body": 123, "curr_content": "test"}')
         self.assertEqual(response.code, 400)
         self.assertIn("Missing POST key", response.reason)
 
     # Test invalid body JSON
     def test_body_invalid(self):
-        response = self.fetch('/pullrequests/files/nbdiff', method="POST", body='{"base_content": "bad", "remote_content": "bad"}')
+        response = self.fetch('/pullrequests/files/nbdiff', method="POST", body='{"prev_content": "bad", "curr_content": "bad"}')
         self.assertEqual(response.code, 500)
         self.assertIn("Error diffing content", response.reason)

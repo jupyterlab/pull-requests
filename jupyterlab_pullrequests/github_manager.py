@@ -57,7 +57,8 @@ class PullRequestsGithubManager(PullRequestsManager):
                 'id': result["pull_request"]["url"],
                 'title': result["title"],
                 'body': result["body"],
-                'internal_id': result["id"]
+                'internal_id': result["id"],
+                'url': result["html_url"]
             })
 
         return data
@@ -76,7 +77,9 @@ class PullRequestsGithubManager(PullRequestsManager):
         for result in results:
             data.append({
                 'name': result["filename"],
-                'status': result["status"]
+                'status': result["status"],
+                'additions': result["additions"],
+                'deletions': result["deletions"]
             })
 
         return data
@@ -135,6 +138,7 @@ class PullRequestsGithubManager(PullRequestsManager):
             'id': result["id"],
             'line_number': result["position"],
             'text': result["body"],
+            'updated_at': result["updated_at"],
             'user_name': result["user"]["login"],
             'user_pic': result["user"]["avatar_url"]
         }

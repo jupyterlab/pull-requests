@@ -74,7 +74,8 @@ class TestListPRs(TestCase):
             'id': 'https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1', 
             'title': 'Interesting PR for feature', 
             'body': 'This is a feature that tests a bunch of different types', 
-            'internal_id': 457075994
+            'internal_id': 457075994,
+            'url': 'https://github.com/timnlupo/juypterlabpr-test/pull/1'
         }]
 
 # -----------------------------------------------------------------------------
@@ -90,7 +91,7 @@ class TestListFiles(TestCase):
         mock_call_github.return_value = read_sample_response('github_list_files.json')
         result = await manager.list_files("https://api.github.com/repos/octocat/repo/pulls/1")
         mock_call_github.assert_called_with('https://api.github.com/repos/octocat/repo/pulls/1/files')
-        assert result == [{'name': 'README.md', 'status': 'added'}]
+        assert result == [{'name': 'README.md', 'status': 'added', 'additions': 1, 'deletions': 0}]
     
 # -----------------------------------------------------------------------------
 # /pullrequests/files/content Handler
@@ -148,6 +149,7 @@ class TestGetFileComments(TestCase):
             "id":296364299,
             "line_number":9,
             "text":"too boring",
+            "updated_at": "2019-06-21T19:21:20Z",
             "user_name":"timnlupo",
             "user_pic":"https://avatars1.githubusercontent.com/u/9003282?v=4"
         }]
@@ -166,6 +168,7 @@ class TestPostFileComments(TestCase):
             'id': 299659626,
             'line_number': 9,
             'text': 'test',
+            'updated_at': '2019-07-02T19:58:38Z',
             'user_name': 'timnlupo',
             'user_pic': 'https://avatars1.githubusercontent.com/u/9003282?v=4',
             'in_reply_to_id': 296364299
@@ -188,6 +191,7 @@ class TestPostFileComments(TestCase):
             'id': 299659626,
             'line_number': 9,
             'text': 'test',
+            'updated_at': '2019-07-02T19:58:38Z',
             'user_name': 'timnlupo',
             'user_pic': 'https://avatars1.githubusercontent.com/u/9003282?v=4',
             'in_reply_to_id': 296364299
@@ -207,9 +211,9 @@ class TestPostFileNBDiff(TestCase):
 
     async def test_valid(self):
         manager = PullRequestsGithubManager("valid-pat")
-        base_content = json.dumps(read_sample_response("ipynb_base.json"))
-        remote_content = json.dumps(read_sample_response("ipynb_remote.json"))
-        result = await manager.get_file_nbdiff(base_content, remote_content)
+        prev_content = json.dumps(read_sample_response("ipynb_base.json"))
+        curr_content = json.dumps(read_sample_response("ipynb_remote.json"))
+        result = await manager.get_file_nbdiff(prev_content, curr_content)
         expected_result = read_sample_response("ipynb_nbdiff.json")
         assert result == expected_result
 
