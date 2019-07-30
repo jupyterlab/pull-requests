@@ -6,6 +6,36 @@ import * as React from "react";
 import ReactResizeDetector from 'react-resize-detector';
 import { PullRequestCommentThreadModel, PullRequestFileModel, PullRequestPlainDiffCommentThreadModel } from "../../models";
 
+import * as monacoCSS from 'file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-css.worker.bundle.js';
+import * as monacoEditor from 'file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-editor.worker.bundle.js';
+import * as monacoHTML from 'file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-html.worker.bundle.js';
+import * as monacoJSON from 'file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-json.worker.bundle.js';
+import * as monacoTS from 'file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-ts.worker.bundle.js';
+
+let URLS: { [key: string]: string } = {
+  css: monacoCSS,
+  html: monacoHTML,
+  javascript: monacoTS,
+  json: monacoJSON,
+  typescript: monacoTS
+};
+
+/**
+ * Worker implementation for the Monaco editor
+ * JupyterLab extensions cannot use webpack so must load workers with file-loader
+ *
+ * Relevant literature
+ * 1. Monaco workers - https://github.com/microsoft/monaco-editor/blob/master/docs/integrate-esm.md
+ * 2. Issue explained - https://github.com/jupyterlab/jupyterlab/issues/4328
+ * 3. Workaround - https://github.com/jupyterlab/jupyterlab-monaco/pull/3
+ */
+(self as any).MonacoEnvironment = {
+  getWorkerUrl: function(moduleId: string, label: string): string {
+    let url = URLS[label] || monacoEditor;
+    return url;
+  }
+};
+
 export interface IPlainDiffComponentState {
   diffEditor: monaco.editor.IStandaloneDiffEditor;
   comments: PullRequestPlainDiffCommentThreadModel[];
