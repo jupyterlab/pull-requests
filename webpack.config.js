@@ -1,3 +1,5 @@
+// From https://github.com/jupyterlab/jupyterlab-monaco
+
 const path = require('path');
 const webpack = require('webpack');
 

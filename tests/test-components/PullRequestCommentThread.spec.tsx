@@ -1,8 +1,8 @@
 import { shallow } from 'enzyme';
 import 'jest';
 import * as React from 'react';
-import { IPullRequestCommentThreadProps, PullRequestCommentThread } from '../../components/diff/PullRequestCommentThread';
-import { SamplePullRequestCommentThreadItemNew, SamplePullRequestCommentThreadItemReply } from "../testutils";
+import { IPullRequestCommentThreadProps, PullRequestCommentThread } from '../../src/components/diff/PullRequestCommentThread';
+import { SamplePullRequestCommentThreadItemNew, SamplePullRequestCommentThreadItemReply } from "./testutils";
 
 // Unit tests for PullRequestBrowserItem
 describe('PullRequestBrowserItem', () => {

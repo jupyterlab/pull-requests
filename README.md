@@ -2,16 +2,18 @@
 
 A JupyterLab extension for viewing and commenting on pull requests
 
+## Important Note
 
-<!-- ## Prerequisites
+This version (pre JupyterLab 1.0) of the extension requires a local depedency of `jupyterlab-git` because the networked version is blocked on [this](https://github.com/jupyterlab/jupyterlab-git/pull/384). I could not get relative local dependencies to work ([see here](https://github.com/jupyterlab/jupyterlab/issues/4599)) and the local dependency will be removed soon, so in the meantime please use the workaround below.
 
-* JupyterLab
-
-## Installation
-
-```bash
-jupyter labextension install jupyterlab-pullrequests
-``` -->
+Go to `package.json` and replace the dependency
+```json
+"@jupyterlab/git": "./jupyterlab-git.tgz",
+```
+with
+```json
+"@jupyterlab/git": "/absolute/path/to/jupyterlab-git.tgz",
+```
 
 ## Installation
 

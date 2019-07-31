@@ -1,5 +1,5 @@
-import * as samplepr from './samplepr.json';
-import { PullRequestCommentThreadModel, PullRequestFileModel, PullRequestCommentModel, PullRequestModel } from '../models';
+import * as samplepr from './sample-responses/samplepr.json';
+import { PullRequestCommentThreadModel, PullRequestFileModel, IPullRequestCommentModel, PullRequestModel } from '../../src/models';
 
 export let SAMPLE_PR_JSON: string = JSON.stringify(samplepr);
 
@@ -27,7 +27,7 @@ export let SamplePullRequestPlainFileItem = new PullRequestFileModel(
     SamplePullRequestItem
 );
 
-export let SamplePullRequestCommentItem: PullRequestCommentModel = {
+export let SamplePullRequestCommentItem: IPullRequestCommentModel = {
     id: 296364299,
     text: "too boring",
     lineNumber: 9,

@@ -3,14 +3,23 @@ import * as d3 from "d3-color";
 import { isNull, isUndefined } from "lodash";
 import * as monaco from "monaco-editor";
 import * as React from "react";
-import ReactResizeDetector from 'react-resize-detector';
-import { PullRequestCommentThreadModel, PullRequestFileModel, PullRequestPlainDiffCommentThreadModel } from "../../models";
+import ReactResizeDetector from "react-resize-detector";
+import {
+  PullRequestCommentThreadModel,
+  PullRequestFileModel,
+  PullRequestPlainDiffCommentThreadModel
+} from "../../models";
 
-import * as monacoCSS from 'file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-css.worker.bundle.js';
-import * as monacoEditor from 'file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-editor.worker.bundle.js';
-import * as monacoHTML from 'file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-html.worker.bundle.js';
-import * as monacoJSON from 'file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-json.worker.bundle.js';
-import * as monacoTS from 'file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-ts.worker.bundle.js';
+/**
+ * Worker implementation for the Monaco editor
+ * From https://github.com/jupyterlab/jupyterlab-monaco
+ */
+
+import * as monacoCSS from "file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-css.worker.bundle.js";
+import * as monacoEditor from "file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-editor.worker.bundle.js";
+import * as monacoHTML from "file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-html.worker.bundle.js";
+import * as monacoJSON from "file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-json.worker.bundle.js";
+import * as monacoTS from "file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-ts.worker.bundle.js";
 
 let URLS: { [key: string]: string } = {
   css: monacoCSS,
@@ -20,15 +29,6 @@ let URLS: { [key: string]: string } = {
   typescript: monacoTS
 };
 
-/**
- * Worker implementation for the Monaco editor
- * JupyterLab extensions cannot use webpack so must load workers with file-loader
- *
- * Relevant literature
- * 1. Monaco workers - https://github.com/microsoft/monaco-editor/blob/master/docs/integrate-esm.md
- * 2. Issue explained - https://github.com/jupyterlab/jupyterlab/issues/4328
- * 3. Workaround - https://github.com/jupyterlab/jupyterlab-monaco/pull/3
- */
 (self as any).MonacoEnvironment = {
   getWorkerUrl: function(moduleId: string, label: string): string {
     let url = URLS[label] || monacoEditor;
@@ -64,7 +64,7 @@ export class PlainDiffComponent extends React.Component<
     if (!isNull(this.state.diffEditor)) {
       this.state.diffEditor.layout();
     }
-  }
+  };
 
   render() {
     return (
@@ -73,14 +73,14 @@ export class PlainDiffComponent extends React.Component<
           id={`monacocontainer-${this.props.file.id}`}
           style={{ height: "100%", width: "100%" }}
         />
-        <ReactResizeDetector handleWidth={true} handleHeight={true} onResize={this.onResize} />
+        <ReactResizeDetector
+          handleWidth={true}
+          handleHeight={true}
+          onResize={this.onResize}
+        />
       </div>
     );
   }
-
-  // -----------------------------------------------------------------------------
-  // Monaco
-  // -----------------------------------------------------------------------------
 
   private getLanguage(ext: string): string {
     const langs = monaco.languages.getLanguages();
@@ -97,11 +97,13 @@ export class PlainDiffComponent extends React.Component<
   }
 
   private getVariableHex(varname: string): string {
-    return d3.color(
-      getComputedStyle(document.body)
-        .getPropertyValue(varname)
-        .trim()
-    ).hex();
+    return d3
+      .color(
+        getComputedStyle(document.body)
+          .getPropertyValue(varname)
+          .trim()
+      )
+      .hex();
   }
 
   private updateTheme() {
@@ -114,7 +116,9 @@ export class PlainDiffComponent extends React.Component<
       colors: {
         "editor.background": this.getVariableHex("--jp-layout-color1"),
         "editor.lineHighlightBorder": this.getVariableHex("--jp-layout-color1"),
-        "editorLineNumber.foreground": this.getVariableHex("--jp-ui-font-color2"),
+        "editorLineNumber.foreground": this.getVariableHex(
+          "--jp-ui-font-color2"
+        ),
         "editorGutter.background": this.getVariableHex("--jp-layout-color1"),
         "diffEditor.insertedTextBackground": "#C9F3C24D", // #80
         "diffEditor.removedTextBackground": "#FF96964D"
@@ -135,8 +139,14 @@ export class PlainDiffComponent extends React.Component<
     };
 
     const language = this.getLanguage(this.props.file.extension);
-    let baseModel = monaco.editor.createModel(this.props.file.basecontent, language);
-    let headModel = monaco.editor.createModel(this.props.file.headcontent, language);
+    let baseModel = monaco.editor.createModel(
+      this.props.file.basecontent,
+      language
+    );
+    let headModel = monaco.editor.createModel(
+      this.props.file.headcontent,
+      language
+    );
     this.updateTheme();
     monaco.editor.setTheme("PlainDiffComponent");
 
@@ -150,7 +160,7 @@ export class PlainDiffComponent extends React.Component<
     });
 
     this.props.themeManager.themeChanged.connect(() => this.updateTheme());
-    this.setState({diffEditor: diffEditor}, () => {
+    this.setState({ diffEditor: diffEditor }, () => {
       this.initComments();
       this.handleMouseEvents();
     });
@@ -165,72 +175,90 @@ export class PlainDiffComponent extends React.Component<
       );
       pdcomments.push(pdcomment);
     }
-    this.setState({comments: pdcomments});
+    this.setState({ comments: pdcomments });
   }
 
   private addComment(commentToAdd: PullRequestPlainDiffCommentThreadModel) {
     this.setState(prevState => ({
       comments: [...prevState.comments, commentToAdd]
-    }))
+    }));
   }
 
   removeComment(commentToRemove: PullRequestPlainDiffCommentThreadModel) {
-    this.setState(prevState => ({
-      comments: [...prevState.comments.filter(comment => comment !== commentToRemove)]
-    }), () => {
-      commentToRemove.deleteComment();
-    });
+    this.setState(
+      prevState => ({
+        comments: [
+          ...prevState.comments.filter(comment => comment !== commentToRemove)
+        ]
+      }),
+      () => {
+        commentToRemove.deleteComment();
+      }
+    );
   }
 
   private handleMouseEvents() {
     // Show add comment decoration on mouse move
-    this.state.diffEditor.getModifiedEditor().onMouseMove((e) => {
+    this.state.diffEditor.getModifiedEditor().onMouseMove(e => {
       if (!isNull(e.target["position"])) {
         this.updateCommentDecoration(e.target["position"]["lineNumber"]);
-      } else if (this.state.decorations.length > 0 && e.target["type"] == 12) {
+      } else if (this.state.decorations.length > 0 && e.target["type"] === 12) {
         this.removeCommentDecoration();
       }
     });
     // Remove add comment decoration if mouse leaves
-    this.state.diffEditor.getModifiedEditor().onMouseLeave((e) => {
+    this.state.diffEditor.getModifiedEditor().onMouseLeave(e => {
       this.removeCommentDecoration();
     });
-    this.state.diffEditor.getModifiedEditor().onMouseDown((e) => {
-      if (e.target["element"]["classList"].contains("jp-PullRequestCommentDecoration")) {
-        let lineNumber = parseInt(e.target["element"]["parentElement"]["innerText"]);
+    this.state.diffEditor.getModifiedEditor().onMouseDown(e => {
+      if (
+        e.target["element"]["classList"].contains(
+          "jp-PullRequestCommentDecoration"
+        )
+      ) {
+        let lineNumber = parseInt(
+          e.target["element"]["parentElement"]["innerText"],
+          10
+        );
         for (let comment of this.state.comments) {
-          if (isNull(comment.thread.comment) && comment.thread.lineNumber === lineNumber) {
+          if (
+            isNull(comment.thread.comment) &&
+            comment.thread.lineNumber === lineNumber
+          ) {
             return;
           }
         }
-        this.addComment(new PullRequestPlainDiffCommentThreadModel(
-          new PullRequestCommentThreadModel(
-            this.props.file,
-            lineNumber
-          ),
-          this
-        ))
+        this.addComment(
+          new PullRequestPlainDiffCommentThreadModel(
+            new PullRequestCommentThreadModel(this.props.file, lineNumber),
+            this
+          )
+        );
       }
     });
   }
 
   private updateCommentDecoration(lineNumber: number) {
-    let newDecorations = this.state.diffEditor.getModifiedEditor().deltaDecorations(this.state.decorations, [
-      {
-        range: new monaco.Range(lineNumber,1,lineNumber,1),
-        options: {
-          isWholeLine: true,
-          linesDecorationsClassName: 'jp-PullRequestCommentDecoration'
+    let newDecorations = this.state.diffEditor
+      .getModifiedEditor()
+      .deltaDecorations(this.state.decorations, [
+        {
+          range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+          options: {
+            isWholeLine: true,
+            linesDecorationsClassName: "jp-PullRequestCommentDecoration"
+          }
         }
-      },
-    ])
-    this.setState({decorations: newDecorations});
+      ]);
+    this.setState({ decorations: newDecorations });
   }
 
   private removeCommentDecoration() {
     if (this.state.decorations.length > 0) {
-      let newDecorations = this.state.diffEditor.getModifiedEditor().deltaDecorations(this.state.decorations, []);
-      this.setState({decorations: newDecorations});
+      let newDecorations = this.state.diffEditor
+        .getModifiedEditor()
+        .deltaDecorations(this.state.decorations, []);
+      this.setState({ decorations: newDecorations });
     }
   }
 }

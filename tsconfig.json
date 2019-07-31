@@ -7,11 +7,10 @@
     "noEmitOnError": true,
     "noUnusedLocals": true,
     "outDir": "lib",
-    "rootDir": "src",
     "strict": true,
     "strictNullChecks": false,
     "target": "es2015",
-    "types": [ "node" ],
+    "types": ["node"],
     "jsx": "react",
     "resolveJsonModule": true
   },

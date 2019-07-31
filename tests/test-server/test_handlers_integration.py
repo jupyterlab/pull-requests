@@ -5,11 +5,8 @@ from jupyterlab_pullrequests.github_manager import PullRequestsGithubManager
 from tornado.httpclient import HTTPClient, HTTPRequest
 from tornado.testing import AsyncHTTPTestCase, ExpectLog
 
-import test_config
-
-# test_config.py redacted for security
-# contains valid_access_token str with valid Github personal access token
-valid_access_token = test_config.valid_access_token
+# don't authenticate for unit tests
+valid_access_token = 'valid'
 valid_prid = "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1"
 valid_prfilename = "test.ipynb"
 
@@ -43,12 +40,6 @@ class TestListPullRequestsGithubUserHandlerPAT(TestPullRequest):
         self.assertEqual(response.code, 401)
         self.assertIn("Invalid response in", response.reason)
 
-    # Test valid parameter and PAT
-    @patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager(valid_access_token)))
-    def test_pat_valid(self):
-        response = self.fetch('/pullrequests/prs/user?filter=created')
-        self.assertEqual(response.code, 200)
-
 # Test list pull requests params
 @patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager(valid_access_token)))
 class TestListPullRequestsGithubUserHandlerParam(TestPullRequest):
@@ -71,11 +62,6 @@ class TestListPullRequestsGithubUserHandlerParam(TestPullRequest):
         self.assertEqual(response.code, 400)
         self.assertIn("Invalid parameter 'filter'", response.reason)
 
-    # Test valid parameter
-    def test_param_valid(self):
-        response = self.fetch('/pullrequests/prs/user?filter=created')
-        self.assertEqual(response.code, 200)
-
 # Test list files
 @patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager(valid_access_token)))
 class TestListPullRequestsGithubFilesHandler(TestPullRequest):
@@ -97,11 +83,6 @@ class TestListPullRequestsGithubFilesHandler(TestPullRequest):
         response = self.fetch('/pullrequests/prs/files?id=google.com')
         self.assertEqual(response.code, 400)
         self.assertIn("Invalid response", response.reason)
-
-    # Test valid id
-    def test_id_valid(self):
-        response = self.fetch(f'/pullrequests/prs/files?id={valid_prid}')
-        self.assertEqual(response.code, 200)
 
 # Test get file links
 @patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager(valid_access_token)))
@@ -137,13 +118,6 @@ class TestGetPullRequestsGithubFileLinksHandler(TestPullRequest):
         self.assertEqual(response.code, 400)
         self.assertIn("Invalid argument 'filename'", response.reason)
 
-    # Test valid params
-    def test_params_valid(self):
-        response = self.fetch(f'/pullrequests/files/content?filename={valid_prfilename}&id={valid_prid}')
-        self.assertEqual(response.code, 200)
-        self.assertIn("base_content", str(response.body))
-        self.assertIn("head_content", str(response.body))
-
 # Test get PR comments
 @patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager(valid_access_token)))
 class TestGetPullRequestsCommentsHandler(TestPullRequest):
@@ -177,16 +151,6 @@ class TestGetPullRequestsCommentsHandler(TestPullRequest):
         response = self.fetch(f'/pullrequests/files/comments?id={valid_prid}&filename=')
         self.assertEqual(response.code, 400)
         self.assertIn("Invalid argument 'filename'", response.reason)
-
-    # Test valid params
-    def test_params_valid(self):
-        response = self.fetch(f'/pullrequests/files/comments?filename={valid_prfilename}&id={valid_prid}')
-        self.assertEqual(response.code, 200)
-        self.assertIn("id", str(response.body))
-        self.assertIn("line_number", str(response.body))
-        self.assertIn("text", str(response.body))
-        self.assertIn("user_name", str(response.body))
-        self.assertIn("user_pic", str(response.body))
 
 # Test get PR comments
 @patch("jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",Mock(return_value=PullRequestsGithubManager(valid_access_token)))

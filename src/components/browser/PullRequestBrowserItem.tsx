@@ -31,16 +31,21 @@ export class PullRequestBrowserItem extends React.Component<
 
   private async fetchPRs() {
     try {
-      let jsonresults = await doRequest("pullrequests/prs/user?filter=" + this.props.filter, "GET")
+      let jsonresults = await doRequest(
+        "pullrequests/prs/user?filter=" + this.props.filter,
+        "GET"
+      );
       let results: PullRequestModel[] = [];
       for (let jsonresult of jsonresults) {
-        results.push(new PullRequestModel(
-          jsonresult["id"],
-          jsonresult["title"],
-          jsonresult["body"],
-          jsonresult["url"],
-          jsonresult["internal_id"]
-        ));
+        results.push(
+          new PullRequestModel(
+            jsonresult["id"],
+            jsonresult["title"],
+            jsonresult["body"],
+            jsonresult["url"],
+            jsonresult["internal_id"]
+          )
+        );
       }
       // render PRs while files load
       this.setState({ data: results, isLoading: true, error: null }, () => {
@@ -48,14 +53,14 @@ export class PullRequestBrowserItem extends React.Component<
       });
     } catch (err) {
       let msg = "Unknown Error";
-        if (
-          err.response != null &&
-          err.response.status != null &&
-          err.message != null
-        ) {
-          msg = `${err.response.status} (${err.message})`;
-        }
-        this.setState({ data: [], isLoading: false, error: msg });
+      if (
+        err.response != null &&
+        err.response.status != null &&
+        err.message != null
+      ) {
+        msg = `${err.response.status} (${err.message})`;
+      }
+      this.setState({ data: [], isLoading: false, error: msg });
     }
   }
 
@@ -64,31 +69,42 @@ export class PullRequestBrowserItem extends React.Component<
       items.map(async item => {
         await item.getFiles();
       })
-    ).then(() => {
-      this.setState({ data: items, isLoading: false, error: null });
-    }).catch((e) => {
-      const msg = `Get Files Error (${e})`;
-      this.setState({ data: [], isLoading: false, error: msg });
-    });
+    )
+      .then(() => {
+        this.setState({ data: items, isLoading: false, error: null });
+      })
+      .catch(e => {
+        const msg = `Get Files Error (${e})`;
+        this.setState({ data: [], isLoading: false, error: msg });
+      });
   }
 
   // This makes a shallow copy of data[i], the data[i].files are not copied
   // If files need to be mutated, will need to restructure props / deep copy
-  private toggleFilesExpanded(e: React.MouseEvent<HTMLSpanElement, MouseEvent>, i: number) {
+  private toggleFilesExpanded(
+    e: React.MouseEvent<HTMLSpanElement, MouseEvent>,
+    i: number
+  ) {
     e.stopPropagation();
     let data = [...this.state.data];
     let item = Object.assign({}, data[i]);
     item.isExpanded = !item.isExpanded;
     data[i] = item;
-    this.setState({data});
+    this.setState({ data });
   }
 
-  private openLink (e: React.MouseEvent<HTMLSpanElement, MouseEvent>, link: string) {
+  private openLink(
+    e: React.MouseEvent<HTMLSpanElement, MouseEvent>,
+    link: string
+  ) {
     e.stopPropagation();
     window.open(link, "_blank");
   }
 
-  private showFileTab(e: React.MouseEvent<HTMLSpanElement, MouseEvent>, file: PullRequestFileModel) {
+  private showFileTab(
+    e: React.MouseEvent<HTMLSpanElement, MouseEvent>,
+    file: PullRequestFileModel
+  ) {
     e.stopPropagation();
     this.props.showTab(file);
   }
@@ -115,15 +131,13 @@ export class PullRequestBrowserItem extends React.Component<
         ) : (
           <ul className="jp-PullRequestBrowserItemList">
             {this.state.data.map((result, i) => (
-              <div 
-                key={i} 
-                onClick={() => this.props.showTab(result)}>
+              <div key={i} onClick={() => this.props.showTab(result)}>
                 <li className="jp-PullRequestBrowserItemListItem">
                   <h2>{result.title}</h2>
                   <div className="jp-PullRequestBrowserItemListItemIconWrapper">
                     <span
                       className="jp-Icon jp-Icon-16 jp-LinkIcon"
-                      onClick={(e) => this.openLink(e, result.link) }
+                      onClick={e => this.openLink(e, result.link)}
                     />
                     <span
                       className={
@@ -132,7 +146,7 @@ export class PullRequestBrowserItem extends React.Component<
                           ? "jp-CaretUp-icon"
                           : "jp-CaretDown-icon")
                       }
-                      onClick={(e) => this.toggleFilesExpanded(e, i)}
+                      onClick={e => this.toggleFilesExpanded(e, i)}
                     />
                   </div>
                 </li>
@@ -140,10 +154,7 @@ export class PullRequestBrowserItem extends React.Component<
                   <ul className="jp-PullRequestBrowserItemFileList">
                     {result.files != null &&
                       result.files.map((file, k) => (
-                        <li
-                          key={k}
-                          onClick={(e) => this.showFileTab(e, file) }
-                        >
+                        <li key={k} onClick={e => this.showFileTab(e, file)}>
                           <PullRequestBrowserFileItem file={file} />
                         </li>
                       ))}

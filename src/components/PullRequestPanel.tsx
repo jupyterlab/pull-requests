@@ -8,7 +8,6 @@ import { PullRequestToolbar } from "./PullRequestToolbar";
 import { PullRequestTabWidget } from "./tab/PullRequestTabWidget";
 
 export class PullRequestPanel extends Widget {
-
   private _app: JupyterLab;
   private _themeManager: IThemeManager;
   private _renderMime: IRenderMimeRegistry;
@@ -16,7 +15,11 @@ export class PullRequestPanel extends Widget {
   private _browser: PullRequestBrowserWidget;
   private _tabs: PullRequestTabWidget[];
 
-  constructor(app: JupyterLab, themeManager: IThemeManager, renderMime: IRenderMimeRegistry) {
+  constructor(
+    app: JupyterLab,
+    themeManager: IThemeManager,
+    renderMime: IRenderMimeRegistry
+  ) {
     super();
     this.addClass("jp-PullRequestPanel");
     this.layout = new PanelLayout();
@@ -41,7 +44,11 @@ export class PullRequestPanel extends Widget {
   showTab = async (data: PullRequestFileModel | PullRequestModel) => {
     let tab = this.getTab(data.id);
     if (tab == null) {
-      tab = new PullRequestTabWidget(data, this._themeManager, this._renderMime);
+      tab = new PullRequestTabWidget(
+        data,
+        this._themeManager,
+        this._renderMime
+      );
       tab.update();
       this._tabs.push(tab);
     }

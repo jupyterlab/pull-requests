@@ -10,13 +10,16 @@ import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
 
 // Assumes valid json
 export class PullRequestTabWidget extends Widget {
-  
   private _file: PullRequestFileModel;
   private _pr: PullRequestModel;
   private _themeManager: IThemeManager;
   private _renderMime: IRenderMimeRegistry;
 
-  constructor(model: PullRequestFileModel | PullRequestModel, themeManager: IThemeManager, renderMime: IRenderMimeRegistry) {
+  constructor(
+    model: PullRequestFileModel | PullRequestModel,
+    themeManager: IThemeManager,
+    renderMime: IRenderMimeRegistry
+  ) {
     super();
     this.title.closable = true;
     this._themeManager = themeManager;
@@ -26,7 +29,11 @@ export class PullRequestTabWidget extends Widget {
       this.title.label = model.name;
       this._file = model;
       ReactDOM.render(
-        <PullRequestFileTab file={this._file} themeManager={this._themeManager} renderMime={this._renderMime} />,
+        <PullRequestFileTab
+          file={this._file}
+          themeManager={this._themeManager}
+          renderMime={this._renderMime}
+        />,
         this.node
       );
     } else {
@@ -34,7 +41,10 @@ export class PullRequestTabWidget extends Widget {
       this.title.label = model.title;
       this._pr = model;
       ReactDOM.render(
-        <PullRequestDescriptionTab pr={this._pr} themeManager={this._themeManager} />,
+        <PullRequestDescriptionTab
+          pr={this._pr}
+          themeManager={this._themeManager}
+        />,
         this.node
       );
     }
@@ -44,12 +54,19 @@ export class PullRequestTabWidget extends Widget {
     ReactDOM.unmountComponentAtNode(this.node);
     if (!isUndefined(this._file)) {
       ReactDOM.render(
-        <PullRequestFileTab file={this._file} themeManager={this._themeManager} renderMime={this._renderMime} />,
+        <PullRequestFileTab
+          file={this._file}
+          themeManager={this._themeManager}
+          renderMime={this._renderMime}
+        />,
         this.node
       );
     } else if (!isUndefined(this._pr)) {
       ReactDOM.render(
-        <PullRequestDescriptionTab pr={this._pr} themeManager={this._themeManager} />,
+        <PullRequestDescriptionTab
+          pr={this._pr}
+          themeManager={this._themeManager}
+        />,
         this.node
       );
     }

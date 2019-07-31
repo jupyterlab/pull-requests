@@ -1,4 +1,8 @@
-import { ILayoutRestorer, JupyterLab, JupyterLabPlugin } from "@jupyterlab/application";
+import {
+  ILayoutRestorer,
+  JupyterLab,
+  JupyterLabPlugin
+} from "@jupyterlab/application";
 import { IThemeManager } from "@jupyterlab/apputils";
 import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
 import { PullRequestPanel } from "./components/PullRequestPanel";

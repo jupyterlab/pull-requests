@@ -1,6 +1,7 @@
 'use strict';
 
 module.exports = {
+  automock: false,
   transform: {
     '^.+\\.tsx?$': 'ts-jest'
   },
@@ -8,9 +9,9 @@ module.exports = {
     '\\.(css|less|sass|scss)$': 'identity-obj-proxy',
     "monaco-editor": "<rootDir>/node_modules/react-monaco-editor"
   },
-  testRegex: 'src/tests/test-.*/.*.spec.ts[x]?$',
+  testRegex: '/tests/test-.*/.*.spec.ts[x]?$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   testPathIgnorePatterns: ['/dev_mode/', '/lib/', '/node_modules/', ".*\\.d\\.ts$"],
-  automock: false,
+  transformIgnorePatterns: ['/node_modules/(?!(@jupyterlab/.*)/)'],
   setupFiles: ['./setupJest.js']
 };

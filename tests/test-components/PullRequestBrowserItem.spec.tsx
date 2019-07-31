@@ -1,9 +1,9 @@
 import { shallow } from 'enzyme';
 import 'jest';
 import * as React from 'react';
-import { IPullRequestBrowserItemProps, PullRequestBrowserItem } from '../../components/browser/PullRequestBrowserItem';
-import { PullRequestFileModel, PullRequestModel } from '../../models';
-import { SAMPLE_PR_JSON } from '../testutils';
+import { IPullRequestBrowserItemProps, PullRequestBrowserItem } from '../../src/components/browser/PullRequestBrowserItem';
+import { PullRequestFileModel, PullRequestModel } from '../../src/models';
+import { SAMPLE_PR_JSON } from './testutils';
 
 // Unit tests for PullRequestBrowserItem
 describe('PullRequestBrowserItem', () => {

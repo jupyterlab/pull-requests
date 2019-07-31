@@ -2,7 +2,7 @@ import { IThemeManager, Spinner } from "@jupyterlab/apputils";
 import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
 import { isNull } from "lodash";
 import * as React from "react";
-import { RefObject } from 'react';
+import { RefObject } from "react";
 import { PullRequestFileModel } from "../../models";
 import { NBDiff } from "../diff/NBDiff";
 import { PlainDiffComponent } from "../diff/PlainDiffComponent";
@@ -16,14 +16,13 @@ export interface IPullRequestFileTabState {
 export interface IPullRequestFileTabProps {
   file: PullRequestFileModel;
   themeManager: IThemeManager;
-  renderMime: IRenderMimeRegistry
+  renderMime: IRenderMimeRegistry;
 }
 
 export class PullRequestFileTab extends React.Component<
   IPullRequestFileTabProps,
   IPullRequestFileTabState
 > {
-
   private spinnerContainer: RefObject<HTMLDivElement> = React.createRef<
     HTMLDivElement
   >();
@@ -34,7 +33,7 @@ export class PullRequestFileTab extends React.Component<
   }
 
   async componentDidMount() {
-    this.spinnerContainer.current.appendChild((new Spinner()).node);
+    this.spinnerContainer.current.appendChild(new Spinner().node);
     await this.loadDiff();
   }
 
@@ -58,8 +57,8 @@ export class PullRequestFileTab extends React.Component<
     return (
       <div className="jp-PullRequestTab">
         {!this.state.isLoading ? (
-          (isNull(this.state.error) && !isNull(this.state.file) ? (
-            (this.state.file.extension === ".ipynb" ? (
+          isNull(this.state.error) && !isNull(this.state.file) ? (
+            this.state.file.extension === ".ipynb" ? (
               <NBDiff
                 file={this.state.file}
                 renderMime={this.props.renderMime}
@@ -69,7 +68,7 @@ export class PullRequestFileTab extends React.Component<
                 file={this.state.file}
                 themeManager={this.props.themeManager}
               />
-            ))
+            )
           ) : (
             <h2 className="jp-PullRequestTabError">
               <span style={{ color: "var(--jp-ui-font-color1)" }}>
@@ -77,7 +76,7 @@ export class PullRequestFileTab extends React.Component<
               </span>{" "}
               {this.state.error}
             </h2>
-          ))
+          )
         ) : (
           <div className="jp-PullRequestTabLoadingContainer">
             <div ref={this.spinnerContainer}></div>

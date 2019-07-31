@@ -9,21 +9,14 @@ from tornado.httpclient import (AsyncHTTPClient, HTTPClientError, HTTPRequest,
                                 HTTPResponse)
 from tornado.web import HTTPError, MissingArgumentError
 
-import test_config
-
 client = AsyncHTTPClient()
-
-# test_config.py redacted for security
-# contains valid_access_token str with valid Github personal access token
-valid_access_token = test_config.valid_access_token
-valid_manager = PullRequestsGithubManager(valid_access_token)
 
 # -----------------------------------------------------------------------------
 # /pullrequests/prs/user Handler Tests
 # -----------------------------------------------------------------------------
 
 def read_sample_response(filename):
-    with open(f'sample_responses/{filename}') as json_data:
+    with open(f'tests/test-server/sample_responses/{filename}') as json_data:
         return json.load(json_data,) 
 
 @pytest.mark.asyncio

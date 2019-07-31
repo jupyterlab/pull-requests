@@ -3,7 +3,6 @@ import { Widget } from "@phosphor/widgets";
 import { PullRequestPanel } from "./PullRequestPanel";
 
 export class PullRequestToolbar extends Toolbar {
-
   private _openRefreshButton: ToolbarButton;
 
   constructor(panel: PullRequestPanel) {

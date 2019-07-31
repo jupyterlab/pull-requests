@@ -1,0 +1,17 @@
+language: python
+python:
+  - '3.6'
+cache:
+  pip: true
+  directories:
+    - /home/travis/.yarn-cache/
+install: pip install "jupyterlab<1.0.0"
+script:
+  - yarn
+  - yarn build
+  - yarn test
+  - yarn run lint
+  - pip install .[test]
+  - pytest tests/test-server
+  - jupyter serverextension enable --py jupyterlab_pullrequests
+  - jupyter labextension install .

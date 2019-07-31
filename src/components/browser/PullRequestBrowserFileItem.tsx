@@ -8,10 +8,9 @@ export interface IPullRequestBrowserFileItemProps {
 }
 
 export class PullRequestBrowserFileItem extends React.Component<
-IPullRequestBrowserFileItemProps,
+  IPullRequestBrowserFileItemProps,
   IPullRequestBrowserFileItemState
 > {
-  
   constructor(props: IPullRequestBrowserFileItemProps) {
     super(props);
     this.state = { data: [], isLoading: true, error: null };
@@ -19,14 +18,30 @@ IPullRequestBrowserFileItemProps,
 
   render() {
     return (
-      <div className="jp-PullRequestBrowserFileItem" title={this.props.file.name}>
-        <span className={"jp-Icon jp-Icon-16 jp-PullRequestBrowserFileItemIcon " + this.getExtensionIcon(this.props.file.extension)}></span>
-        <span className="jp-PullRequestBrowserFileItemName">{this.extractFilename(this.props.file.name)}</span>
-        <span className="jp-PullRequestBrowserFileItemChanged">{this.props.file.status}</span>
+      <div
+        className="jp-PullRequestBrowserFileItem"
+        title={this.props.file.name}
+      >
+        <span
+          className={
+            "jp-Icon jp-Icon-16 jp-PullRequestBrowserFileItemIcon " +
+            this.getExtensionIcon(this.props.file.extension)
+          }
+        ></span>
+        <span className="jp-PullRequestBrowserFileItemName">
+          {this.extractFilename(this.props.file.name)}
+        </span>
+        <span className="jp-PullRequestBrowserFileItemChanged">
+          {this.props.file.status}
+        </span>
         <div className="jp-PullRequestBrowserFileItemDiff">
-          <span className="jp-PullRequestBrowserFileItemDiffText">{this.props.file.additions}</span>
+          <span className="jp-PullRequestBrowserFileItemDiffText">
+            {this.props.file.additions}
+          </span>
           <span className="jp-Icon jp-Icon-13 jp-PullRequestBrowserFileItemDiffInserted"></span>
-          <span className="jp-PullRequestBrowserFileItemDiffText">{this.props.file.deletions}</span>
+          <span className="jp-PullRequestBrowserFileItemDiffText">
+            {this.props.file.deletions}
+          </span>
           <span className="jp-Icon jp-Icon-13 jp-PullRequestBrowserFileItemDiffDeleted"></span>
         </div>
       </div>
@@ -36,37 +51,37 @@ IPullRequestBrowserFileItemProps,
   /** Get the extension of a given file */
   private getExtensionIcon(ext: string): string {
     switch (ext) {
-      case '.ipynb':
+      case ".ipynb":
         return "jp-NotebookIcon";
-      case '.md':
+      case ".md":
         return "jp-MarkdownIcon";
-      case '.py':
+      case ".py":
         return "jp-PythonIcon";
-      case '.json':
+      case ".json":
         return "jp-JSONIcon";
-      case '.csv':
+      case ".csv":
         return "jp-SpreadsheetIcon";
-      case '.xls':
+      case ".xls":
         return "jp-FileIcon";
-      case '.r':
+      case ".r":
         return "jp-RKernelIcon";
-      case '.yml':
+      case ".yml":
         return "jp-YamlIcon";
-      case '.yaml':
+      case ".yaml":
         return "jp-YamlIcon";
-      case '.svg':
+      case ".svg":
         return "jp-ImageIcon";
-      case '.tiff':
+      case ".tiff":
         return "jp-ImageIcon";
-      case '.jpeg':
+      case ".jpeg":
         return "jp-ImageIcon";
-      case '.jpg':
+      case ".jpg":
         return "jp-ImageIcon";
-      case '.gif':
+      case ".gif":
         return "jp-ImageIcon";
-      case '.png':
+      case ".png":
         return "jp-ImageIcon";
-      case '.raw':
+      case ".raw":
         return "jp-ImageIcon";
       default:
         return "jp-FileIcon";
@@ -75,10 +90,10 @@ IPullRequestBrowserFileItemProps,
 
   /** Get the filename from a path */
   private extractFilename(path: string): string {
-    if (path[path.length - 1] === '/') {
+    if (path[path.length - 1] === "/") {
       return path;
     } else {
-      let temp = path.split('/');
+      let temp = path.split("/");
       return temp[temp.length - 1];
     }
   }
