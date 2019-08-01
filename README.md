@@ -1,10 +1,29 @@
 # jupyterlab-pullrequests
 
-A JupyterLab extension for viewing and commenting on pull requests
+[![Stability Experimental](https://img.shields.io/badge/stability-experimental-red.svg)](https://img.shields.io/badge/stability-experimental-red.svg)
+[![Build Status](https://travis-ci.org/jupyterlab/pull-requests.svg?branch=master)](https://travis-ci.org/jupyterlab/pull-requests)
+
+A JupyterLab extension for reviewing pull requests
+
+![](gifs/demo.gif)
+
+## Prerequisites
+
+- JupyterLab <1.0
+
+## Usage
+
+- Open the pull request extension from the tab on the left panel
 
 ## Installation
 
-### 1. See development install directions below
+### 1. Install the extension with the following steps
+
+```bash
+jupyter labextension install @jupyterlab/pullrequests
+pip install --upgrade jupyterlab-pullrequests
+jupyter serverextension enable --py jupyterlab_pullrequests
+```
 
 ### 2. Getting your access token from GitHub
 
@@ -40,6 +59,14 @@ Congrats, you did it! Launch JupyterLab and look for the Pull Request tab on the
 
 ## Development
 
+### Contributing
+
+If you would like to contribute to the project, please read our [contributor documentation](https://github.com/jupyterlab/pull-requests/blob/master/CONTRIBUTING.md).
+
+JupyterLab follows the official [Jupyter Code of Conduct](https://github.com/jupyter/governance/blob/master/conduct/code_of_conduct.md).
+
+### Install
+
 For a development install, do the following in the repository directory:
 
 ```bash
@@ -61,40 +88,6 @@ jupyter serverextension enable --py jupyterlab_pullrequests
 To rebuild the package and the JupyterLab app:
 
 ```bash
-jlpm run build
-jupyter lab build
-```
-
-## Known Issues
-
-This version (pre JupyterLab 1.0) of the extension requires a local depedency of `jupyterlab-git` because the networked version is blocked on [this](https://github.com/jupyterlab/jupyterlab-git/pull/384).
-
-Relative local dependencies sometimes fail with the following error during JupyterLab webpack (see [here](https://github.com/jupyterlab/jupyterlab/issues/4599)).
-
-```
-Tarball is not in network and can not be located in cache (["../yarn/v2/.tmp/12c686dd13cb1ef64cebbd243df0a44d/jupyterlab-git.tgz","../yarn/v2/.tmp/064d18f9871b47b33e275a17ec9ead49/.yarn-tarball.tgz"])
-```
-
-To fix, simply update the local dependency from a relative path to an absolute path.
-
-Go to `package.json` and replace the dependency
-
-```json
-"@jupyterlab/git": "file:./jupyterlab-git.tgz",
-```
-
-with
-
-```json
-"@jupyterlab/git": "file:/absolute/path/to/jupyterlab-git.tgz",
-```
-
-That's it! Now rebuild your project with the following and you're good to go.
-
-```
-rm -rf node_modules
-jlpm cache clean
-jlpm install
 jlpm run build
 jupyter lab build
 ```
