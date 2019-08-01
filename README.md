@@ -1,6 +1,18 @@
 # jupyterlab-pullrequests
 
-A JupyterLab extension for viewing and commenting on pull requests
+[![Build Status](https://travis-ci.org/jupyterlab/pull-requests.svg?branch=master)](https://travis-ci.org/jupyterlab/pull-requests)
+
+A JupyterLab extension for reviewing pull requests
+
+![](https://user-images.githubusercontent.com/9003282/62256798-a3ccb600-b3b7-11e9-921b-d72dcbb81477.gif)
+
+## Prerequisites
+
+- JupyterLab  
+
+## Usage
+
+- Open the pull request extension from the tab on the left panel
 
 ## Installation
 
@@ -40,6 +52,14 @@ Congrats, you did it! Launch JupyterLab and look for the Pull Request tab on the
 
 ## Development
 
+### Contributing
+
+If you would like to contribute to the project, please read our [contributor documentation](https://github.com/jupyterlab/pull-requests/blob/master/CONTRIBUTING.md).
+
+JupyterLab follows the official [Jupyter Code of Conduct](https://github.com/jupyter/governance/blob/master/conduct/code_of_conduct.md).
+
+### Install
+
 For a development install, do the following in the repository directory:
 
 ```bash
@@ -75,7 +95,7 @@ Relative local dependencies sometimes fail with the following error during Jupyt
 Tarball is not in network and can not be located in cache (["../yarn/v2/.tmp/12c686dd13cb1ef64cebbd243df0a44d/jupyterlab-git.tgz","../yarn/v2/.tmp/064d18f9871b47b33e275a17ec9ead49/.yarn-tarball.tgz"])
 ```
 
-To fix, simply update the local dependency from a relative path to an absolute path.
+To fix, update the local dependency from a relative path to an absolute path.
 
 Go to `package.json` and replace the dependency
 

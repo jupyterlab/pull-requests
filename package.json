@@ -11,13 +11,7 @@
   "bugs": {
     "url": "https://github.com/jupyterlab/pull-requests/issues"
   },
-  "license": "SEE LICENSES",
-  "licenses": [
-    {
-      "type": "Amazon Software License",
-      "url": "http://aws.amazon.com/asl"
-    }
-  ],
+  "license": "BSD-3-Clause",
   "author": "Amazon",
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
