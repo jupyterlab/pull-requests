@@ -1,14 +1,15 @@
 # jupyterlab-pullrequests
 
+[![Stability Experimental](https://img.shields.io/badge/stability-experimental-red.svg)](https://img.shields.io/badge/stability-experimental-red.svg)
 [![Build Status](https://travis-ci.org/jupyterlab/pull-requests.svg?branch=master)](https://travis-ci.org/jupyterlab/pull-requests)
 
 A JupyterLab extension for reviewing pull requests
 
-![](https://user-images.githubusercontent.com/9003282/62256798-a3ccb600-b3b7-11e9-921b-d72dcbb81477.gif)
+![](demo.gif)
 
 ## Prerequisites
 
-- JupyterLab  
+- JupyterLab <1.0
 
 ## Usage
 
@@ -16,7 +17,13 @@ A JupyterLab extension for reviewing pull requests
 
 ## Installation
 
-### 1. See development install directions below
+### 1. Install the extension with the following steps
+
+```bash
+jupyter labextension install @jupyterlab/pullrequests
+pip install --upgrade jupyterlab-pullrequests
+jupyter serverextension enable --py jupyterlab_pullrequests
+```
 
 ### 2. Getting your access token from GitHub
 
@@ -81,40 +88,6 @@ jupyter serverextension enable --py jupyterlab_pullrequests
 To rebuild the package and the JupyterLab app:
 
 ```bash
-jlpm run build
-jupyter lab build
-```
-
-## Known Issues
-
-This version (pre JupyterLab 1.0) of the extension requires a local depedency of `jupyterlab-git` because the networked version is blocked on [this](https://github.com/jupyterlab/jupyterlab-git/pull/384).
-
-Relative local dependencies sometimes fail with the following error during JupyterLab webpack (see [here](https://github.com/jupyterlab/jupyterlab/issues/4599)).
-
-```
-Tarball is not in network and can not be located in cache (["../yarn/v2/.tmp/12c686dd13cb1ef64cebbd243df0a44d/jupyterlab-git.tgz","../yarn/v2/.tmp/064d18f9871b47b33e275a17ec9ead49/.yarn-tarball.tgz"])
-```
-
-To fix, update the local dependency from a relative path to an absolute path.
-
-Go to `package.json` and replace the dependency
-
-```json
-"@jupyterlab/git": "file:./jupyterlab-git.tgz",
-```
-
-with
-
-```json
-"@jupyterlab/git": "file:/absolute/path/to/jupyterlab-git.tgz",
-```
-
-That's it! Now rebuild your project with the following and you're good to go.
-
-```
-rm -rf node_modules
-jlpm cache clean
-jlpm install
 jlpm run build
 jupyter lab build
 ```
