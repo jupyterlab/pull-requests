@@ -1,4 +1,4 @@
-import { JupyterLab } from "@jupyterlab/application";
+import { JupyterFrontEnd } from "@jupyterlab/application";
 import { IThemeManager, Toolbar } from "@jupyterlab/apputils";
 import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
 import { PanelLayout, Widget } from "@phosphor/widgets";
@@ -8,7 +8,7 @@ import { PullRequestToolbar } from "./PullRequestToolbar";
 import { PullRequestTabWidget } from "./tab/PullRequestTabWidget";
 
 export class PullRequestPanel extends Widget {
-  private _app: JupyterLab;
+  private _app: JupyterFrontEnd;
   private _themeManager: IThemeManager;
   private _renderMime: IRenderMimeRegistry;
   private _toolbar: Toolbar;
@@ -16,7 +16,7 @@ export class PullRequestPanel extends Widget {
   private _tabs: PullRequestTabWidget[];
 
   constructor(
-    app: JupyterLab,
+    app: JupyterFrontEnd,
     themeManager: IThemeManager,
     renderMime: IRenderMimeRegistry
   ) {
@@ -53,7 +53,7 @@ export class PullRequestPanel extends Widget {
       this._tabs.push(tab);
     }
     if (!tab.isAttached) {
-      this._app.shell.addToMainArea(tab);
+      this._app.shell.add(tab, "main");
     } else {
       tab.update();
     }
