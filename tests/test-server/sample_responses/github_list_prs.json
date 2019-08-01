@@ -1,0 +1,57 @@
+{
+    "total_count": 1,
+    "incomplete_results": false,
+    "items": [
+        {
+            "url": "https://api.github.com/repos/timnlupo/juypterlabpr-test/issues/1",
+            "repository_url": "https://api.github.com/repos/timnlupo/juypterlabpr-test",
+            "labels_url": "https://api.github.com/repos/timnlupo/juypterlabpr-test/issues/1/labels{/name}",
+            "comments_url": "https://api.github.com/repos/timnlupo/juypterlabpr-test/issues/1/comments",
+            "events_url": "https://api.github.com/repos/timnlupo/juypterlabpr-test/issues/1/events",
+            "html_url": "https://github.com/timnlupo/juypterlabpr-test/pull/1",
+            "id": 457075994,
+            "node_id": "MDExOlB1bGxSZXF1ZXN0Mjg4OTYxNDU4",
+            "number": 1,
+            "title": "Interesting PR for feature",
+            "user": {
+                "login": "timnlupo",
+                "id": 9003282,
+                "node_id": "MDQ6VXNlcjkwMDMyODI=",
+                "avatar_url": "https://avatars1.githubusercontent.com/u/9003282?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/timnlupo",
+                "html_url": "https://github.com/timnlupo",
+                "followers_url": "https://api.github.com/users/timnlupo/followers",
+                "following_url": "https://api.github.com/users/timnlupo/following{/other_user}",
+                "gists_url": "https://api.github.com/users/timnlupo/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/timnlupo/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/timnlupo/subscriptions",
+                "organizations_url": "https://api.github.com/users/timnlupo/orgs",
+                "repos_url": "https://api.github.com/users/timnlupo/repos",
+                "events_url": "https://api.github.com/users/timnlupo/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/timnlupo/received_events",
+                "type": "User",
+                "site_admin": false
+            },
+            "labels": [],
+            "state": "open",
+            "locked": false,
+            "assignee": null,
+            "assignees": [],
+            "milestone": null,
+            "comments": 0,
+            "created_at": "2019-06-17T18:02:42Z",
+            "updated_at": "2019-06-21T21:51:17Z",
+            "closed_at": null,
+            "author_association": "OWNER",
+            "pull_request": {
+                "url": "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1",
+                "html_url": "https://github.com/timnlupo/juypterlabpr-test/pull/1",
+                "diff_url": "https://github.com/timnlupo/juypterlabpr-test/pull/1.diff",
+                "patch_url": "https://github.com/timnlupo/juypterlabpr-test/pull/1.patch"
+            },
+            "body": "This is a feature that tests a bunch of different types",
+            "score": 1
+        }
+    ]
+}

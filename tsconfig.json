@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "lib": ["es2015", "dom"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noEmitOnError": true,
+    "noUnusedLocals": true,
+    "outDir": "lib",
+    "strict": true,
+    "strictNullChecks": false,
+    "target": "es2015",
+    "types": ["node"],
+    "jsx": "react",
+    "resolveJsonModule": true
+  },
+  "include": ["src/*"]
+}
