@@ -2,19 +2,6 @@
 
 A JupyterLab extension for viewing and commenting on pull requests
 
-## Important Note
-
-This version (pre JupyterLab 1.0) of the extension requires a local depedency of `jupyterlab-git` because the networked version is blocked on [this](https://github.com/jupyterlab/jupyterlab-git/pull/384). I could not get relative local dependencies to work ([see here](https://github.com/jupyterlab/jupyterlab/issues/4599)) and the local dependency will be removed soon, so in the meantime please use the workaround below.
-
-Go to `package.json` and replace the dependency
-```json
-"@jupyterlab/git": "./jupyterlab-git.tgz",
-```
-with
-```json
-"@jupyterlab/git": "/absolute/path/to/jupyterlab-git.tgz",
-```
-
 ## Installation
 
 ### 1. See development install directions below
@@ -78,3 +65,36 @@ jlpm run build
 jupyter lab build
 ```
 
+## Known Issues
+
+This version (pre JupyterLab 1.0) of the extension requires a local depedency of `jupyterlab-git` because the networked version is blocked on [this](https://github.com/jupyterlab/jupyterlab-git/pull/384).
+
+Relative local dependencies sometimes fail with the following error during JupyterLab webpack (see [here](https://github.com/jupyterlab/jupyterlab/issues/4599)).
+
+```
+Tarball is not in network and can not be located in cache (["../yarn/v2/.tmp/12c686dd13cb1ef64cebbd243df0a44d/jupyterlab-git.tgz","../yarn/v2/.tmp/064d18f9871b47b33e275a17ec9ead49/.yarn-tarball.tgz"])
+```
+
+To fix, simply update the local dependency from a relative path to an absolute path.
+
+Go to `package.json` and replace the dependency
+
+```json
+"@jupyterlab/git": "file:./jupyterlab-git.tgz",
+```
+
+with
+
+```json
+"@jupyterlab/git": "file:/absolute/path/to/jupyterlab-git.tgz",
+```
+
+That's it! Now rebuild your project with the following and you're good to go.
+
+```
+rm -rf node_modules
+jlpm cache clean
+jlpm install
+jlpm run build
+jupyter lab build
+```
