@@ -5,7 +5,7 @@
 
 A JupyterLab extension for reviewing pull requests
 
-![](demo.gif)
+![](gifs/demo.gif)
 
 ## Prerequisites
 
