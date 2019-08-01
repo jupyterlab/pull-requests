@@ -2,11 +2,11 @@
 | JupyterLab Pull Requests Style
 |----------------------------------------------------------------------------*/
 
-[data-theme-light='true'] .jp-PullRequest-icon {
+[data-jp-theme-light='true'] .jp-PullRequest-icon {
   background-image: url(pullrequest-light.svg);
 }
 
-[data-theme-light='false'] .jp-PullRequest-icon {
+[data-jp-theme-light='false'] .jp-PullRequest-icon {
   background-image: url(pullrequest-dark.svg);
 }
 
@@ -140,19 +140,19 @@
   font-size: 11px;
 }
 
-[data-theme-light='true'] .jp-PullRequestBrowserFileItemDiffInserted {
+[data-jp-theme-light='true'] .jp-PullRequestBrowserFileItemDiffInserted {
   background-image: url(pullrequest-insertion-light.svg);
 }
 
-[data-theme-light='true'] .jp-PullRequestBrowserFileItemDiffDeleted {
+[data-jp-theme-light='true'] .jp-PullRequestBrowserFileItemDiffDeleted {
   background-image: url(pullrequest-deletion-light.svg);
 }
 
-[data-theme-light='false'] .jp-PullRequestBrowserFileItemDiffInserted {
+[data-jp-theme-light='false'] .jp-PullRequestBrowserFileItemDiffInserted {
   background-image: url(pullrequest-insertion-dark.svg);
 }
 
-[data-theme-light='false'] .jp-PullRequestBrowserFileItemDiffDeleted {
+[data-jp-theme-light='false'] .jp-PullRequestBrowserFileItemDiffDeleted {
   background-image: url(pullrequest-deletion-dark.svg);
 }
 
@@ -389,11 +389,11 @@
   text-align: right !important;
 }
 
-[data-theme-light='true'] .jp-PullRequestTab .monaco-editor .current-line ~ .line-numbers {
+[data-jp-theme-light='true'] .jp-PullRequestTab .monaco-editor .current-line ~ .line-numbers {
   color: var(--jp-ui-font-color0);
 }
 
-[data-theme-light='false'] .jp-PullRequestTab .monaco-editor .current-line ~ .line-numbers {
+[data-jp-theme-light='false'] .jp-PullRequestTab .monaco-editor .current-line ~ .line-numbers {
   color: var(--jp-ui-font-color2);
 }
 
