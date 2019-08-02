@@ -2,6 +2,8 @@
 
 [![Stability Experimental](https://img.shields.io/badge/stability-experimental-red.svg)](https://img.shields.io/badge/stability-experimental-red.svg)
 [![Build Status](https://travis-ci.org/jupyterlab/pull-requests.svg?branch=master)](https://travis-ci.org/jupyterlab/pull-requests)
+[![Version](https://img.shields.io/npm/v/@jupyterlab/pullrequests.svg)](https://www.npmjs.com/package/@jupyterlab/pullrequests)
+[![Version](https://img.shields.io/pypi/v/jupyterlab-pullrequests.svg)](https://pypi.org/project/jupyterlab-pullrequests/)
 
 A JupyterLab extension for reviewing pull requests
 
