@@ -7,8 +7,7 @@ tests_require = ["pytest", "asynctest"]
 
 setup_args = dict(
     name="jupyterlab_pullrequests",
-    version="0.1.0",
-    author="Amazon",
+    version="0.2.0",
     description="A server extension for JupyterLab's pull request extension",
     packages=setuptools.find_packages(),
     install_requires=["notebook", "nbdime"],
