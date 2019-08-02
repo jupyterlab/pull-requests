@@ -10,7 +10,7 @@ tests_require = ["pytest", "asynctest"]
 
 setup_args = dict(
     name="jupyterlab_pullrequests",
-    version="0.1.0",
+    version="0.2.0",
     author="Jupyter Development Team",
     license="BSD-3-Clause",
     description="A server extension for JupyterLab's pull request extension",
