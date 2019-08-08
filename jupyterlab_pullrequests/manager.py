@@ -38,10 +38,10 @@ class PullRequestsManager():
     @gen.coroutine
     def get_file_nbdiff(self, prev_content, curr_content):
         def read_notebook(content):
-            if content:
-                return nbformat.reads(content, as_version=4)
-            else:
+            if not content:
                 return nbformat.v4.new_notebook()
+            return nbformat.reads(content, as_version=4)
+
         try:
             prev_nb = read_notebook(prev_content)
             curr_nb = read_notebook(curr_content)
