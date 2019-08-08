@@ -37,11 +37,16 @@ class PullRequestsManager():
 
     @gen.coroutine
     def get_file_nbdiff(self, prev_content, curr_content):
+        def read_notebook(content):
+            if content:
+                return nbformat.reads(content, as_version=4)
+            else:
+                return nbformat.v4.new_notebook()
         try:
-            prev_nb = nbformat.reads(prev_content, as_version=4)
-            curr_nb = nbformat.reads(curr_content, as_version=4)
+            prev_nb = read_notebook(prev_content)
+            curr_nb = read_notebook(curr_content)
             thediff = diff_notebooks(prev_nb, curr_nb)
         except:
             raise
-        data = { 'base': prev_nb, 'diff': thediff }
+        data = {'base': prev_nb, 'diff': thediff}
         return data
