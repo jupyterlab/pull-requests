@@ -6,7 +6,7 @@ import {
   PullRequestCommentThreadModel,
   PullRequestPlainDiffCommentThreadModel
 } from "../../models";
-import * as moment from "moment";
+import moment from "moment";
 
 export interface IPullRequestCommentThreadState {
   isExpanded: boolean;

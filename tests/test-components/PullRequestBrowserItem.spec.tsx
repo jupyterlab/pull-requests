@@ -44,11 +44,11 @@ describe('PullRequestBrowserItem', () => {
             expect(component.find('.jp-PullRequestBrowserItemListItem')).toHaveLength(0);
         });
         it('should load list item if nonempty api response', () => {
-            component.setState({data: JSON.parse(SAMPLE_PR_JSON)});
+            component.setState({data: [JSON.parse(SAMPLE_PR_JSON)]});
             expect(component.find('.jp-PullRequestBrowserItemListItem')).toHaveLength(1);
         })
         it('should load list item files if nonempty api response and expanded', () => {
-            let _data = JSON.parse(SAMPLE_PR_JSON);
+            let _data = [JSON.parse(SAMPLE_PR_JSON)];
             _data[0].isExpanded = true;
             _data[0].files = [];
             _data[0].files.push(new PullRequestFileModel("test.ipynb", "modified", 12, 23, _data[0]));
@@ -56,7 +56,7 @@ describe('PullRequestBrowserItem', () => {
             expect(component.find('.jp-PullRequestBrowserItemFileList')).toHaveLength(1);
         })
         it('should not load list item files if nonempty api response and unexpanded', () => {
-            let _data = JSON.parse(SAMPLE_PR_JSON);
+            let _data = [JSON.parse(SAMPLE_PR_JSON)];
             _data[0].isExpanded = false;
             component.setState({data:_data})
             expect(component.find('.jp-PullRequestBrowserItemFileList')).toHaveLength(0);

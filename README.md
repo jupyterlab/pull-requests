@@ -11,7 +11,7 @@ A JupyterLab extension for reviewing pull requests
 
 ## Prerequisites
 
-- JupyterLab 1.0+
+- JupyterLab 2.0+
 
 ## Usage
 

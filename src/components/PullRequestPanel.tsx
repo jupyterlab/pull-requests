@@ -1,7 +1,7 @@
 import { JupyterFrontEnd } from "@jupyterlab/application";
 import { IThemeManager, Toolbar } from "@jupyterlab/apputils";
 import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
-import { PanelLayout, Widget } from "@phosphor/widgets";
+import { PanelLayout, Widget } from "@lumino/widgets";
 import { PullRequestFileModel, PullRequestModel } from "../models";
 import { PullRequestBrowserWidget } from "./browser/PullRequestBrowserWidget";
 import { PullRequestToolbar } from "./PullRequestToolbar";

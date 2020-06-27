@@ -1,5 +1,5 @@
 import { Toolbar, ToolbarButton } from "@jupyterlab/apputils";
-import { Widget } from "@phosphor/widgets";
+import { Widget } from "@lumino/widgets";
 import { PullRequestPanel } from "./PullRequestPanel";
 
 export class PullRequestToolbar extends Toolbar {
@@ -22,7 +22,7 @@ export class PullRequestToolbar extends Toolbar {
       onClick: () => {
         panel.update();
       },
-      iconClassName: "jp-Refresh-icon jp-Icon jp-Icon-16",
+      iconClass: "jp-Refresh-icon jp-Icon jp-Icon-16",
       tooltip: "Refresh"
     });
     this._openRefreshButton.addClass("jp-PullRequestToolbarItem");

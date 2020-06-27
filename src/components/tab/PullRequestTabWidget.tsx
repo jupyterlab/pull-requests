@@ -1,5 +1,5 @@
 import { IThemeManager } from "@jupyterlab/apputils";
-import { Widget } from "@phosphor/widgets";
+import { Widget } from "@lumino/widgets";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { PullRequestFileModel, PullRequestModel } from "../../models";

@@ -7,7 +7,7 @@ import { IThemeManager } from "@jupyterlab/apputils";
 import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
 import { PullRequestPanel } from "./components/PullRequestPanel";
 
-import "@jupyterlab/git/style/diff.css";
+import "@jupyterlab/git/style/index.css";
 import "@jupyterlab/git/style/variables.css";
 
 const NAMESPACE = "pullrequests";

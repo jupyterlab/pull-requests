@@ -1,4 +1,4 @@
-import { nbformat } from "@jupyterlab/coreutils";
+import * as nbformat from "@jupyterlab/nbformat";
 import { RenderMimeProvider } from "@jupyterlab/git/lib/components/diff/Diff";
 import { CellDiff } from "@jupyterlab/git/lib/components/diff/NbDiff";
 import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
