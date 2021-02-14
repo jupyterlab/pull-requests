@@ -1,15 +1,15 @@
-import { isUndefined, uniqueId } from "lodash";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { PullRequestCommentThread } from "./components/diff/PullRequestCommentThread";
-import { PlainDiffComponent } from "./components/diff/PlainDiffComponent";
-import { doRequest } from "./utils";
+import { isUndefined, uniqueId } from 'lodash';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+import { PullRequestCommentThread } from './components/diff/PullRequestCommentThread';
+import { PlainDiffComponent } from './components/diff/PlainDiffComponent';
+import { doRequest } from './utils';
 
 // -----------------------------------------------------------------------------
 // Pull Request Model
 // -----------------------------------------------------------------------------
 
-// A class for the neccessary items in GitHub PR json response
+// A class for the necessary items in GitHub PR json response
 // Extendable to other source control libraries (eg CodeCommit) in the future
 export class PullRequestModel {
   constructor(
@@ -28,18 +28,18 @@ export class PullRequestModel {
   }
 
   async getFiles(): Promise<void> {
-    let jsonresults = await doRequest(
-      "pullrequests/prs/files?id=" + this.id,
-      "GET"
+    const jsonresults = await doRequest(
+      'pullrequests/prs/files?id=' + this.id,
+      'GET'
     );
-    let results: PullRequestFileModel[] = [];
-    for (let jsonresult of jsonresults) {
+    const results: PullRequestFileModel[] = [];
+    for (const jsonresult of jsonresults) {
       results.push(
         new PullRequestFileModel(
-          jsonresult["name"],
-          jsonresult["status"],
-          jsonresult["additions"],
-          jsonresult["deletions"],
+          jsonresult['name'],
+          jsonresult['status'],
+          jsonresult['additions'],
+          jsonresult['deletions'],
           this
         )
       );
@@ -73,38 +73,38 @@ export class PullRequestFileModel {
     this.additions = additions;
     this.deletions = deletions;
     this.pr = pr;
-    this.id = this.pr.internalId + "-" + this.name;
+    this.id = this.pr.internalId + '-' + this.name;
     this.extension = this.getExtension(this.name);
   }
 
   async loadFile(): Promise<void> {
-    let jsonresults = await doRequest(
+    const jsonresults = await doRequest(
       `pullrequests/files/content?id=${this.pr.id}&filename=${this.name}`,
-      "GET"
+      'GET'
     );
-    this.commitId = jsonresults["commit_id"];
-    this.basecontent = jsonresults["base_content"];
-    this.headcontent = jsonresults["head_content"];
+    this.commitId = jsonresults['commit_id'];
+    this.basecontent = jsonresults['base_content'];
+    this.headcontent = jsonresults['head_content'];
   }
 
   async loadComments() {
-    let jsonresults = await doRequest(
+    const jsonresults = await doRequest(
       `pullrequests/files/comments?id=${this.pr.id}&filename=${this.name}`,
-      "GET"
+      'GET'
     );
-    let results: PullRequestCommentThreadModel[] = [];
-    for (let jsonresult of jsonresults) {
+    const results: PullRequestCommentThreadModel[] = [];
+    for (const jsonresult of jsonresults) {
       const item = new PullRequestCommentThreadModel(this, {
-        id: jsonresult["id"],
-        text: jsonresult["text"],
-        updatedAt: jsonresult["updated_at"],
-        lineNumber: jsonresult["line_number"],
-        username: jsonresult["user_name"],
-        userpic: jsonresult["user_pic"]
+        id: jsonresult['id'],
+        text: jsonresult['text'],
+        updatedAt: jsonresult['updated_at'],
+        lineNumber: jsonresult['line_number'],
+        username: jsonresult['user_name'],
+        userpic: jsonresult['user_pic']
       });
-      if (!isUndefined(jsonresult["in_reply_to_id"])) {
-        for (let result of results) {
-          if (result.id === jsonresult["in_reply_to_id"]) {
+      if (!isUndefined(jsonresult['in_reply_to_id'])) {
+        for (const result of results) {
+          if (result.id === jsonresult['in_reply_to_id']) {
             result.replies.push(item.comment);
           }
         }
@@ -117,7 +117,7 @@ export class PullRequestFileModel {
 
   private getExtension(filename: string): string {
     return `.${filename.substring(
-      filename.lastIndexOf(".") + 1,
+      filename.lastIndexOf('.') + 1,
       filename.length
     ) || filename}`;
   }
@@ -157,8 +157,8 @@ export class PullRequestCommentThreadModel {
     this.file = file;
     this.replies = [];
     this.commitId = file.commitId;
-    this.id = uniqueId(file.id + "-");
-    if (typeof given === "number") {
+    this.id = uniqueId(file.id + '-');
+    if (typeof given === 'number') {
       this.lineNumber = given;
       this.comment = null;
     } else {
@@ -170,6 +170,7 @@ export class PullRequestCommentThreadModel {
   getCommentReplyBody(text: string): any {
     const request = {
       text: text,
+      // eslint-disable-next-line @typescript-eslint/camelcase
       in_reply_to: this.comment.id
     };
     return request;
@@ -180,26 +181,27 @@ export class PullRequestCommentThreadModel {
       text: text,
       filename: this.file.name,
       position: this.lineNumber,
+      // eslint-disable-next-line @typescript-eslint/camelcase
       commit_id: this.commitId
     };
     return request;
   }
 
   async postComment(body: any) {
-    let jsonresult = await doRequest(
+    const jsonresult = await doRequest(
       `pullrequests/files/comments?id=${this.file.pr.id}&filename=${this.file.name}`,
-      "POST",
+      'POST',
       body
     );
     const item = new PullRequestCommentThreadModel(this.file, {
-      id: jsonresult["id"],
-      text: jsonresult["text"],
-      updatedAt: jsonresult["updated_at"],
-      lineNumber: jsonresult["line_number"],
-      username: jsonresult["user_name"],
-      userpic: jsonresult["user_pic"]
+      id: jsonresult['id'],
+      text: jsonresult['text'],
+      updatedAt: jsonresult['updated_at'],
+      lineNumber: jsonresult['line_number'],
+      username: jsonresult['user_name'],
+      userpic: jsonresult['user_pic']
     });
-    if (this.comment == null) {
+    if (this.comment === null) {
       this.comment = item.comment;
     } else {
       this.replies.push(item.comment);
@@ -235,12 +237,12 @@ export class PullRequestPlainDiffCommentThreadModel {
   }
 
   initComment() {
-    let overlayDom = document.createElement("div");
-    overlayDom.style.width = "100%";
-    overlayDom.style.visibility = "visible";
+    const overlayDom = document.createElement('div');
+    overlayDom.style.width = '100%';
+    overlayDom.style.visibility = 'visible';
 
-    let overlayWidget = {
-      getId: () => "overlay.zone.widget." + this.thread.id,
+    const overlayWidget = {
+      getId: () => 'overlay.zone.widget.' + this.thread.id,
       getDomNode: () => overlayDom,
       getPosition: (): any => null
     };
@@ -273,9 +275,9 @@ export class PullRequestPlainDiffCommentThreadModel {
   }
 
   private addToEditor() {
-    let zoneNode = document.createElement("div");
+    const zoneNode = document.createElement('div');
     zoneNode.id = this.thread.id;
-    let marginZoneNode = document.createElement("div");
+    const marginZoneNode = document.createElement('div');
 
     this.plainDiff.state.diffEditor
       .getModifiedEditor()
@@ -286,8 +288,8 @@ export class PullRequestPlainDiffCommentThreadModel {
           domNode: zoneNode,
           marginDomNode: marginZoneNode,
           onDomNodeTop: top => {
-            this.domNode.style.top = top + "px";
-            this.domNode.style.visibility = "visible";
+            this.domNode.style.top = top + 'px';
+            this.domNode.style.visibility = 'visible';
           }
         });
       });
@@ -297,7 +299,7 @@ export class PullRequestPlainDiffCommentThreadModel {
     const tempViewZoneId = this.viewZoneId;
     this.plainDiff.state.diffEditor
       .getModifiedEditor()
-      .changeViewZones(function(changeAccessor) {
+      .changeViewZones(changeAccessor => {
         changeAccessor.removeZone(tempViewZoneId);
       });
     this.viewZoneId = null;

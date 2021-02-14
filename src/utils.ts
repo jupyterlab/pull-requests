@@ -1,17 +1,17 @@
-import { ServerConnection } from "@jupyterlab/services";
+import { ServerConnection } from '@jupyterlab/services';
 
 // API request wrapper
 function httpRequest(
   url: string,
   method: string,
-  request?: Object
+  request?: Record<string, any>
 ): Promise<Response> {
-  let fullRequest = {
+  const fullRequest = {
     method: method,
     body: JSON.stringify(request)
   };
-  let setting = ServerConnection.makeSettings();
-  let fullUrl = setting.baseUrl + url;
+  const setting = ServerConnection.makeSettings();
+  const fullUrl = setting.baseUrl + url;
   return ServerConnection.makeRequest(fullUrl, fullRequest, setting);
 }
 
@@ -20,13 +20,9 @@ export async function doRequest(
   method: string,
   request?: object
 ): Promise<any> {
-  try {
-    let response = await httpRequest(url, method, request);
-    if (response.status !== 200) {
-      throw new ServerConnection.ResponseError(response);
-    }
-    return response.json();
-  } catch (err) {
-    throw err;
+  const response = await httpRequest(url, method, request);
+  if (response.status !== 200) {
+    throw new ServerConnection.ResponseError(response);
   }
+  return response.json();
 }

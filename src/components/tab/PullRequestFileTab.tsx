@@ -1,11 +1,11 @@
-import { IThemeManager, Spinner } from "@jupyterlab/apputils";
-import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
-import { isNull } from "lodash";
-import * as React from "react";
-import { RefObject } from "react";
-import { PullRequestFileModel } from "../../models";
-import { NBDiff } from "../diff/NBDiff";
-import { PlainDiffComponent } from "../diff/PlainDiffComponent";
+import { IThemeManager, Spinner } from '@jupyterlab/apputils';
+import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { isNull } from 'lodash';
+import * as React from 'react';
+import { RefObject } from 'react';
+import { PullRequestFileModel } from '../../models';
+import { NBDiff } from '../diff/NBDiff';
+import { PlainDiffComponent } from '../diff/PlainDiffComponent';
 
 export interface IPullRequestFileTabState {
   file: PullRequestFileModel;
@@ -38,7 +38,7 @@ export class PullRequestFileTab extends React.Component<
   }
 
   private async loadDiff() {
-    let _data = this.props.file;
+    const _data = this.props.file;
     try {
       await _data.loadFile();
       await _data.loadComments();
@@ -58,7 +58,7 @@ export class PullRequestFileTab extends React.Component<
       <div className="jp-PullRequestTab">
         {!this.state.isLoading ? (
           isNull(this.state.error) && !isNull(this.state.file) ? (
-            this.state.file.extension === ".ipynb" ? (
+            this.state.file.extension === '.ipynb' ? (
               <NBDiff
                 file={this.state.file}
                 renderMime={this.props.renderMime}
@@ -71,9 +71,9 @@ export class PullRequestFileTab extends React.Component<
             )
           ) : (
             <h2 className="jp-PullRequestTabError">
-              <span style={{ color: "var(--jp-ui-font-color1)" }}>
+              <span style={{ color: 'var(--jp-ui-font-color1)' }}>
                 Error Loading File:
-              </span>{" "}
+              </span>{' '}
               {this.state.error}
             </h2>
           )

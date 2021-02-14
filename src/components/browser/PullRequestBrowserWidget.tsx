@@ -1,8 +1,8 @@
-import { Widget } from "@lumino/widgets";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { PullRequestFileModel, PullRequestModel } from "../../models";
-import { PullRequestBrowser } from "./PullRequestBrowser";
+import { Widget } from '@lumino/widgets';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+import { PullRequestFileModel, PullRequestModel } from '../../models';
+import { PullRequestBrowser } from './PullRequestBrowser';
 
 export class PullRequestBrowserWidget extends Widget {
   private _showTab: (

@@ -2,16 +2,16 @@ import {
   ILayoutRestorer,
   JupyterFrontEnd,
   JupyterFrontEndPlugin
-} from "@jupyterlab/application";
-import { IThemeManager } from "@jupyterlab/apputils";
-import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
-import { PullRequestPanel } from "./components/PullRequestPanel";
+} from '@jupyterlab/application';
+import { IThemeManager } from '@jupyterlab/apputils';
+import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { PullRequestPanel } from './components/PullRequestPanel';
 
-import "@jupyterlab/git/style/index.css";
-import "@jupyterlab/git/style/variables.css";
+import '@jupyterlab/git/style/index.css';
+import '@jupyterlab/git/style/variables.css';
 
-const NAMESPACE = "pullrequests";
-const PLUGIN_ID = "@jupyterlab/pullrequests";
+const NAMESPACE = 'pullrequests';
+const PLUGIN_ID = '@jupyterlab/pullrequests';
 
 // JupyterLab plugin props
 const pullRequestPlugin: JupyterFrontEndPlugin<void> = {
@@ -30,7 +30,7 @@ function activate(
 ): void {
   const prPanel = new PullRequestPanel(app, themeManager, renderMime);
   restorer.add(prPanel, NAMESPACE);
-  app.shell.add(prPanel, "left", { rank: 200 }); // rank chosen from similar open source extensions
+  app.shell.add(prPanel, 'left', { rank: 200 }); // rank chosen from similar open source extensions
   return;
 }
 

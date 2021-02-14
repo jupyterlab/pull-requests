@@ -1,17 +1,18 @@
-import * as nbformat from "@jupyterlab/nbformat";
-import { RenderMimeProvider } from "@jupyterlab/git/lib/components/diff/Diff";
-import { CellDiff } from "@jupyterlab/git/lib/components/diff/NbDiff";
-import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
-import { isNull, isUndefined } from "lodash";
-import { IDiffEntry } from "nbdime/lib/diff/diffentries";
-import { CellDiffModel, NotebookDiffModel } from "nbdime/lib/diff/model";
-import * as React from "react";
+import * as nbformat from '@jupyterlab/nbformat';
+import { RenderMimeProvider } from '@jupyterlab/git/lib/components/diff/Diff';
+import { CellDiff } from '@jupyterlab/git/lib/components/diff/NbDiff';
+import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { isNull, isUndefined } from 'lodash';
+import * as jsonMap from 'json-source-map';
+import { IDiffEntry } from 'nbdime/lib/diff/diffentries';
+import { CellDiffModel, NotebookDiffModel } from 'nbdime/lib/diff/model';
+import * as React from 'react';
 import {
   PullRequestCommentThreadModel,
   PullRequestFileModel
-} from "../../models";
-import { doRequest } from "../../utils";
-import { PullRequestCommentThread } from "./PullRequestCommentThread";
+} from '../../models';
+import { doRequest } from '../../utils';
+import { PullRequestCommentThread } from './PullRequestCommentThread';
 
 export interface IDiffProps {
   file: PullRequestFileModel;
@@ -39,9 +40,9 @@ export class NBDiff extends React.Component<IDiffProps, INBDiffState> {
     if (!isUndefined(this.state.error)) {
       return (
         <h2 className="jp-PullRequestTabError">
-          <span style={{ color: "var(--jp-ui-font-color1)" }}>
+          <span style={{ color: 'var(--jp-ui-font-color1)' }}>
             Error Loading File:
-          </span>{" "}
+          </span>{' '}
           {this.state.error}
         </h2>
       );
@@ -98,13 +99,15 @@ export class NBDiff extends React.Component<IDiffProps, INBDiffState> {
 
   private async performDiff() {
     try {
-      let jsonresults = await doRequest("pullrequests/files/nbdiff", "POST", {
+      const jsonresults = await doRequest('pullrequests/files/nbdiff', 'POST', {
+        // eslint-disable-next-line @typescript-eslint/camelcase
         prev_content: this.props.file.basecontent,
+        // eslint-disable-next-line @typescript-eslint/camelcase
         curr_content: this.props.file.headcontent
       });
-      let base = jsonresults["base"] as nbformat.INotebookContent;
-      let diff = (jsonresults["diff"] as any) as IDiffEntry[];
-      let nbdModel = new NotebookDiffModel(base, diff);
+      const base = jsonresults['base'] as nbformat.INotebookContent;
+      const diff = (jsonresults['diff'] as any) as IDiffEntry[];
+      const nbdModel = new NotebookDiffModel(base, diff);
       this.setState({
         nbdModel: nbdModel,
         prChunks: this.getPRChunks(this.reChunkCells(nbdModel.chunkedCells))
@@ -116,17 +119,17 @@ export class NBDiff extends React.Component<IDiffProps, INBDiffState> {
   }
 
   private reChunkCells(originalChunks: CellDiffModel[][]): CellDiffModel[][] {
-    let newChunks: CellDiffModel[][] = [];
-    for (let chunk of originalChunks) {
+    const newChunks: CellDiffModel[][] = [];
+    for (const chunk of originalChunks) {
       // If chunk is unmodified, push it to stack
       if (chunk.length === 1 && !(chunk[0].added || chunk[0].deleted)) {
         newChunks.push([chunk[0]]);
       } else {
         let modifiedPair: ModifiedChunkPair = new ModifiedChunkPair(null, null);
-        for (let cell of chunk) {
+        for (const cell of chunk) {
           if (cell.deleted) {
             // if 'removed' not in chunk, add to chunk
-            if (modifiedPair.removedCell == null) {
+            if (modifiedPair.removedCell === null) {
               modifiedPair.removedCell = cell;
             }
             // if 'removed' already in chunk, push chunk to chunks and start new chunk
@@ -136,7 +139,7 @@ export class NBDiff extends React.Component<IDiffProps, INBDiffState> {
             }
           } else {
             // if 'added' not in chunk, add to chunk
-            if (modifiedPair.addedCell == null) {
+            if (modifiedPair.addedCell === null) {
               modifiedPair.addedCell = cell;
             }
             // if 'added' already in chunk, push chunk to chunks and start new chunk
@@ -156,27 +159,27 @@ export class NBDiff extends React.Component<IDiffProps, INBDiffState> {
   }
 
   private addComment(i: number) {
-    for (let comment of this.state.prChunks[i].comments) {
+    for (const comment of this.state.prChunks[i].comments) {
       if (isNull(comment.comment)) {
         return;
       }
     }
 
-    let commentToAdd: PullRequestCommentThreadModel = new PullRequestCommentThreadModel(
+    const commentToAdd: PullRequestCommentThreadModel = new PullRequestCommentThreadModel(
       this.props.file,
       this.state.prChunks[i].lineNumber.lineNumberStart
     );
 
-    let prChunks = [...this.state.prChunks];
-    let prChunk = { ...prChunks[i] };
+    const prChunks = [...this.state.prChunks];
+    const prChunk = { ...prChunks[i] };
     prChunk.comments = [...prChunk.comments, commentToAdd];
     prChunks[i] = prChunk;
     this.setState({ prChunks: prChunks });
   }
 
   removeComment(i: number, commentToRemove: PullRequestCommentThreadModel) {
-    let prChunks = [...this.state.prChunks];
-    let prChunk = { ...prChunks[i] };
+    const prChunks = [...this.state.prChunks];
+    const prChunk = { ...prChunks[i] };
     prChunk.comments = [
       ...prChunk.comments.filter(comment => comment !== commentToRemove)
     ];
@@ -188,40 +191,39 @@ export class NBDiff extends React.Component<IDiffProps, INBDiffState> {
     originalChunks: CellDiffModel[][]
   ): PullRequestChunkModel[] {
     // Parse headContent
-    let jsonMap = require("json-source-map");
-    let contentCells = jsonMap.parse(this.props.file.headcontent);
+    const contentCells = jsonMap.parse(this.props.file.headcontent);
 
     // Unchunk, add line numbers if applicable, and rechunk
-    let prChunks: PullRequestChunkModel[] = [];
+    const prChunks: PullRequestChunkModel[] = [];
     let i = 0;
-    for (let chunk of originalChunks) {
-      for (let cell of chunk) {
+    for (const chunk of originalChunks) {
+      for (const cell of chunk) {
         // Add line numbers if it exists in remote
         if (!isNull(cell.source.remote)) {
-          let prChunk: PullRequestChunkModel = new PullRequestChunkModel(
+          const prChunk: PullRequestChunkModel = new PullRequestChunkModel(
             chunk,
             this.props.file
           );
-          let headNbdimeSource = cell.source.remote;
-          let headContentSource: string = "";
-          for (let line of contentCells.data.cells[i].source) {
+          const headNbdimeSource = cell.source.remote;
+          let headContentSource = '';
+          for (const line of contentCells.data.cells[i].source) {
             headContentSource += line;
           }
           if (headNbdimeSource !== headContentSource) {
             throw new Error(
-              "Error parsing line numbers: Mismatched source nbdime (" +
+              'Error parsing line numbers: Mismatched source nbdime (' +
                 headNbdimeSource +
-                ") and content (" +
+                ') and content (' +
                 headContentSource +
-                ")"
+                ')'
             );
           }
           prChunk.lineNumber = {
-            lineNumberStart: contentCells.pointers["/cells/" + i].value.line,
-            lineNumberEnd: contentCells.pointers["/cells/" + i].valueEnd.line
+            lineNumberStart: contentCells.pointers['/cells/' + i].value.line,
+            lineNumberEnd: contentCells.pointers['/cells/' + i].valueEnd.line
           };
           // Add any comments within the range
-          let prCellComments: PullRequestCommentThreadModel[] = [];
+          const prCellComments: PullRequestCommentThreadModel[] = [];
           this.props.file.comments.forEach(thread => {
             if (
               thread.lineNumber >= prChunk.lineNumber.lineNumberStart &&
@@ -254,15 +256,15 @@ export class ModifiedChunkPair {
   }
 
   isEmpty(): boolean {
-    return this.addedCell == null && this.removedCell == null;
+    return this.addedCell === null && this.removedCell === null;
   }
 
   toArray(): CellDiffModel[] {
-    let arr: CellDiffModel[] = [];
-    if (this.addedCell != null) {
+    const arr: CellDiffModel[] = [];
+    if (this.addedCell !== null) {
       arr.push(this.addedCell);
     }
-    if (this.removedCell != null) {
+    if (this.removedCell !== null) {
       arr.push(this.removedCell);
     }
     return arr;

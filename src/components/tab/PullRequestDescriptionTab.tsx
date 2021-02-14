@@ -1,8 +1,8 @@
-import { IThemeManager, Spinner } from "@jupyterlab/apputils";
-import { isNull } from "lodash";
-import * as React from "react";
-import { RefObject } from "react";
-import { PullRequestModel } from "../../models";
+import { IThemeManager, Spinner } from '@jupyterlab/apputils';
+import { isNull } from 'lodash';
+import * as React from 'react';
+import { RefObject } from 'react';
+import { PullRequestModel } from '../../models';
 
 export interface IPullRequestDescriptionTabState {
   pr: PullRequestModel;
@@ -43,16 +43,16 @@ export class PullRequestDescriptionTab extends React.Component<
               <h2>{this.state.pr.body}</h2>
               <button
                 className="jp-Button-flat jp-mod-styled jp-mod-accept"
-                onClick={() => window.open(this.state.pr.link, "_blank")}
+                onClick={() => window.open(this.state.pr.link, '_blank')}
               >
                 View Details
               </button>
             </div>
           ) : (
             <h2 className="jp-PullRequestTabError">
-              <span style={{ color: "var(--jp-ui-font-color1)" }}>
+              <span style={{ color: 'var(--jp-ui-font-color1)' }}>
                 Error Loading File:
-              </span>{" "}
+              </span>{' '}
               {this.state.error}
             </h2>
           )

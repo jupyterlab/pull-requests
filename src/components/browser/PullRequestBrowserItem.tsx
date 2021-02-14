@@ -1,13 +1,13 @@
-import * as React from "react";
-import { BeatLoader } from "react-spinners";
-import { PullRequestFileModel, PullRequestModel } from "../../models";
-import { doRequest } from "../../utils";
-import { PullRequestBrowserFileItem } from "./PullRequestBrowserFileItem";
+import * as React from 'react';
+import { BeatLoader } from 'react-spinners';
+import { PullRequestFileModel, PullRequestModel } from '../../models';
+import { doRequest } from '../../utils';
+import { PullRequestBrowserFileItem } from './PullRequestBrowserFileItem';
 
 export interface IPullRequestBrowserItemState {
   data: PullRequestModel[];
   isLoading: boolean;
-  error: string;
+  error: string | null;
 }
 
 export interface IPullRequestBrowserItemProps {
@@ -31,19 +31,19 @@ export class PullRequestBrowserItem extends React.Component<
 
   private async fetchPRs() {
     try {
-      let jsonresults = await doRequest(
-        "pullrequests/prs/user?filter=" + this.props.filter,
-        "GET"
+      const jsonresults = await doRequest(
+        'pullrequests/prs/user?filter=' + this.props.filter,
+        'GET'
       );
-      let results: PullRequestModel[] = [];
-      for (let jsonresult of jsonresults) {
+      const results: PullRequestModel[] = [];
+      for (const jsonresult of jsonresults) {
         results.push(
           new PullRequestModel(
-            jsonresult["id"],
-            jsonresult["title"],
-            jsonresult["body"],
-            jsonresult["url"],
-            jsonresult["internal_id"]
+            jsonresult['id'],
+            jsonresult['title'],
+            jsonresult['body'],
+            jsonresult['url'],
+            jsonresult['internal_id']
           )
         );
       }
@@ -52,12 +52,8 @@ export class PullRequestBrowserItem extends React.Component<
         this.fetchFiles(results);
       });
     } catch (err) {
-      let msg = "Unknown Error";
-      if (
-        err.response != null &&
-        err.response.status != null &&
-        err.message != null
-      ) {
+      let msg = 'Unknown Error';
+      if (err.response?.status && err.message) {
         msg = `${err.response.status} (${err.message})`;
       }
       this.setState({ data: [], isLoading: false, error: msg });
@@ -86,8 +82,8 @@ export class PullRequestBrowserItem extends React.Component<
     i: number
   ) {
     e.stopPropagation();
-    let data = [...this.state.data];
-    let item = Object.assign({}, data[i]);
+    const data = [...this.state.data];
+    const item = Object.assign({}, data[i]);
     item.isExpanded = !item.isExpanded;
     data[i] = item;
     this.setState({ data });
@@ -98,7 +94,7 @@ export class PullRequestBrowserItem extends React.Component<
     link: string
   ) {
     e.stopPropagation();
-    window.open(link, "_blank");
+    window.open(link, '_blank');
   }
 
   private showFileTab(
@@ -115,17 +111,17 @@ export class PullRequestBrowserItem extends React.Component<
         <header>
           <h2>{this.props.header}</h2>
           <BeatLoader
-            sizeUnit={"px"}
+            sizeUnit={'px'}
             size={5}
-            color={"var(--jp-ui-font-color1)"}
+            color={'var(--jp-ui-font-color1)'}
             loading={this.state.isLoading}
           />
         </header>
-        {this.state.error != null ? (
+        {this.state.error ? (
           <h2 className="jp-PullRequestBrowserItemError">
-            <span style={{ color: "var(--jp-ui-font-color1)" }}>
+            <span style={{ color: 'var(--jp-ui-font-color1)' }}>
               Error Listing Pull Requests:
-            </span>{" "}
+            </span>{' '}
             {this.state.error}
           </h2>
         ) : (
@@ -141,10 +137,10 @@ export class PullRequestBrowserItem extends React.Component<
                     />
                     <span
                       className={
-                        "jp-Icon jp-Icon-16 " +
+                        'jp-Icon jp-Icon-16 ' +
                         (result.isExpanded
-                          ? "jp-CaretUp-icon"
-                          : "jp-CaretDown-icon")
+                          ? 'jp-CaretUp-icon'
+                          : 'jp-CaretDown-icon')
                       }
                       onClick={e => this.toggleFilesExpanded(e, i)}
                     />
@@ -152,12 +148,11 @@ export class PullRequestBrowserItem extends React.Component<
                 </li>
                 {result.isExpanded && (
                   <ul className="jp-PullRequestBrowserItemFileList">
-                    {result.files != null &&
-                      result.files.map((file, k) => (
-                        <li key={k} onClick={e => this.showFileTab(e, file)}>
-                          <PullRequestBrowserFileItem file={file} />
-                        </li>
-                      ))}
+                    {result.files?.map((file, k) => (
+                      <li key={k} onClick={e => this.showFileTab(e, file)}>
+                        <PullRequestBrowserFileItem file={file} />
+                      </li>
+                    ))}
                   </ul>
                 )}
               </div>

@@ -1,12 +1,12 @@
-import { IThemeManager } from "@jupyterlab/apputils";
-import { Widget } from "@lumino/widgets";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { PullRequestFileModel, PullRequestModel } from "../../models";
-import { PullRequestFileTab } from "./PullRequestFileTab";
-import { PullRequestDescriptionTab } from "./PullRequestDescriptionTab";
-import { isUndefined } from "lodash";
-import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
+import { IThemeManager } from '@jupyterlab/apputils';
+import { Widget } from '@lumino/widgets';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+import { PullRequestFileModel, PullRequestModel } from '../../models';
+import { PullRequestFileTab } from './PullRequestFileTab';
+import { PullRequestDescriptionTab } from './PullRequestDescriptionTab';
+import { isUndefined } from 'lodash';
+import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 
 // Assumes valid json
 export class PullRequestTabWidget extends Widget {

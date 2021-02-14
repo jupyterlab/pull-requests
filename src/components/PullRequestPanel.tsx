@@ -1,11 +1,11 @@
-import { JupyterFrontEnd } from "@jupyterlab/application";
-import { IThemeManager, Toolbar } from "@jupyterlab/apputils";
-import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
-import { PanelLayout, Widget } from "@lumino/widgets";
-import { PullRequestFileModel, PullRequestModel } from "../models";
-import { PullRequestBrowserWidget } from "./browser/PullRequestBrowserWidget";
-import { PullRequestToolbar } from "./PullRequestToolbar";
-import { PullRequestTabWidget } from "./tab/PullRequestTabWidget";
+import { JupyterFrontEnd } from '@jupyterlab/application';
+import { IThemeManager, Toolbar } from '@jupyterlab/apputils';
+import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { PanelLayout, Widget } from '@lumino/widgets';
+import { PullRequestFileModel, PullRequestModel } from '../models';
+import { PullRequestBrowserWidget } from './browser/PullRequestBrowserWidget';
+import { PullRequestToolbar } from './PullRequestToolbar';
+import { PullRequestTabWidget } from './tab/PullRequestTabWidget';
 
 export class PullRequestPanel extends Widget {
   private _app: JupyterFrontEnd;
@@ -21,12 +21,12 @@ export class PullRequestPanel extends Widget {
     renderMime: IRenderMimeRegistry
   ) {
     super();
-    this.addClass("jp-PullRequestPanel");
+    this.addClass('jp-PullRequestPanel');
     this.layout = new PanelLayout();
 
-    this.title.iconClass = "jp-PullRequest-icon jp-SideBar-tabIcon";
-    this.title.caption = "Pull Requests";
-    this.id = "pullrequests";
+    this.title.iconClass = 'jp-PullRequest-icon jp-SideBar-tabIcon';
+    this.title.caption = 'Pull Requests';
+    this.id = 'pullrequests';
 
     this._app = app;
     this._themeManager = themeManager;
@@ -43,7 +43,7 @@ export class PullRequestPanel extends Widget {
   // Show tab window for specific PR
   showTab = async (data: PullRequestFileModel | PullRequestModel) => {
     let tab = this.getTab(data.id);
-    if (tab == null) {
+    if (tab === null) {
       tab = new PullRequestTabWidget(
         data,
         this._themeManager,
@@ -53,15 +53,15 @@ export class PullRequestPanel extends Widget {
       this._tabs.push(tab);
     }
     if (!tab.isAttached) {
-      this._app.shell.add(tab, "main");
+      this._app.shell.add(tab, 'main');
     } else {
       tab.update();
     }
     this._app.shell.activateById(tab.id);
   };
 
-  private getTab(id: string) {
-    for (let tab of this._tabs) {
+  private getTab(id: string): PullRequestTabWidget | null {
+    for (const tab of this._tabs) {
       if (tab.id.toString() === id.toString()) {
         return tab;
       }
@@ -75,7 +75,7 @@ export class PullRequestPanel extends Widget {
 
   onUpdateRequest(): void {
     this._browser.update();
-    for (let tab of this._tabs) {
+    for (const tab of this._tabs) {
       tab.update();
     }
   }

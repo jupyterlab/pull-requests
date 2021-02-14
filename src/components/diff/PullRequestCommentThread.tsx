@@ -1,12 +1,12 @@
-import { isNull, isUndefined } from "lodash";
-import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
+import { isNull, isUndefined } from 'lodash';
+import * as React from 'react';
+import ReactResizeDetector from 'react-resize-detector';
 import {
   IPullRequestCommentModel,
   PullRequestCommentThreadModel,
   PullRequestPlainDiffCommentThreadModel
-} from "../../models";
-import moment from "moment";
+} from '../../models';
+import moment from 'moment';
 
 export interface IPullRequestCommentThreadState {
   isExpanded: boolean;
@@ -30,7 +30,7 @@ export class PullRequestCommentThread extends React.Component<
     this.state = {
       isExpanded: true,
       isInput: isNull(this.props.thread.comment) ? true : false,
-      inputText: "",
+      inputText: '',
       thread: this.props.thread
     };
   }
@@ -51,14 +51,14 @@ export class PullRequestCommentThread extends React.Component<
 
   onResize = () => {
     if (!isUndefined(this.props.plainDiff)) {
-      for (let comment of this.props.plainDiff.plainDiff.state.comments) {
+      for (const comment of this.props.plainDiff.plainDiff.state.comments) {
         comment.toggleUpdate();
       }
     }
   };
 
   async handleSubmit() {
-    let _thread = this.props.thread;
+    const _thread = this.props.thread;
     let payload;
     if (!isNull(this.state.thread.comment)) {
       payload = _thread.getCommentReplyBody(this.state.inputText);
@@ -67,7 +67,7 @@ export class PullRequestCommentThread extends React.Component<
     }
     await _thread.postComment(payload);
     this.setState({ thread: _thread, isInput: false });
-    this.setState({ inputText: "" });
+    this.setState({ inputText: '' });
   }
 
   handleCancel() {
@@ -102,14 +102,14 @@ export class PullRequestCommentThread extends React.Component<
         <div className="jp-PullRequestCommentHeader">
           {!this.state.isExpanded && !isNull(this.state.thread.comment) && (
             <p>
-              {this.state.thread.comment.username}:{" "}
+              {this.state.thread.comment.username}:{' '}
               {this.state.thread.comment.text}
             </p>
           )}
           <span
             className={
-              "jp-Icon jp-Icon-20 " +
-              (this.state.isExpanded ? "jp-CaretUp-icon" : "jp-CaretDown-icon")
+              'jp-Icon jp-Icon-20 ' +
+              (this.state.isExpanded ? 'jp-CaretUp-icon' : 'jp-CaretDown-icon')
             }
             onClick={() =>
               this.setState({ isExpanded: !this.state.isExpanded })
@@ -140,7 +140,7 @@ export class PullRequestCommentThread extends React.Component<
                   <div className="jp-PullRequestInputButtonContainer">
                     <button
                       onClick={() => this.handleSubmit()}
-                      disabled={this.state.inputText === ""}
+                      disabled={this.state.inputText === ''}
                       className="jp-Button-flat jp-mod-styled jp-mod-accept"
                     >
                       Comment
