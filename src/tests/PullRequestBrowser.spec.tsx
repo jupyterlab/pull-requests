@@ -14,14 +14,6 @@ describe('PullRequestBrowser', () => {
         }
     };
 
-    // Test constructor
-    describe('#constructor()', () => {
-        const pullRequestBrowser = new PullRequestBrowser(props);
-        it('should construct a new branch header', () => {
-            expect(pullRequestBrowser).toBeInstanceOf(PullRequestBrowser);
-        });
-    });
-
     // Test render
     describe('#render()', () => {
         const component = shallow(<PullRequestBrowser {...props} />);
