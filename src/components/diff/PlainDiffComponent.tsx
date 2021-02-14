@@ -14,25 +14,11 @@ import {
  * Worker implementation for the Monaco editor
  * From https://github.com/jupyterlab/jupyterlab-monaco
  */
-
-import * as monacoCSS from 'file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-css.worker.bundle.js';
 import * as monacoEditor from 'file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-editor.worker.bundle.js';
-import * as monacoHTML from 'file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-html.worker.bundle.js';
-import * as monacoJSON from 'file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-json.worker.bundle.js';
-import * as monacoTS from 'file-loader!../../../lib/JUPYTERLAB_FILE_LOADER_jupyterlab-pullrequests-ts.worker.bundle.js';
-
-const URLS: { [key: string]: string } = {
-  css: monacoCSS,
-  html: monacoHTML,
-  javascript: monacoTS,
-  json: monacoJSON,
-  typescript: monacoTS
-};
 
 (self as any).MonacoEnvironment = {
   getWorkerUrl: function(moduleId: string, label: string): string {
-    const url = URLS[label] || monacoEditor;
-    return url;
+    return monacoEditor;
   }
 };
 
@@ -114,14 +100,14 @@ export class PlainDiffComponent extends React.Component<
       base: isLight ? 'vs' : 'vs-dark',
       inherit: true,
       colors: {
-        'editor.background': this.getVariableHex('--jp-layout-color1'),
-        'editor.lineHighlightBorder': this.getVariableHex('--jp-layout-color1'),
-        'editorLineNumber.foreground': this.getVariableHex(
-          '--jp-ui-font-color2'
-        ),
-        'editorGutter.background': this.getVariableHex('--jp-layout-color1'),
-        'diffEditor.insertedTextBackground': '#C9F3C24D', // #80
-        'diffEditor.removedTextBackground': '#FF96964D'
+        'editor.background': this.getVariableHex('--jp-layout-color1')
+        // 'editor.lineHighlightBorder': this.getVariableHex('--jp-layout-color1'),
+        // 'editorLineNumber.foreground': this.getVariableHex(
+        //   '--jp-ui-font-color2'
+        // ),
+        // 'editorGutter.background': this.getVariableHex('--jp-layout-color1'),
+        // 'diffEditor.insertedTextBackground': '#C9F3C24D', // #80
+        // 'diffEditor.removedTextBackground': '#FF96964D'
       },
       rules: []
     });
