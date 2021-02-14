@@ -24,10 +24,6 @@ export class PullRequestPanel extends Widget {
     this.addClass('jp-PullRequestPanel');
     this.layout = new PanelLayout();
 
-    this.title.iconClass = 'jp-PullRequest-icon jp-SideBar-tabIcon';
-    this.title.caption = 'Pull Requests';
-    this.id = 'pullrequests';
-
     this._app = app;
     this._themeManager = themeManager;
     this._renderMime = renderMime;
@@ -41,6 +37,7 @@ export class PullRequestPanel extends Widget {
   }
 
   // Show tab window for specific PR
+  // FIXME transform to command
   showTab = async (data: PullRequestFileModel | PullRequestModel) => {
     let tab = this.getTab(data.id);
     if (tab === null) {

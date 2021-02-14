@@ -1,3 +1,7 @@
+import {
+  deletionsMadeIcon,
+  insertionsMadeIcon
+} from '@jupyterlab/git/lib/style/icons';
 import * as React from 'react';
 import { PullRequestFileModel } from '../../models';
 
@@ -76,11 +80,11 @@ export function PullRequestBrowserFileItem(
         <span className="jp-PullRequestBrowserFileItemDiffText">
           {props.file.additions}
         </span>
-        <span className="jp-Icon jp-Icon-13 jp-PullRequestBrowserFileItemDiffInserted"></span>
+        <insertionsMadeIcon.react tag="span" />
         <span className="jp-PullRequestBrowserFileItemDiffText">
           {props.file.deletions}
         </span>
-        <span className="jp-Icon jp-Icon-13 jp-PullRequestBrowserFileItemDiffDeleted"></span>
+        <deletionsMadeIcon.react tag="span" />
       </div>
     </div>
   );

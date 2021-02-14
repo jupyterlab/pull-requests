@@ -1,3 +1,4 @@
+import { caretUpIcon, caretDownIcon } from '@jupyterlab/ui-components';
 import { isNull, isUndefined } from 'lodash';
 import * as React from 'react';
 import ReactResizeDetector from 'react-resize-detector';
@@ -106,15 +107,17 @@ export class PullRequestCommentThread extends React.Component<
               {this.state.thread.comment.text}
             </p>
           )}
-          <span
-            className={
-              'jp-Icon jp-Icon-20 ' +
-              (this.state.isExpanded ? 'jp-CaretUp-icon' : 'jp-CaretDown-icon')
-            }
+          <button
             onClick={() =>
               this.setState({ isExpanded: !this.state.isExpanded })
             }
-          />
+          >
+            {this.state.isExpanded ? (
+              <caretUpIcon.react tag="span" />
+            ) : (
+              <caretDownIcon.react tag="span" />
+            )}
+          </button>
         </div>
         {this.state.isExpanded && (
           <div>

@@ -22,9 +22,8 @@ A JupyterLab extension for reviewing pull requests
 ### 1. Install the extension with the following steps
 
 ```bash
-jupyter labextension install @jupyterlab/pullrequests
 pip install --upgrade jupyterlab-pullrequests
-jupyter serverextension enable --py jupyterlab_pullrequests
+jupyter lab build
 ```
 
 ### 2. Getting your access token from GitHub
@@ -73,18 +72,13 @@ For a development install, do the following in the repository directory:
 
 ```bash
 # Install dependencies
-jlpm install
-# Build Typescript source
-jlpm run build
+pip install -e .
+# Activate the server extension
+jupyter serverextension enable --sys-prefix jupyterlab_pullrequests
 # Link your development version of the extension with JupyterLab
-jupyter labextension link .
+jupyter labextension install .
 # Rebuild Typescript source after making changes
 jlpm run build
-```
-
-```bash
-pip install .
-jupyter serverextension enable --py jupyterlab_pullrequests
 ```
 
 To rebuild the package and the JupyterLab app:

@@ -20,6 +20,6 @@
     "target": "es2017",
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": ["src/**/*"],
   "exclude": ["src/tests"]
 }

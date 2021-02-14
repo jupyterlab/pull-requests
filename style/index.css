@@ -2,26 +2,6 @@
 | JupyterLab Pull Requests Style
 |----------------------------------------------------------------------------*/
 
-[data-jp-theme-light='true'] .jp-PullRequest-icon {
-  background-image: url(pullrequest-light.svg);
-}
-
-[data-jp-theme-light='false'] .jp-PullRequest-icon {
-  background-image: url(pullrequest-dark.svg);
-}
-
-.jp-Refresh-icon {
-  background-image: var(--jp-icon-refresh);
-}
-
-.jp-CaretUp-icon {
-  background-image: var(--jp-icon-caretup);
-}
-
-.jp-CaretDown-icon {
-  background-image: var(--jp-icon-caretdown);
-}
-
 .jp-PullRequestBrowser {
   background-color: var(--jp-layout-color1);
   margin: 0;
@@ -138,22 +118,6 @@
 .jp-PullRequestBrowserFileItem .jp-PullRequestBrowserFileItemDiffText {
   color: var(--jp-ui-font-color2);
   font-size: 11px;
-}
-
-[data-jp-theme-light='true'] .jp-PullRequestBrowserFileItemDiffInserted {
-  background-image: url(pullrequest-insertion-light.svg);
-}
-
-[data-jp-theme-light='true'] .jp-PullRequestBrowserFileItemDiffDeleted {
-  background-image: url(pullrequest-deletion-light.svg);
-}
-
-[data-jp-theme-light='false'] .jp-PullRequestBrowserFileItemDiffInserted {
-  background-image: url(pullrequest-insertion-dark.svg);
-}
-
-[data-jp-theme-light='false'] .jp-PullRequestBrowserFileItemDiffDeleted {
-  background-image: url(pullrequest-deletion-dark.svg);
 }
 
 .jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemError {
@@ -369,7 +333,7 @@
 }
 
 .jp-PullRequestCommentDecoration {
-  background-image: url(pullrequest-plus.svg), linear-gradient(var(--jp-brand-color1), var(--jp-brand-color1));
+  background-image: url(icons/pullrequest-plus.svg), linear-gradient(var(--jp-brand-color1), var(--jp-brand-color1));
   border-radius: var(--jp-border-radius);
   background-size: contain;
   background-repeat: no-repeat;

@@ -1,3 +1,4 @@
+import { refreshIcon } from '@jupyterlab/ui-components';
 import { Toolbar, ToolbarButton } from '@jupyterlab/apputils';
 import { Widget } from '@lumino/widgets';
 import { PullRequestPanel } from './PullRequestPanel';
@@ -19,10 +20,10 @@ export class PullRequestToolbar extends Toolbar {
 
     // Add toolbar refresh button
     this._openRefreshButton = new ToolbarButton({
-      onClick: () => {
+      onClick: (): void => {
         panel.update();
       },
-      iconClass: 'jp-Refresh-icon jp-Icon jp-Icon-16',
+      icon: refreshIcon,
       tooltip: 'Refresh'
     });
     this._openRefreshButton.addClass('jp-PullRequestToolbarItem');

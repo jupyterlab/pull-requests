@@ -1,3 +1,8 @@
+import {
+  caretDownIcon,
+  caretUpIcon,
+  linkIcon
+} from '@jupyterlab/ui-components';
 import * as React from 'react';
 import { BeatLoader } from 'react-spinners';
 import { PullRequestFileModel, PullRequestModel } from '../../models';
@@ -131,19 +136,16 @@ export class PullRequestBrowserItem extends React.Component<
                 <li className="jp-PullRequestBrowserItemListItem">
                   <h2>{result.title}</h2>
                   <div className="jp-PullRequestBrowserItemListItemIconWrapper">
-                    <span
-                      className="jp-Icon jp-Icon-16 jp-LinkIcon"
-                      onClick={e => this.openLink(e, result.link)}
-                    />
-                    <span
-                      className={
-                        'jp-Icon jp-Icon-16 ' +
-                        (result.isExpanded
-                          ? 'jp-CaretUp-icon'
-                          : 'jp-CaretDown-icon')
-                      }
-                      onClick={e => this.toggleFilesExpanded(e, i)}
-                    />
+                    <button onClick={e => this.openLink(e, result.link)}>
+                      <linkIcon.react tag="span" />
+                    </button>
+                    <button onClick={e => this.toggleFilesExpanded(e, i)}>
+                      {result.isExpanded ? (
+                        <caretUpIcon.react tag="span" />
+                      ) : (
+                        <caretDownIcon.react tag="span" />
+                      )}
+                    </button>
                   </div>
                 </li>
                 {result.isExpanded && (
