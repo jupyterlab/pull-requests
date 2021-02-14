@@ -3,6 +3,7 @@ import {
   caretUpIcon,
   linkIcon
 } from '@jupyterlab/ui-components';
+import { ActionButton } from '@jupyterlab/git/lib/components/ActionButton';
 import * as React from 'react';
 import { BeatLoader } from 'react-spinners';
 import { PullRequestFileModel, PullRequestModel } from '../../models';
@@ -136,16 +137,20 @@ export class PullRequestBrowserItem extends React.Component<
                 <li className="jp-PullRequestBrowserItemListItem">
                   <h2>{result.title}</h2>
                   <div className="jp-PullRequestBrowserItemListItemIconWrapper">
-                    <button onClick={e => this.openLink(e, result.link)}>
-                      <linkIcon.react tag="span" />
-                    </button>
-                    <button onClick={e => this.toggleFilesExpanded(e, i)}>
-                      {result.isExpanded ? (
-                        <caretUpIcon.react tag="span" />
-                      ) : (
-                        <caretDownIcon.react tag="span" />
-                      )}
-                    </button>
+                    <ActionButton
+                      icon={linkIcon}
+                      onClick={e => this.openLink(e, result.link)}
+                      title="Open in new tab"
+                    />
+                    <ActionButton
+                      icon={result.isExpanded ? caretUpIcon : caretDownIcon}
+                      onClick={e => this.toggleFilesExpanded(e, i)}
+                      title={
+                        result.isExpanded
+                          ? 'Hide modified files'
+                          : 'Show modified files'
+                      }
+                    />
                   </div>
                 </li>
                 {result.isExpanded && (
