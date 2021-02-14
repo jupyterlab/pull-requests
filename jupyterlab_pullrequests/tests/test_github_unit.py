@@ -1,4 +1,5 @@
 import json
+import pathlib
 from collections import namedtuple
 from http import HTTPStatus
 
@@ -14,6 +15,7 @@ from tornado.httpclient import (
 from tornado.web import HTTPError, MissingArgumentError
 
 client = AsyncHTTPClient()
+HERE = pathlib.Path(__file__).parent.resolve()
 
 # -----------------------------------------------------------------------------
 # /pullrequests/prs/user Handler Tests
@@ -21,10 +23,7 @@ client = AsyncHTTPClient()
 
 
 def read_sample_response(filename):
-    with open(f"tests/test-server/sample_responses/{filename}") as json_data:
-        return json.load(
-            json_data,
-        )
+    return json.loads((HERE / "sample_responses" / filename).read_text())
 
 
 @pytest.mark.asyncio
