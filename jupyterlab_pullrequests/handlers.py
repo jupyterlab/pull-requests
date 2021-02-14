@@ -15,6 +15,7 @@ from tornado.web import HTTPError, MissingArgumentError
 # /pullrequests/prs/user Handler
 # -----------------------------------------------------------------------------
 
+
 class ListPullRequestsUserHandler(PullRequestsAPIHandler):
     """
     Returns array of a user's PRs
@@ -26,23 +27,25 @@ class ListPullRequestsUserHandler(PullRequestsAPIHandler):
     def validate_request(self, pr_filter):
         if not (pr_filter == "created" or pr_filter == "assigned"):
             raise HTTPError(
-                status_code=HTTPStatus.BAD_REQUEST, 
-                reason=f"Invalid parameter 'filter'. Expected value 'created' or 'assigned', received '{pr_filter}'."
+                status_code=HTTPStatus.BAD_REQUEST,
+                reason=f"Invalid parameter 'filter'. Expected value 'created' or 'assigned', received '{pr_filter}'.",
             )
 
     @gen.coroutine
     def get(self):
 
         pr_filter = get_request_attr_value(self, "filter")
-        self.validate_request(pr_filter) # handler specific validation
-        
+        self.validate_request(pr_filter)  # handler specific validation
+
         current_user = yield self.manager.get_current_user()
-        prs = yield self.manager.list_prs(current_user['username'], pr_filter)
+        prs = yield self.manager.list_prs(current_user["username"], pr_filter)
         self.finish(json.dumps(prs))
+
 
 # -----------------------------------------------------------------------------
 # /pullrequests/prs/files Handler
 # -----------------------------------------------------------------------------
+
 
 class ListPullRequestsFilesHandler(PullRequestsAPIHandler):
     """
@@ -56,9 +59,11 @@ class ListPullRequestsFilesHandler(PullRequestsAPIHandler):
         files = yield self.manager.list_files(pr_id)
         self.finish(json.dumps(files))
 
+
 # -----------------------------------------------------------------------------
 # /pullrequests/files/content Handler
 # -----------------------------------------------------------------------------
+
 
 class PullRequestsFileContentHandler(PullRequestsAPIHandler):
     """
@@ -72,9 +77,11 @@ class PullRequestsFileContentHandler(PullRequestsAPIHandler):
         content = yield self.manager.get_file_content(pr_id, filename)
         self.finish(json.dumps(content))
 
+
 # -----------------------------------------------------------------------------
 # /pullrequests/files/comments Handler
 # -----------------------------------------------------------------------------
+
 
 class PullRequestsFileCommentsHandler(PullRequestsAPIHandler):
     """
@@ -94,19 +101,23 @@ class PullRequestsFileCommentsHandler(PullRequestsAPIHandler):
         filename = get_request_attr_value(self, "filename")
         data = get_body_value(self)
         try:
-            if 'in_reply_to' in data:
+            if "in_reply_to" in data:
                 PRCommentReply = namedtuple("PRCommentReply", ["text", "in_reply_to"])
                 body = PRCommentReply(data["text"], data["in_reply_to"])
             else:
-                PRCommentNew = namedtuple("PRCommentNew", ["text", "commit_id", "filename", "position"])
-                body = PRCommentNew(data["text"], data["commit_id"], data["filename"], data["position"])
+                PRCommentNew = namedtuple(
+                    "PRCommentNew", ["text", "commit_id", "filename", "position"]
+                )
+                body = PRCommentNew(
+                    data["text"], data["commit_id"], data["filename"], data["position"]
+                )
         except KeyError as e:
             raise HTTPError(
-                status_code=HTTPStatus.BAD_REQUEST,
-                reason=f"Missing POST key: {e}"
+                status_code=HTTPStatus.BAD_REQUEST, reason=f"Missing POST key: {e}"
             )
         result = yield self.manager.post_file_comment(pr_id, filename, body)
         self.finish(json.dumps(result))
+
 
 class PullRequestsFileNBDiffHandler(PullRequestsAPIHandler):
     """
@@ -121,15 +132,14 @@ class PullRequestsFileNBDiffHandler(PullRequestsAPIHandler):
             curr_content = data["curr_content"]
         except KeyError as e:
             raise HTTPError(
-                status_code=HTTPStatus.BAD_REQUEST,
-                reason=f"Missing POST key: {e}"
+                status_code=HTTPStatus.BAD_REQUEST, reason=f"Missing POST key: {e}"
             )
         try:
             content = yield self.manager.get_file_nbdiff(prev_content, curr_content)
         except Exception as e:
             raise HTTPError(
-                status_code=HTTPStatus.INTERNAL_SERVER_ERROR, 
-                reason=f"Error diffing content: {e}."
+                status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                reason=f"Error diffing content: {e}.",
             )
         self.finish(json.dumps(content))
 
@@ -137,6 +147,7 @@ class PullRequestsFileNBDiffHandler(PullRequestsAPIHandler):
 # -----------------------------------------------------------------------------
 # Handler utilities
 # -----------------------------------------------------------------------------
+
 
 def get_request_attr_value(handler, arg):
     try:
@@ -146,14 +157,14 @@ def get_request_attr_value(handler, arg):
         return param
     except MissingArgumentError:
         raise HTTPError(
-            status_code=HTTPStatus.BAD_REQUEST,
-            reason=f"Missing argument '{arg}'."
+            status_code=HTTPStatus.BAD_REQUEST, reason=f"Missing argument '{arg}'."
         )
     except ValueError:
         raise HTTPError(
             status_code=HTTPStatus.BAD_REQUEST,
-            reason=f"Invalid argument '{arg}', cannot be blank."
+            reason=f"Invalid argument '{arg}', cannot be blank.",
         )
+
 
 def get_body_value(handler):
     try:
@@ -162,24 +173,28 @@ def get_body_value(handler):
         return escape.json_decode(handler.request.body)
     except ValueError as e:
         raise HTTPError(
-            status_code=HTTPStatus.BAD_REQUEST,
-            reason=f"Invalid POST body: {e}"
+            status_code=HTTPStatus.BAD_REQUEST, reason=f"Invalid POST body: {e}"
         )
+
 
 # -----------------------------------------------------------------------------
 # URL to handler mappings
 # -----------------------------------------------------------------------------
 
-default_handlers = [("/pullrequests/prs/user", ListPullRequestsUserHandler),
-                    ("/pullrequests/prs/files", ListPullRequestsFilesHandler),
-                    ("/pullrequests/files/content", PullRequestsFileContentHandler),
-                    ("/pullrequests/files/comments", PullRequestsFileCommentsHandler),
-                    ("/pullrequests/files/nbdiff", PullRequestsFileNBDiffHandler)]
+default_handlers = [
+    ("/pullrequests/prs/user", ListPullRequestsUserHandler),
+    ("/pullrequests/prs/files", ListPullRequestsFilesHandler),
+    ("/pullrequests/files/content", PullRequestsFileContentHandler),
+    ("/pullrequests/files/comments", PullRequestsFileCommentsHandler),
+    ("/pullrequests/files/nbdiff", PullRequestsFileNBDiffHandler),
+]
 
-def load_jupyter_server_extension(nbapp):
-    webapp = nbapp.web_app
-    base_url = webapp.settings["base_url"]
+
+def setup_handlers(web_app):
+    host_pattern = ".*$"
+
+    base_url = web_app.settings["base_url"]
     webapp.add_handlers(
-        ".*$",
+        host_pattern,
         [(url_path_join(base_url, pat), handler) for pat, handler in default_handlers],
     )

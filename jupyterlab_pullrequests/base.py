@@ -20,8 +20,11 @@ class GitHubConfig(Configurable):
     )
 
     platform = Unicode(
-        "github", config=True, help=("The source control platform. options=[github, codecommit]")
+        "github",
+        config=True,
+        help=("The source control platform. options=[github, codecommit]"),
     )
+
 
 class PullRequestsAPIHandler(APIHandler):
     """

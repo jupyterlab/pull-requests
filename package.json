@@ -18,23 +18,32 @@
     "style/**/*.{css,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
   ],
   "main": "lib/index.js",
-  "style": "style/index.css",
   "types": "lib/index.d.ts",
+  "style": "style/index.css",
   "repository": {
     "type": "git",
     "url": "https://github.com/jupyterlab/pull-requests.git"
   },
   "scripts": {
-    "build": "webpack && tsc",
-    "clean": "rimraf lib",
-    "watch": "tsc -w",
+    "build": "jlpm run build:lib",
+    "build:labextension": "cd jupyterlab_pullrequests && rimraf labextension && mkdirp labextension && cd labextension && npm pack ../..",
+    "build:lib": "webpack && tsc",
+    "build:all": "jlpm run build:labextension",
+    "clean": "jlpm run clean:lib",
+    "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
+    "clean:labextension": "rimraf jupyterlab_pullrequests/labextension",
+    "clean:all": "jlpm run clean:lib && jlpm run clean:labextension",
+
+    "eslint": "eslint . --ext .ts,.tsx --fix",
+    "eslint:check": "eslint . --ext .ts,.tsx",
+    "prepare": "jlpm run clean && jlpm run build",
     "test": "jest",
-    "lint": "tslint --project .",
-    "lintfix": "tslint --fix --project ./tsconfig.json",
-    "tslint-check": "tslint-config-prettier-check ./tslint.json"
+    "watch": "tsc -w"
   },
   "dependencies": {
     "@jupyterlab/application": "^2.0.0",
+    "@jupyterlab/coreutils": "^4.0.0",
+    "@jupyterlab/services": "^5.0.0",
     "@jupyterlab/filebrowser": "^2.0.0",
     "@jupyterlab/git": "^0.20.0",
     "@jupyterlab/mainmenu": "^2.0.0",
@@ -59,24 +68,41 @@
     "@types/react": "^16.8.19",
     "@types/react-dom": "^16.8.4",
     "@types/react-resize-detector": "^4.0.1",
+    "@typescript-eslint/eslint-plugin": "^2.25.0",
+    "@typescript-eslint/parser": "^2.25.0",
     "d3-color": "^1.2.8",
     "enzyme": "^3.9.0",
     "enzyme-adapter-react-16": "^1.13.2",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-plugin-prettier": "^3.1.2", 
+    "eslint-plugin-react": "^7.18.3",
     "husky": "^3.0.1",
     "jest": "^24.8.0",
     "jest-fetch-mock": "^2.1.2",
     "lodash": "^4.17.11",
-    "prettier": "^1.17.1",
+    "mkdirp": "^1.0.3", 
+    "prettier": "^1.16.4",
     "rimraf": "^2.6.1",
     "ts-jest": "^24.0.2",
-    "tslint": "^5.17.0",
-    "tslint-config-prettier": "^1.18.0",
-    "tslint-plugin-prettier": "^2.0.1",
     "typescript": "~3.7.0",
     "webpack": "^4.38.0",
     "webpack-cli": "^3.3.6"
   },
+  "sideEffects": [
+    "style/*.css"
+  ],
   "jupyterlab": {
+    "discovery": {
+        "server": {
+          "managers": [
+            "pip"
+          ],
+          "base": {
+            "name": "jupyterlab_pullrequests"
+          }
+        }
+    }, 
     "extension": true
   },
   "resolutions": {

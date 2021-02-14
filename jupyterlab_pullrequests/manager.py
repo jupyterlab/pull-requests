@@ -5,8 +5,8 @@ import tornado.gen as gen
 from nbdime import diff_notebooks
 from tornado.httpclient import AsyncHTTPClient
 
-class PullRequestsManager():
 
+class PullRequestsManager:
     def __init__(self, access_token):
         self.client = AsyncHTTPClient()
         self.access_token = access_token
@@ -48,5 +48,5 @@ class PullRequestsManager():
             thediff = diff_notebooks(prev_nb, curr_nb)
         except:
             raise
-        data = {'base': prev_nb, 'diff': thediff}
+        data = {"base": prev_nb, "diff": thediff}
         return data
