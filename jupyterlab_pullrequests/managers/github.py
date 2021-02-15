@@ -2,7 +2,6 @@ import json
 from http import HTTPStatus
 from typing import Dict, List, NoReturn, Optional, Union
 
-import tornado.gen as gen
 from notebook.utils import url_path_join
 from tornado.httpclient import AsyncHTTPClient, HTTPClientError, HTTPRequest
 from tornado.httputil import url_concat
