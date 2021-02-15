@@ -1,37 +1,36 @@
 import json
 from http import HTTPStatus
+from typing import Dict, List, NoReturn, Optional, Union
 
 import tornado.gen as gen
-from jupyterlab_pullrequests.manager import PullRequestsManager
 from notebook.utils import url_path_join
 from tornado.httpclient import AsyncHTTPClient, HTTPClientError, HTTPRequest
 from tornado.httputil import url_concat
 from tornado.web import HTTPError
 
-GITHUB_API_BASE_URL = "https://api.github.com"
+from ..base import PRCommentNew, PRCommentReply
+from ..log import get_logger
+from .manager import PullRequestsManager
 
 
 class PullRequestsGithubManager(PullRequestsManager):
+    def __init__(
+        self, base_api_url: str = "https://api.github.com", access_token: str = ""
+    ) -> NoReturn:
+        """
+        Args:
+            base_api_url: Base REST API url for the versioning service
+            access_token: Versioning service access token
+        """
+        super().__init__(base_api_url=base_api_url, access_token=access_token)
 
-    # -----------------------------------------------------------------------------
-    # /pullrequests/prs/user Handler
-    # -----------------------------------------------------------------------------
-
-    @gen.coroutine
-    def get_current_user(self):
-
-        if not self.access_token:
-            raise HTTPError(
-                status_code=HTTPStatus.BAD_REQUEST,
-                reason="No Github access token specified.",
-            )
-
-        git_url = url_path_join(GITHUB_API_BASE_URL, "user")
-        data = yield self.call_github(git_url)
+    async def get_current_user(self) -> Dict[str, str]:
+        git_url = url_path_join(self._base_api_url, "user")
+        data = await self.call_github(git_url)
 
         return {"username": data["login"]}
 
-    def get_search_filter(self, username, pr_filter):
+    def get_search_filter(self, username: str, pr_filter: str) -> str:
 
         if pr_filter == "created":
             search_filter = "+author:"
@@ -40,17 +39,16 @@ class PullRequestsGithubManager(PullRequestsManager):
 
         return search_filter + username
 
-    @gen.coroutine
-    def list_prs(self, username, pr_filter):
+    async def list_prs(self, username: str, pr_filter: str) -> List[Dict[str, str]]:
 
         search_filter = self.get_search_filter(username, pr_filter)
 
         # Use search API to find matching PRs and return
         git_url = url_path_join(
-            GITHUB_API_BASE_URL, "/search/issues?q=+state:open+type:pr" + search_filter
+            self._base_api_url, "/search/issues?q=+state:open+type:pr" + search_filter
         )
 
-        results = yield self.call_github(git_url)
+        results = await self.call_github(git_url)
 
         data = []
         for result in results["items"]:
@@ -70,11 +68,10 @@ class PullRequestsGithubManager(PullRequestsManager):
     # /pullrequests/prs/files Handler
     # -----------------------------------------------------------------------------
 
-    @gen.coroutine
-    def list_files(self, pr_id):
+    async def list_files(self, pr_id: str) -> List[Dict[str, str]]:
 
         git_url = url_path_join(pr_id, "/files")
-        results = yield self.call_github(git_url)
+        results = await self.call_github(git_url)
 
         data = []
         for result in results:
@@ -93,10 +90,9 @@ class PullRequestsGithubManager(PullRequestsManager):
     # /pullrequests/files/content Handler
     # -----------------------------------------------------------------------------
 
-    @gen.coroutine
-    def get_pr_links(self, pr_id, filename):
+    async def get_pr_links(self, pr_id: str, filename: str) -> Dict[str, str]:
 
-        data = yield self.call_github(pr_id)
+        data = await self.call_github(pr_id)
         base_url = url_concat(
             url_path_join(data["base"]["repo"]["url"], "contents", filename),
             {"ref": data["base"]["ref"]},
@@ -108,10 +104,9 @@ class PullRequestsGithubManager(PullRequestsManager):
         commit_id = data["head"]["sha"]
         return {"base_url": base_url, "head_url": head_url, "commit_id": commit_id}
 
-    @gen.coroutine
-    def validate_pr_link(self, link):
+    async def validate_pr_link(self, link: str):
         try:
-            data = yield self.call_github(link)
+            data = await self.call_github(link)
             return data["download_url"]
         except HTTPError as e:
             if e.status_code == 404:
@@ -119,24 +114,22 @@ class PullRequestsGithubManager(PullRequestsManager):
             else:
                 raise e
 
-    @gen.coroutine
-    def get_link_content(self, file_url):
+    async def get_link_content(self, file_url: str):
 
         if file_url == "":
             return ""
-        result = yield self.call_github(file_url, False)
+        result = await self.call_github(file_url, False)
         return result
 
-    @gen.coroutine
-    def get_file_content(self, pr_id, filename):
+    async def get_file_content(self, pr_id: str, filename: str) -> Dict[str, str]:
 
-        links = yield self.get_pr_links(pr_id, filename)
+        links = await self.get_pr_links(pr_id, filename)
 
-        base_raw_url = yield self.validate_pr_link(links["base_url"])
-        head_raw_url = yield self.validate_pr_link(links["head_url"])
+        base_raw_url = await self.validate_pr_link(links["base_url"])
+        head_raw_url = await self.validate_pr_link(links["head_url"])
 
-        base_content = yield self.get_link_content(base_raw_url)
-        head_content = yield self.get_link_content(head_raw_url)
+        base_content = await self.get_link_content(base_raw_url)
+        head_content = await self.get_link_content(head_raw_url)
 
         return {
             "base_content": base_content,
@@ -148,7 +141,7 @@ class PullRequestsGithubManager(PullRequestsManager):
     # /pullrequests/files/comments Handler
     # -----------------------------------------------------------------------------
 
-    def file_comment_response(self, result):
+    def file_comment_response(self, result: Dict[str, str]) -> Dict[str, str]:
         data = {
             "id": result["id"],
             "line_number": result["position"],
@@ -161,21 +154,23 @@ class PullRequestsGithubManager(PullRequestsManager):
             data["in_reply_to_id"] = result["in_reply_to_id"]
         return data
 
-    @gen.coroutine
-    def get_file_comments(self, pr_id, filename):
+    async def get_file_comments(
+        self, pr_id: str, filename: str
+    ) -> List[Dict[str, str]]:
 
         git_url = url_path_join(pr_id, "/comments")
-        results = yield self.call_github(git_url)
+        results = await self.call_github(git_url)
         return [
             self.file_comment_response(result)
             for result in results
             if result["path"] == filename
         ]
 
-    @gen.coroutine
-    def post_file_comment(self, pr_id, filename, body):
+    async def post_file_comment(
+        self, pr_id: str, filename: str, body: Union[PRCommentReply, PRCommentNew]
+    ):
 
-        if type(body).__name__ == "PRCommentReply":
+        if isinstance(body, PRCommentReply):
             body = {"body": body.text, "in_reply_to": body.in_reply_to}
         else:
             body = {
@@ -185,63 +180,78 @@ class PullRequestsGithubManager(PullRequestsManager):
                 "position": body.position,
             }
         git_url = url_path_join(pr_id, "comments")
-        response = yield self.call_github(git_url, method="POST", body=body)
+        response = await self.call_github(git_url, method="POST", body=body)
         return self.file_comment_response(response)
 
     # -----------------------------------------------------------------------------
     # Handler utilities
     # -----------------------------------------------------------------------------
 
-    @gen.coroutine
-    def call_github(self, git_url, load_json=True, method="GET", body=None):
+    async def call_github(
+        self,
+        git_url: str,
+        load_json: bool = True,
+        method: str = "GET",
+        body=None,
+        params: Optional[Dict[str, str]] = None,
+    ):
+        if not self._access_token:
+            raise HTTPError(
+                status_code=HTTPStatus.BAD_REQUEST,
+                reason="No Github access token specified.",
+            )
 
-        params = {
+        headers = {
             "Accept": "application/vnd.github.v3+json",
-            "access_token": self.access_token,
+            "Authorization": f"token {self._access_token}",
         }
+
+        if not git_url.startswith(self._base_api_url):
+            git_url = "/".join((self._base_api_url.rstrip("/"), git_url.lstrip("/")))
+
+        if params is not None:
+            git_url = url_concat(git_url, params)
 
         # User agents required for Github API, see https://developer.github.com/v3/#user-agent-required
         try:
-            if method.lower() == "get":
-                request = HTTPRequest(
-                    url_concat(git_url, params),
-                    validate_cert=True,
-                    user_agent="JupyterLab Pull Requests",
-                )
-            elif method.lower() == "post":
-                request = HTTPRequest(
-                    url_concat(git_url, params),
-                    validate_cert=True,
-                    user_agent="JupyterLab Pull Requests",
-                    method="POST",
-                    body=json.dumps(body),
-                )
-            else:
-                raise ValueError()
-        except:
-            HTTPError(
+            request = HTTPRequest(
+                git_url,
+                validate_cert=True,
+                user_agent="JupyterLab Pull Requests",
+                method=method.upper(),
+                body=None if body is None else json.dumps(body),
+                headers=headers,
+            )
+        except BaseException as e:
+            get_logger().error("Failed to create http request", exc_info=e)
+            raise HTTPError(
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 reason=f"Invalid call_github '{method}': {e}",
-            )
+            ) from e
 
         try:
-            response = yield self.client.fetch(request)
+            response = await self._client.fetch(request)
             result = response.body.decode("utf-8")
             if load_json:
                 return json.loads(result)
             else:
                 return result
         except HTTPClientError as e:
+            get_logger().error(
+                f"Failed to fetch {request.method} {request.url}", exc_info=e
+            )
             raise HTTPError(
                 status_code=e.code, reason=f"Invalid response in '{git_url}': {e}"
-            )
+            ) from e
         except ValueError as e:
+            get_logger().error("Failed to fetch http request", exc_info=e)
             raise HTTPError(
                 status_code=HTTPStatus.BAD_REQUEST,
                 reason=f"Invalid response in '{git_url}': {e}",
-            )
+            ) from e
         except Exception as e:
+            get_logger().error("Failed to fetch http request", exc_info=e)
             raise HTTPError(
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 reason=f"Unknown error in '{git_url}': {e}",
-            )
+            ) from e

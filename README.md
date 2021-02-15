@@ -50,7 +50,7 @@ file can be found [here](http://jupyter-notebook.readthedocs.io/en/stable/config
 Once you have identified this file, add the following lines to it:
 
 ```python
-c.GitHubConfig.access_token = '<YOUR_ACCESS_TOKEN>'
+c.PRConfig.access_token = '<YOUR_ACCESS_TOKEN>'
 ```
 
 where "`<YOUR_ACCESS_TOKEN>`" is the string value you obtained above.

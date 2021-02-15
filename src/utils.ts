@@ -21,7 +21,7 @@ export async function doRequest(
   request?: object
 ): Promise<any> {
   const response = await httpRequest(url, method, request);
-  if (response.status !== 200) {
+  if (!response.ok) {
     throw new ServerConnection.ResponseError(response);
   }
   return response.json();

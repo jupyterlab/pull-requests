@@ -3,14 +3,14 @@ Setup Module to setup Python Handlers for the jupyterlab_pullrequests extension.
 """
 import os
 
-from jupyter_packaging import (
-    create_cmdclass,
-    install_npm,
-    ensure_targets,
-    combine_commands,
-    get_version,
-)
 import setuptools
+from jupyter_packaging import (
+    combine_commands,
+    create_cmdclass,
+    ensure_targets,
+    get_version,
+    install_npm,
+)
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 

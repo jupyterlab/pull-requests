@@ -1,51 +1,48 @@
-import jupyterlab_pullrequests.handlers
 import tornado.web
 from asynctest import Mock, patch
-from jupyterlab_pullrequests.github_manager import PullRequestsGithubManager
 from tornado.httpclient import HTTPClient, HTTPRequest
 from tornado.testing import AsyncHTTPTestCase, ExpectLog
 
+import jupyterlab_pullrequests.handlers
+from jupyterlab_pullrequests.base import PRConfig
+from jupyterlab_pullrequests.handlers import setup_handlers
+from jupyterlab_pullrequests.managers.github import PullRequestsGithubManager
+
 # don't authenticate for unit tests
-valid_access_token = "valid"
 valid_prid = "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1"
 valid_prfilename = "test.ipynb"
 
 # Base class for PullRequest test cases
 class TestPullRequest(AsyncHTTPTestCase):
+    test_api_base_url = "https://api.github.com"
+    test_access_token = "valid"
+
     def get_app(self):
-        return tornado.web.Application(
-            jupyterlab_pullrequests.handlers.default_handlers
+        app = tornado.web.Application()
+        app.settings["base_url"] = "/"
+        setup_handlers(
+            app,
+            PRConfig(
+                api_base_url=self.test_api_base_url, access_token=self.test_access_token
+            ),
         )
+        return app
 
 
-# Test list pull requests PAT
-class TestListPullRequestsGithubUserHandlerPAT(TestPullRequest):
-
-    # Test no PAT
-    @patch(
-        "jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",
-        Mock(return_value=PullRequestsGithubManager(None)),
-    )
-    def test_pat_none(self):
-        response = self.fetch("/pullrequests/prs/user?filter=created")
-        self.assertEqual(response.code, 400)
-        self.assertIn("No Github access token specified", response.reason)
+class TestListPullRequestsGithubUserHandlerEmptyPAT(TestPullRequest):
+    test_access_token = ""
 
     # Test empty PAT
-    @patch(
-        "jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",
-        Mock(return_value=PullRequestsGithubManager("")),
-    )
     def test_pat_empty(self):
         response = self.fetch("/pullrequests/prs/user?filter=created")
         self.assertEqual(response.code, 400)
         self.assertIn("No Github access token specified", response.reason)
 
+
+class TestListPullRequestsGithubUserHandlerInvalidPAT(TestPullRequest):
+    test_access_token = "invalid"
+
     # Test invalid PAT
-    @patch(
-        "jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",
-        Mock(return_value=PullRequestsGithubManager("invalid")),
-    )
     def test_pat_invalid(self):
         response = self.fetch("/pullrequests/prs/user?filter=created")
         self.assertEqual(response.code, 401)
@@ -53,10 +50,6 @@ class TestListPullRequestsGithubUserHandlerPAT(TestPullRequest):
 
 
 # Test list pull requests params
-@patch(
-    "jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",
-    Mock(return_value=PullRequestsGithubManager(valid_access_token)),
-)
 class TestListPullRequestsGithubUserHandlerParam(TestPullRequest):
 
     # Test missing parameter
@@ -79,10 +72,6 @@ class TestListPullRequestsGithubUserHandlerParam(TestPullRequest):
 
 
 # Test list files
-@patch(
-    "jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",
-    Mock(return_value=PullRequestsGithubManager(valid_access_token)),
-)
 class TestListPullRequestsGithubFilesHandler(TestPullRequest):
 
     # Test missing id
@@ -97,6 +86,10 @@ class TestListPullRequestsGithubFilesHandler(TestPullRequest):
         self.assertEqual(response.code, 400)
         self.assertIn("Invalid argument 'id'", response.reason)
 
+
+class TestListPullRequestsGithubFilesHandlerBadID(TestPullRequest):
+    test_api_base_url = ""
+
     # Test invalid id
     def test_id_invalid(self):
         response = self.fetch("/pullrequests/prs/files?id=google.com")
@@ -105,10 +98,6 @@ class TestListPullRequestsGithubFilesHandler(TestPullRequest):
 
 
 # Test get file links
-@patch(
-    "jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",
-    Mock(return_value=PullRequestsGithubManager(valid_access_token)),
-)
 class TestGetPullRequestsGithubFileLinksHandler(TestPullRequest):
 
     # Test missing id
@@ -127,14 +116,6 @@ class TestGetPullRequestsGithubFileLinksHandler(TestPullRequest):
         self.assertEqual(response.code, 400)
         self.assertIn("Invalid argument 'id'", response.reason)
 
-    # Test invalid id
-    def test_id_invalid(self):
-        response = self.fetch(
-            f"/pullrequests/files/content?filename={valid_prfilename}&id=google.com"
-        )
-        self.assertEqual(response.code, 400)
-        self.assertIn("Invalid response", response.reason)
-
     # Test missing id
     def test_filename_missing(self):
         response = self.fetch(f"/pullrequests/files/content?id={valid_prid}")
@@ -148,11 +129,19 @@ class TestGetPullRequestsGithubFileLinksHandler(TestPullRequest):
         self.assertIn("Invalid argument 'filename'", response.reason)
 
 
+class TestGetPullRequestsGithubFileLinksHandlerID(TestPullRequest):
+    test_api_base_url = ""
+
+    # Test invalid id
+    def test_id_invalid(self):
+        response = self.fetch(
+            f"/pullrequests/files/content?filename={valid_prfilename}&id=google.com"
+        )
+        self.assertEqual(response.code, 400)
+        self.assertIn("Invalid response", response.reason)
+
+
 # Test get PR comments
-@patch(
-    "jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",
-    Mock(return_value=PullRequestsGithubManager(valid_access_token)),
-)
 class TestGetPullRequestsCommentsHandler(TestPullRequest):
 
     # Test missing id
@@ -171,14 +160,6 @@ class TestGetPullRequestsCommentsHandler(TestPullRequest):
         self.assertEqual(response.code, 400)
         self.assertIn("Invalid argument 'id'", response.reason)
 
-    # Test invalid id
-    def test_id_invalid(self):
-        response = self.fetch(
-            f"/pullrequests/files/comments?filename={valid_prfilename}&id=google.com"
-        )
-        self.assertEqual(response.code, 400)
-        self.assertIn("Invalid response", response.reason)
-
     # Test missing id
     def test_filename_missing(self):
         response = self.fetch(f"/pullrequests/files/comments?id={valid_prid}")
@@ -192,11 +173,19 @@ class TestGetPullRequestsCommentsHandler(TestPullRequest):
         self.assertIn("Invalid argument 'filename'", response.reason)
 
 
+class TestGetPullRequestsCommentsHandler(TestPullRequest):
+    test_api_base_url = ""
+
+    # Test invalid id
+    def test_id_invalid(self):
+        response = self.fetch(
+            f"/pullrequests/files/comments?filename={valid_prfilename}&id=google.com"
+        )
+        self.assertEqual(response.code, 400)
+        self.assertIn("Invalid response", response.reason)
+
+
 # Test get PR comments
-@patch(
-    "jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",
-    Mock(return_value=PullRequestsGithubManager(valid_access_token)),
-)
 class TestPostPullRequestsCommentsHandler(TestPullRequest):
 
     # Test missing id
@@ -218,16 +207,6 @@ class TestPostPullRequestsCommentsHandler(TestPullRequest):
         )
         self.assertEqual(response.code, 400)
         self.assertIn("Invalid argument 'id'", response.reason)
-
-    # Test invalid id
-    def test_id_invalid(self):
-        response = self.fetch(
-            f"/pullrequests/files/comments?filename={valid_prfilename}&id=google.com",
-            method="POST",
-            body='{"in_reply_to": 123, "text": "test"}',
-        )
-        self.assertEqual(response.code, 400)
-        self.assertIn("Invalid response", response.reason)
 
     # Test missing id
     def test_filename_missing(self):
@@ -278,11 +257,21 @@ class TestPostPullRequestsCommentsHandler(TestPullRequest):
         self.assertIn("Missing POST key", response.reason)
 
 
+class TestPostPullRequestsCommentsHandlerID(TestPullRequest):
+    test_api_base_url = ""
+
+    # Test invalid id
+    def test_id_invalid(self):
+        response = self.fetch(
+            f"/pullrequests/files/comments?filename={valid_prfilename}&id=google.com",
+            method="POST",
+            body='{"in_reply_to": 123, "text": "test"}',
+        )
+        self.assertEqual(response.code, 400)
+        self.assertIn("Invalid response", response.reason)
+
+
 # Test get PR comments
-@patch(
-    "jupyterlab_pullrequests.base.PullRequestsAPIHandler.get_manager",
-    Mock(return_value=PullRequestsGithubManager(valid_access_token)),
-)
 class TestPostPullRequestsNBDiffHandler(TestPullRequest):
 
     # Test empty body
@@ -308,7 +297,7 @@ class TestPostPullRequestsNBDiffHandler(TestPullRequest):
         self.assertIn("Missing POST key", response.reason)
 
     # Test invalid body JSON
-    def test_body_invalid(self):
+    def test_body_invalid_(self):
         response = self.fetch(
             "/pullrequests/files/nbdiff",
             method="POST",
