@@ -1,67 +1,58 @@
-import { IThemeManager, Spinner } from '@jupyterlab/apputils';
-import { isNull } from 'lodash';
-import * as React from 'react';
-import { RefObject } from 'react';
+import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { Widget } from '@lumino/widgets';
 import { PullRequestModel } from '../../models';
-
-export interface IPullRequestDescriptionTabState {
-  pr: PullRequestModel;
-  isLoading: boolean;
-  error: string;
-}
 
 export interface IPullRequestDescriptionTabProps {
   pr: PullRequestModel;
-  themeManager: IThemeManager;
+  renderMimeRegistry: IRenderMimeRegistry;
 }
 
-export class PullRequestDescriptionTab extends React.Component<
-  IPullRequestDescriptionTabProps,
-  IPullRequestDescriptionTabState
-> {
-  private spinnerContainer: RefObject<HTMLDivElement> = React.createRef<
-    HTMLDivElement
-  >();
-
+export class PullRequestDescriptionTab extends Widget {
   constructor(props: IPullRequestDescriptionTabProps) {
-    super(props);
-    this.state = { pr: props.pr, isLoading: true, error: null };
-  }
-
-  componentDidMount() {
-    this.spinnerContainer.current.appendChild(new Spinner().node);
-    this.setState({ isLoading: false });
-  }
-
-  render() {
-    return (
-      <div className="jp-PullRequestTab">
-        {!this.state.isLoading ? (
-          isNull(this.state.error) && !isNull(this.state.pr) ? (
-            <div className="jp-PullRequestDescriptionTab">
-              <h1>{this.state.pr.title}</h1>
-              <h2>{this.state.pr.body}</h2>
-              <button
-                className="jp-Button-flat jp-mod-styled jp-mod-accept"
-                onClick={() => window.open(this.state.pr.link, '_blank')}
-              >
-                View Details
-              </button>
-            </div>
-          ) : (
-            <h2 className="jp-PullRequestTabError">
-              <span style={{ color: 'var(--jp-ui-font-color1)' }}>
-                Error Loading File:
-              </span>{' '}
-              {this.state.error}
-            </h2>
-          )
-        ) : (
-          <div className="jp-PullRequestTabLoadingContainer">
-            <div ref={this.spinnerContainer}></div>
-          </div>
-        )}
-      </div>
+    const markdownRenderer = props.renderMimeRegistry.createRenderer(
+      'text/markdown'
     );
+
+    super({
+      node: PullRequestDescriptionTab.create(
+        props.pr.title,
+        props.pr.link,
+        markdownRenderer
+      )
+    });
+
+    markdownRenderer.renderModel({
+      data: {
+        'text/markdown': props.pr.body
+      },
+      trusted: false,
+      metadata: {},
+      setData: () => null
+    });
+  }
+
+  private static create(
+    title: string,
+    link: string,
+    descriptionWidget: Widget
+  ): HTMLDivElement {
+    const div1 = document.createElement('div');
+    div1.classList.add('jp-PullRequestTab');
+    const div2 = document.createElement('div');
+    div2.classList.add('jp-PullRequestDescriptionTab');
+    const h1 = document.createElement('h1');
+    h1.textContent = title;
+    const button = document.createElement('button');
+    button.classList.add('jp-Button-flat', 'jp-mod-styled', 'jp-mod-accept');
+    button.addEventListener('click', (): void => {
+      window.open(link, '_blank');
+    });
+    button.textContent = 'View Details';
+    div2.append(h1);
+    div2.append(descriptionWidget.node);
+    div2.append(button);
+    div1.append(div2);
+
+    return div1;
   }
 }

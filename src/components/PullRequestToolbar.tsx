@@ -1,12 +1,9 @@
 import { refreshIcon } from '@jupyterlab/ui-components';
 import { Toolbar, ToolbarButton } from '@jupyterlab/apputils';
 import { Widget } from '@lumino/widgets';
-import { PullRequestPanel } from './PullRequestPanel';
 
 export class PullRequestToolbar extends Toolbar {
-  private _openRefreshButton: ToolbarButton;
-
-  constructor(panel: PullRequestPanel) {
+  constructor(onUpdate: () => void) {
     super();
     this.addClass('jp-PullRequestToolbar');
 
@@ -19,14 +16,12 @@ export class PullRequestToolbar extends Toolbar {
     this.addItem('Widget', widget);
 
     // Add toolbar refresh button
-    this._openRefreshButton = new ToolbarButton({
-      onClick: (): void => {
-        panel.update();
-      },
+    const openRefreshButton = new ToolbarButton({
+      onClick: onUpdate,
       icon: refreshIcon,
       tooltip: 'Refresh'
     });
-    this._openRefreshButton.addClass('jp-PullRequestToolbarItem');
-    this.addItem('Refresh', this._openRefreshButton);
+    openRefreshButton.addClass('jp-PullRequestToolbarItem');
+    this.addItem('Refresh', openRefreshButton);
   }
 }

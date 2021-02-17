@@ -6,7 +6,7 @@ import {
 import { IThemeManager } from '@jupyterlab/apputils';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { PullRequestPanel } from './components/PullRequestPanel';
-import { pullRequestsIcon } from './style/icons';
+// import { pullRequestsIcon } from './style/icons';
 
 const NAMESPACE = 'pullrequests';
 const PLUGIN_ID = '@jupyterlab/pullrequests';
@@ -30,14 +30,15 @@ function activate(
   const prPanel = new PullRequestPanel(app, themeManager, renderMime);
 
   prPanel.id = 'pullrequests';
-  prPanel.title.icon = pullRequestsIcon;
+  // prPanel.title.icon = pullRequestsIcon;
+  prPanel.title.label = 'PR';
   prPanel.title.caption = 'Pull Requests';
 
   // Let the application restorer track the running panel for restoration
   restorer.add(prPanel, NAMESPACE);
 
   // Add the panel to the sidebar
-  app.shell.add(prPanel, 'left', { rank: 200 });
+  app.shell.add(prPanel, 'right', { rank: 200 });
 }
 
 export default pullRequestPlugin;

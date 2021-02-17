@@ -4,7 +4,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { PullRequestFileModel, PullRequestModel } from '../../models';
 import { PullRequestFileTab } from './PullRequestFileTab';
-import { PullRequestDescriptionTab } from './PullRequestDescriptionTab';
+// import { PullRequestDescriptionTab } from './PullRequestDescriptionTab';
 import { isUndefined } from 'lodash';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 
@@ -36,17 +36,6 @@ export class PullRequestTabWidget extends Widget {
         />,
         this.node
       );
-    } else {
-      this.id = model.id; // IDs in format 123456-README.md
-      this.title.label = model.title;
-      this._pr = model;
-      ReactDOM.render(
-        <PullRequestDescriptionTab
-          pr={this._pr}
-          themeManager={this._themeManager}
-        />,
-        this.node
-      );
     }
   }
 
@@ -62,13 +51,7 @@ export class PullRequestTabWidget extends Widget {
         this.node
       );
     } else if (!isUndefined(this._pr)) {
-      ReactDOM.render(
-        <PullRequestDescriptionTab
-          pr={this._pr}
-          themeManager={this._themeManager}
-        />,
-        this.node
-      );
+      // ReactDOM.render(<PullRequestDescriptionTab pr={this._pr}  />, this.node);
     }
   }
 }
