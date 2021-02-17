@@ -34,6 +34,6 @@ jobs:
 
         jupyter lab build
         jupyter serverextension list 2>&1 | grep -ie "jupyterlab_pullrequests.*OK"
-        jupyter labextension list 2>&1 | grep -ie "jupyterlab-pullrequests.*OK"
+        jupyter labextension list 2>&1 | grep -ie "@jupyterlab/pullrequests.*OK"
 
         python -m jupyterlab.browser_check
