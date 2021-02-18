@@ -45,6 +45,7 @@
   "dependencies": {
     "@jupyterlab/application": "^2.0.0",
     "@jupyterlab/coreutils": "^4.0.0",
+    "@jupyterlab/docregistry": "^2.0.0",
     "@jupyterlab/filebrowser": "^2.0.0",
     "@jupyterlab/git": "0.21.0 - 0.30.0",
     "@jupyterlab/mainmenu": "^2.0.0",

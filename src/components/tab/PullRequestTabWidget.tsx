@@ -9,6 +9,7 @@ import { isUndefined } from 'lodash';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 
 // Assumes valid json
+// FIXME remove
 export class PullRequestTabWidget extends Widget {
   private _file: PullRequestFileModel;
   private _pr: PullRequestModel;

@@ -36,7 +36,10 @@ export class PullRequestPanel extends Widget {
     this._renderMime = renderMime;
     this._tabs = [];
     this._browser = ReactWidget.create(
-      <PullRequestBrowser showTab={this.showTab.bind(this)} />
+      <PullRequestBrowser
+        docRegistry={app.docRegistry}
+        showTab={this.showTab.bind(this)}
+      />
     );
     this._toolbar = new PullRequestToolbar(this.update.bind(this));
 

@@ -3,6 +3,7 @@ import {
   caretUpIcon,
   linkIcon
 } from '@jupyterlab/ui-components';
+import { DocumentRegistry } from '@jupyterlab/docregistry';
 import { ActionButton } from '@jupyterlab/git/lib/components/ActionButton';
 import * as React from 'react';
 import { BeatLoader } from 'react-spinners';
@@ -17,6 +18,7 @@ export interface IPullRequestBrowserItemState {
 }
 
 export interface IPullRequestBrowserItemProps {
+  docRegistry: DocumentRegistry;
   header: string;
   filter: string;
   showTab: (data: PullRequestFileModel | PullRequestModel) => Promise<void>;
@@ -49,7 +51,8 @@ export class PullRequestBrowserItem extends React.Component<
             jsonresult['title'],
             jsonresult['body'],
             jsonresult['url'],
-            jsonresult['internal_id']
+            jsonresult['internal_id'],
+            this.props.docRegistry
           )
         );
       }

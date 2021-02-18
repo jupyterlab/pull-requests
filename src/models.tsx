@@ -1,4 +1,5 @@
 import { isUndefined, uniqueId } from 'lodash';
+import { DocumentRegistry } from '@jupyterlab/docregistry';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { PullRequestCommentThread } from './components/diff/PullRequestCommentThread';
@@ -17,7 +18,8 @@ export class PullRequestModel {
     title: string,
     body: string,
     link: string,
-    internalId: string
+    internalId: string,
+    docRegistry: DocumentRegistry
   ) {
     this.id = id;
     this.title = title;
@@ -25,6 +27,7 @@ export class PullRequestModel {
     this.link = link;
     this.internalId = internalId;
     this.isExpanded = false;
+    this._docRegistry = docRegistry;
   }
 
   async getFiles(): Promise<void> {
@@ -34,12 +37,15 @@ export class PullRequestModel {
     );
     const results: PullRequestFileModel[] = [];
     for (const jsonresult of jsonresults) {
+      const path = jsonresult['name'];
       results.push(
         new PullRequestFileModel(
-          jsonresult['name'],
+          path,
           jsonresult['status'],
           jsonresult['additions'],
           jsonresult['deletions'],
+          this._docRegistry.getFileTypesForPath(path)[0] ||
+            DocumentRegistry.defaultTextFileType,
           this
         )
       );
@@ -54,6 +60,7 @@ export class PullRequestModel {
   internalId: string;
   files: PullRequestFileModel[];
   isExpanded: boolean;
+  private _docRegistry: DocumentRegistry;
 }
 
 // -----------------------------------------------------------------------------
@@ -66,8 +73,10 @@ export class PullRequestFileModel {
     status: string,
     additions: number,
     deletions: number,
+    fileType: DocumentRegistry.IFileType,
     pr: PullRequestModel
   ) {
+    this.fileType = fileType;
     this.name = name;
     this.status = status;
     this.additions = additions;
@@ -123,6 +132,7 @@ export class PullRequestFileModel {
   }
 
   id: string;
+  fileType: DocumentRegistry.IFileType;
   name: string;
   status: string;
   additions: number;
