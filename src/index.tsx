@@ -124,8 +124,7 @@ function activate(
   );
 
   prPanel.id = 'pullRequests';
-  // prPanel.title.icon = pullRequestsIcon;
-  prPanel.title.label = 'PR';
+  prPanel.title.icon = pullRequestsIcon;
   prPanel.title.caption = 'Pull Requests';
 
   // Let the application restorer track the running panel for restoration
