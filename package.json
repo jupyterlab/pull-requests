@@ -30,7 +30,7 @@
   "scripts": {
     "build": "jlpm run build:lib",
     "build:labextension": "cd jupyterlab_pullrequests && rimraf labextension && mkdirp labextension && cd labextension && npm pack ../..",
-    "build:lib": "webpack && tsc",
+    "build:lib": "tsc",
     "build:all": "jlpm run build:labextension",
     "clean": "jlpm run clean:lib",
     "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
@@ -44,14 +44,20 @@
   },
   "dependencies": {
     "@jupyterlab/application": "^2.0.0",
+    "@jupyterlab/apputils": "^2.0.0",
+    "@jupyterlab/codemirror": "^2.0.0",
     "@jupyterlab/coreutils": "^4.0.0",
     "@jupyterlab/docregistry": "^2.0.0",
     "@jupyterlab/filebrowser": "^2.0.0",
     "@jupyterlab/git": "0.21.0 - 0.30.0",
     "@jupyterlab/mainmenu": "^2.0.0",
+    "@jupyterlab/nbformat": "^2.0.0",
     "@jupyterlab/rendermime": "^2.0.0",
     "@jupyterlab/services": "^5.0.0",
+    "@jupyterlab/settingregistry": "^2.0.0",
     "@jupyterlab/ui-components": "^2.0.0",
+    "@lumino/commands": "^1.12.0",
+    "@lumino/widgets": "^1.16.0",
     "base64-js": "^1.3.0",
     "json-source-map": "^0.4.0",
     "moment": "^2.24.0",
@@ -61,7 +67,8 @@
     "react-dom": "~16.9.0",
     "react-monaco-editor": "^0.26.2",
     "react-resize-detector": "^4.2.0",
-    "react-spinners": "0.5.12"
+    "react-spinners": "0.5.12",
+    "react-window": "^1.8.5"
   },
   "devDependencies": {
     "@babel/core": "^7.5.0",
@@ -78,6 +85,7 @@
     "@types/react": "~16.8.19",
     "@types/react-dom": "~16.0.5",
     "@types/react-resize-detector": "^4.0.1",
+    "@types/react-window": "^1.8.0",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
     "d3-color": "^1.2.8",

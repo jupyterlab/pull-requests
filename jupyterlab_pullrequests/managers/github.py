@@ -56,8 +56,8 @@ class PullRequestsGithubManager(PullRequestsManager):
                     "id": result["pull_request"]["url"],
                     "title": result["title"],
                     "body": result["body"],
-                    "internal_id": result["id"],
-                    "url": result["html_url"],
+                    "internalId": result["id"],
+                    "link": result["html_url"],
                 }
             )
 
@@ -78,8 +78,6 @@ class PullRequestsGithubManager(PullRequestsManager):
                 {
                     "name": result["filename"],
                     "status": result["status"],
-                    "additions": result["additions"],
-                    "deletions": result["deletions"],
                 }
             )
 
@@ -101,7 +99,7 @@ class PullRequestsGithubManager(PullRequestsManager):
             {"ref": data["head"]["ref"]},
         )
         commit_id = data["head"]["sha"]
-        return {"base_url": base_url, "head_url": head_url, "commit_id": commit_id}
+        return {"baseUrl": base_url, "headUrl": head_url, "commitId": commit_id}
 
     async def validate_pr_link(self, link: str):
         try:
@@ -124,16 +122,16 @@ class PullRequestsGithubManager(PullRequestsManager):
 
         links = await self.get_pr_links(pr_id, filename)
 
-        base_raw_url = await self.validate_pr_link(links["base_url"])
-        head_raw_url = await self.validate_pr_link(links["head_url"])
+        base_raw_url = await self.validate_pr_link(links["baseUrl"])
+        head_raw_url = await self.validate_pr_link(links["headUrl"])
 
         base_content = await self.get_link_content(base_raw_url)
         head_content = await self.get_link_content(head_raw_url)
 
         return {
-            "base_content": base_content,
-            "head_content": head_content,
-            "commit_id": links["commit_id"],
+            "baseContent": base_content,
+            "headContent": head_content,
+            "commitId": links["commitId"],
         }
 
     # -----------------------------------------------------------------------------
@@ -143,14 +141,14 @@ class PullRequestsGithubManager(PullRequestsManager):
     def file_comment_response(self, result: Dict[str, str]) -> Dict[str, str]:
         data = {
             "id": result["id"],
-            "line_number": result["position"],
+            "lineNumber": result["position"],
             "text": result["body"],
-            "updated_at": result["updated_at"],
-            "user_name": result["user"]["login"],
-            "user_pic": result["user"]["avatar_url"],
+            "updatedAt": result["updated_at"],
+            "userName": result["user"]["login"],
+            "userPic": result["user"]["avatar_url"],
         }
         if "in_reply_to_id" in result:
-            data["in_reply_to_id"] = result["in_reply_to_id"]
+            data["inReplyToId"] = result["in_reply_to_id"]
         return data
 
     async def get_file_comments(
@@ -174,7 +172,7 @@ class PullRequestsGithubManager(PullRequestsManager):
         else:
             body = {
                 "body": body.text,
-                "commit_id": body.commit_id,
+                "commit_id": body.commitId,
                 "path": body.filename,
                 "position": body.position,
             }

@@ -161,8 +161,8 @@ class PullRequestsFileNBDiffHandler(PullRequestsAPIHandler):
     async def post(self):
         data = get_body_value(self)
         try:
-            prev_content = data["prev_content"]
-            curr_content = data["curr_content"]
+            prev_content = data["previousContent"]
+            curr_content = data["currentContent"]
         except KeyError as e:
             get_logger().error(f"Missing key in POST request.", exc_info=e)
             raise tornado.web.HTTPError(

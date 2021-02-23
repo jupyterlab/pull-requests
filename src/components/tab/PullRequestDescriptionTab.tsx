@@ -1,9 +1,9 @@
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { Widget } from '@lumino/widgets';
-import { PullRequestModel } from '../../models';
+import { IPullRequest } from '../../tokens';
 
 export interface IPullRequestDescriptionTabProps {
-  pr: PullRequestModel;
+  pullRequest: IPullRequest;
   renderMimeRegistry: IRenderMimeRegistry;
 }
 
@@ -15,15 +15,15 @@ export class PullRequestDescriptionTab extends Widget {
 
     super({
       node: PullRequestDescriptionTab.create(
-        props.pr.title,
-        props.pr.link,
+        props.pullRequest.title,
+        props.pullRequest.link,
         markdownRenderer
       )
     });
 
     markdownRenderer.renderModel({
       data: {
-        'text/markdown': props.pr.body
+        'text/markdown': props.pullRequest.body
       },
       trusted: false,
       metadata: {},

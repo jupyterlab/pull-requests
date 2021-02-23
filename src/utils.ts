@@ -1,26 +1,23 @@
+import { URLExt } from '@jupyterlab/coreutils';
 import { ServerConnection } from '@jupyterlab/services';
 
 // API request wrapper
-function httpRequest(
+export async function requestAPI<T>(
   url: string,
   method: string,
-  request?: Record<string, any>
-): Promise<Response> {
+  request?: object
+): Promise<T> {
   const fullRequest = {
     method: method,
     body: JSON.stringify(request)
   };
   const setting = ServerConnection.makeSettings();
-  const fullUrl = setting.baseUrl + url;
-  return ServerConnection.makeRequest(fullUrl, fullRequest, setting);
-}
-
-export async function doRequest(
-  url: string,
-  method: string,
-  request?: object
-): Promise<any> {
-  const response = await httpRequest(url, method, request);
+  const fullUrl = URLExt.join(setting.baseUrl, url);
+  const response = await ServerConnection.makeRequest(
+    fullUrl,
+    fullRequest,
+    setting
+  );
   if (!response.ok) {
     throw new ServerConnection.ResponseError(response);
   }

@@ -11,7 +11,7 @@ import {
   PullRequestCommentThreadModel,
   PullRequestFileModel
 } from '../../models';
-import { doRequest } from '../../utils';
+import { requestAPI } from '../../utils';
 import { PullRequestCommentThread } from './PullRequestCommentThread';
 
 export interface IDiffProps {
@@ -99,12 +99,16 @@ export class NBDiff extends React.Component<IDiffProps, INBDiffState> {
 
   private async performDiff() {
     try {
-      const jsonresults = await doRequest('pullrequests/files/nbdiff', 'POST', {
-        // eslint-disable-next-line @typescript-eslint/camelcase
-        prev_content: this.props.file.basecontent,
-        // eslint-disable-next-line @typescript-eslint/camelcase
-        curr_content: this.props.file.headcontent
-      });
+      const jsonresults = await requestAPI<any>(
+        'pullrequests/files/nbdiff',
+        'POST',
+        {
+          // eslint-disable-next-line @typescript-eslint/camelcase
+          prev_content: this.props.file.basecontent,
+          // eslint-disable-next-line @typescript-eslint/camelcase
+          curr_content: this.props.file.headcontent
+        }
+      );
       const base = jsonresults['base'] as nbformat.INotebookContent;
       const diff = (jsonresults['diff'] as any) as IDiffEntry[];
       const nbdModel = new NotebookDiffModel(base, diff);
@@ -166,7 +170,9 @@ export class NBDiff extends React.Component<IDiffProps, INBDiffState> {
     }
 
     const commentToAdd: PullRequestCommentThreadModel = new PullRequestCommentThreadModel(
-      this.props.file,
+      '',
+      this.props.file.name,
+      this.props.file.commitId,
       this.state.prChunks[i].lineNumber.lineNumberStart
     );
 
@@ -231,7 +237,9 @@ export class NBDiff extends React.Component<IDiffProps, INBDiffState> {
             ) {
               prCellComments.push(
                 new PullRequestCommentThreadModel(
-                  this.props.file,
+                  '',
+                  this.props.file.name,
+                  this.props.file.commitId,
                   thread.comment
                 )
               );

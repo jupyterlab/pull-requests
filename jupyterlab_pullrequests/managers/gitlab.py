@@ -64,8 +64,8 @@ class PullRequestsGitLabManager(PullRequestsManager):
                     "id": url,
                     "title": result["title"],
                     "body": result["description"],
-                    "internal_id": result["id"],
-                    "url": result["web_url"],
+                    "internalId": result["id"],
+                    "link": result["web_url"],
                 }
             )
 
@@ -94,8 +94,6 @@ class PullRequestsGitLabManager(PullRequestsManager):
                 {
                     "name": result["new_path"],
                     "status": status,
-                    "additions": 0,
-                    "deletions": 0,
                 }
             )
 
@@ -131,7 +129,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
             {"ref": data["source_branch"]},
         )
         commit_id = data["diff_refs"]["head_sha"]
-        return {"base_url": base_url, "head_url": head_url, "commit_id": commit_id}
+        return {"baseUrl": base_url, "headUrl": head_url, "commitId": commit_id}
 
     async def get_link_content(self, file_url: str):
         try:
@@ -143,13 +141,13 @@ class PullRequestsGitLabManager(PullRequestsManager):
 
         links = await self.get_pr_links(pr_id, filename)
         
-        base_content = await self.get_link_content(links["base_url"])
-        head_content = await self.get_link_content(links["head_url"])
+        base_content = await self.get_link_content(links["baseUrl"])
+        head_content = await self.get_link_content(links["headUrl"])
 
         return {
-            "base_content": base_content,
-            "head_content": head_content,
-            "commit_id": links["commit_id"],
+            "baseContent": base_content,
+            "headContent": head_content,
+            "commitId": links["commitId"],
         }
 
     # -----------------------------------------------------------------------------
@@ -159,14 +157,14 @@ class PullRequestsGitLabManager(PullRequestsManager):
     def file_comment_response(self, result: Dict[str, str]) -> Dict[str, str]:
         data = {
             "id": result["id"],
-            "line_number": result["position"]["new_line"],
+            "lineNumber": result["position"]["new_line"],
             "text": result["body"],
-            "updated_at": result["updated_at"],
-            "user_name": result["author"]["username"],
-            "user_pic": result["author"]["avatar_url"],
+            "updatedAt": result["updated_at"],
+            "userName": result["author"]["username"],
+            "userPic": result["author"]["avatar_url"],
         }
         if "in_reply_to_id" in result:
-            data["in_reply_to_id"] = result["in_reply_to_id"]
+            data["inReplyToId"] = result["in_reply_to_id"]
         return data
 
     async def get_file_comments(
@@ -190,13 +188,13 @@ class PullRequestsGitLabManager(PullRequestsManager):
     ):
         if isinstance(body, PRCommentReply):
             body = {"body": body.text}
-            # git_url = url_path_join(pr_id, "discussions", "1", "notes")
-            # response = await self._call_gitlab(git_url, method="POST", body=body)
+            git_url = url_path_join(pr_id, "discussions", "1", "notes")
+            response = await self._call_gitlab(git_url, method="POST", body=body)
             return self.file_comment_response(response)
         else:
             body = {
                 "body": body.text,
-                "commit_id": body.commit_id,
+                "commitId": body.commit_id,
                 "path": body.filename,
                 "position": {"position_type": "text", "new_line": body.position},
             }

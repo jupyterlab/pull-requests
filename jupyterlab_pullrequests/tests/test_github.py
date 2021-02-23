@@ -112,7 +112,7 @@ class TestListFiles(TestCase):
             "https://api.github.com/repos/octocat/repo/pulls/1/files"
         )
         assert result == [
-            {"name": "README.md", "status": "added", "additions": 1, "deletions": 0}
+            {"name": "README.md", "status": "added"}
         ]
 
 

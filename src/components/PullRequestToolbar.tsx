@@ -1,27 +1,26 @@
+import React from 'react';
 import { refreshIcon } from '@jupyterlab/ui-components';
-import { Toolbar, ToolbarButton } from '@jupyterlab/apputils';
-import { Widget } from '@lumino/widgets';
+import { ActionButton } from '@jupyterlab/git/lib/components/ActionButton';
 
-export class PullRequestToolbar extends Toolbar {
-  constructor(onUpdate: () => void) {
-    super();
-    this.addClass('jp-PullRequestToolbar');
+export interface IPullRequestToolbarProps {
+  /**
+   * Refresh button callback
+   */
+  onRefresh: () => void;
+}
 
-    // Add toolbar header
-    const widget: Widget = new Widget();
-    const title = document.createElement('h2');
-    title.innerText = 'Pull Requests';
-    widget.addClass('jp-PullRequestToolbarHeader');
-    widget.node.appendChild(title);
-    this.addItem('Widget', widget);
-
-    // Add toolbar refresh button
-    const openRefreshButton = new ToolbarButton({
-      onClick: onUpdate,
-      icon: refreshIcon,
-      tooltip: 'Refresh'
-    });
-    openRefreshButton.addClass('jp-PullRequestToolbarItem');
-    this.addItem('Refresh', openRefreshButton);
-  }
+export function PullRequestToolbar(
+  props: IPullRequestToolbarProps
+): JSX.Element {
+  return (
+    <div className="lm-Widget jp-Toolbar jp-scrollbar-tiny jp-PullRequestToolbar">
+      <h2>Pull Requests</h2>
+      <span className="jp-pullrequest-space"></span>
+      <ActionButton
+        icon={refreshIcon}
+        title="Refresh"
+        onClick={props.onRefresh}
+      />
+    </div>
+  );
 }

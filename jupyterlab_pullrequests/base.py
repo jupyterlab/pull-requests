@@ -8,12 +8,12 @@ from traitlets.config import Configurable
 
 class PRCommentReply(NamedTuple):
     text: str
-    in_reply_to: str
+    inReplyTo: str
 
 
 class PRCommentNew(NamedTuple):
     text: str
-    commit_id: str
+    commitId: str
     filename: str
     position: int
 

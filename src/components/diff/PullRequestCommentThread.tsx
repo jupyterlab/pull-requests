@@ -3,11 +3,11 @@ import { isNull, isUndefined } from 'lodash';
 import * as React from 'react';
 import ReactResizeDetector from 'react-resize-detector';
 import {
-  IPullRequestCommentModel,
   PullRequestCommentThreadModel,
   PullRequestPlainDiffCommentThreadModel
 } from '../../models';
 import moment from 'moment';
+import { IComment } from '../../tokens';
 
 export interface IPullRequestCommentThreadState {
   isExpanded: boolean;
@@ -80,15 +80,15 @@ export class PullRequestCommentThread extends React.Component<
     }
   }
 
-  getCommentItemDom(item: IPullRequestCommentModel) {
+  getCommentItemDom(item: IComment) {
     return (
       <div className="jp-PullRequestCommentItem">
         <div className="jp-PullRequestCommentItemImg">
-          <img src={item.userpic}></img>
+          <img src={item.userPic}></img>
         </div>
         <div className="jp-PullRequestCommentItemContent">
           <div className="jp-PullRequestCommentItemContentTitle">
-            <h2>{item.username}</h2>
+            <h2>{item.userName}</h2>
             <p>{moment(item.updatedAt).fromNow()}</p>
           </div>
           <p>{item.text}</p>
@@ -103,7 +103,7 @@ export class PullRequestCommentThread extends React.Component<
         <div className="jp-PullRequestCommentHeader">
           {!this.state.isExpanded && !isNull(this.state.thread.comment) && (
             <p>
-              {this.state.thread.comment.username}:{' '}
+              {this.state.thread.comment.userName}:{' '}
               {this.state.thread.comment.text}
             </p>
           )}
@@ -144,7 +144,7 @@ export class PullRequestCommentThread extends React.Component<
                     <button
                       onClick={() => this.handleSubmit()}
                       disabled={this.state.inputText === ''}
-                      className="jp-Button-flat jp-mod-styled jp-mod-accept"
+                      className="jp-Button-flat jp-PullRequest-CommentButton jp-mod-styled jp-mod-accept"
                     >
                       Comment
                     </button>

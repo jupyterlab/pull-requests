@@ -1,9 +1,9 @@
 import { FilePath } from '@jupyterlab/git/lib/components/FilePath';
 import * as React from 'react';
-import { PullRequestFileModel } from '../../models';
+import { IFile } from '../../tokens';
 
 export interface IPullRequestBrowserFileItemProps {
-  file: PullRequestFileModel;
+  file: IFile;
 }
 
 export function PullRequestBrowserFileItem(

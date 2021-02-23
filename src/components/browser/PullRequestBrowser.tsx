@@ -1,31 +1,39 @@
-import * as React from 'react';
 import { DocumentRegistry } from '@jupyterlab/docregistry';
-import { PullRequestFileModel, PullRequestModel } from '../../models';
+import { CommandRegistry } from '@lumino/commands';
+import * as React from 'react';
+import { IPullRequestGroup } from '../../tokens';
 import { PullRequestBrowserItem } from './PullRequestBrowserItem';
 
 export interface IPullRequestBrowserProps {
+  /**
+   * Jupyter Front End Commands Registry
+   */
+  commands: CommandRegistry;
   docRegistry: DocumentRegistry;
-  showTab: (data: PullRequestFileModel | PullRequestModel) => Promise<void>;
+  /**
+   * Groups of Pull Request Lists
+   */
+  prGroups: IPullRequestGroup[];
 }
 
+/**
+ * Display the Pull Request Lists
+ * @param props Component properties
+ */
 export function PullRequestBrowser(
   props: IPullRequestBrowserProps
 ): JSX.Element {
   return (
     <div className="jp-PullRequestBrowser">
       <ul>
-        <PullRequestBrowserItem
-          docRegistry={props.docRegistry}
-          showTab={props.showTab}
-          header={'Created by Me'}
-          filter={'created'}
-        />
-        <PullRequestBrowserItem
-          docRegistry={props.docRegistry}
-          showTab={props.showTab}
-          header={'Assigned to Me'}
-          filter={'assigned'}
-        />
+        {props.prGroups.map(group => (
+          <PullRequestBrowserItem
+            key={group.name}
+            commands={props.commands}
+            docRegistry={props.docRegistry}
+            group={group}
+          />
+        ))}
       </ul>
     </div>
   );

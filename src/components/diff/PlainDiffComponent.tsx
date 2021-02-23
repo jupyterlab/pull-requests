@@ -156,7 +156,12 @@ export class PlainDiffComponent extends React.Component<
     const pdcomments: PullRequestPlainDiffCommentThreadModel[] = [];
     for (const thread of this.props.file.comments) {
       const pdcomment = new PullRequestPlainDiffCommentThreadModel(
-        new PullRequestCommentThreadModel(this.props.file, thread.comment),
+        new PullRequestCommentThreadModel(
+          '',
+          this.props.file.name,
+          this.props.file.commitId,
+          thread.comment
+        ),
         this
       );
       pdcomments.push(pdcomment);
@@ -216,7 +221,12 @@ export class PlainDiffComponent extends React.Component<
         }
         this.addComment(
           new PullRequestPlainDiffCommentThreadModel(
-            new PullRequestCommentThreadModel(this.props.file, lineNumber),
+            new PullRequestCommentThreadModel(
+              '',
+              this.props.file.name,
+              this.props.file.commitId,
+              lineNumber
+            ),
             this
           )
         );

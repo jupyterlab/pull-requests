@@ -2,6 +2,8 @@
 | JupyterLab Pull Requests Style
 |----------------------------------------------------------------------------*/
 
+@import url('difftext.css');
+
 .jp-PullRequestBrowser {
   background-color: var(--jp-layout-color1);
   margin: 0;
