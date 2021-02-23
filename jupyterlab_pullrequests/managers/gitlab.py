@@ -33,11 +33,11 @@ class PullRequestsGitLabManager(PullRequestsManager):
     def get_search_filter(self, username: str, pr_filter: str) -> str:
 
         if pr_filter == "created":
-            search_filter = "author_username="
+            search_filter = f"author_username={username}"
         elif pr_filter == "assigned":
-            search_filter = "scope=assigned_to_me&author_username="
+            search_filter = "scope=assigned_to_me"
 
-        return search_filter + username
+        return search_filter 
 
     async def list_prs(self, username: str, pr_filter: str) -> List[Dict[str, str]]:
 
