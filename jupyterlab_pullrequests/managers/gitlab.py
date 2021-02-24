@@ -37,7 +37,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
         elif pr_filter == "assigned":
             search_filter = "scope=assigned_to_me"
 
-        return search_filter 
+        return search_filter
 
     async def list_prs(self, username: str, pr_filter: str) -> List[Dict[str, str]]:
 
@@ -140,7 +140,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
     async def get_file_content(self, pr_id: str, filename: str) -> Dict[str, str]:
 
         links = await self.get_pr_links(pr_id, filename)
-        
+
         base_content = await self.get_link_content(links["baseUrl"])
         head_content = await self.get_link_content(links["headUrl"])
 
@@ -171,19 +171,27 @@ class PullRequestsGitLabManager(PullRequestsManager):
         results = await self._call_gitlab(git_url)
         discussions = []
         for discussion in results:
-            thread = dict(id=discussion["id"], comments=[], lineNumber=None)
+            thread = dict(
+                id=discussion["id"], comments=[], line=None, originalLine=None
+            )
             for note in discussion["notes"]:
                 if filename is None and note["type"] != "DiffNote":
                     thread["comments"].append(self.response_to_comment(note))
-                elif note["type"] == "DiffNote" and note["position"]["new_path"] == filename:
-                    if thread["lineNumber"] is None:
-                        thread["lineNumber"] = note["position"]["new_line"]
+                elif (
+                    note["type"] == "DiffNote"
+                    and (note["position"]["new_path"] or note["position"]["new_path"])
+                    == filename
+                ):
+                    if thread["line"] is None:
+                        thread["line"] = note["position"]["new_line"]
+                    if thread["originalLine"] is None:
+                        thread["originalLine"] = note["position"]["old_line"]
                     thread["comments"].append(self.response_to_comment(note))
                 else:
                     break
             else:
                 discussions.append(thread)
-        
+
         return discussions
 
     async def post_file_comment(

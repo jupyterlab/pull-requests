@@ -32,7 +32,8 @@ class NewComment(NamedTuple):
 # class Discussion:
 #     id: str
 #     comments: List[Comment]
-#     lineNumber: Optional[int] = None
+#     line: Optional[int] = None
+#     originalLine: Optional[int] = None
 
 
 class PRConfig(Configurable):

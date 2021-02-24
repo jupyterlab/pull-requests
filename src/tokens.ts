@@ -53,7 +53,8 @@ export interface INewComment {
 export interface IThread {
   id: string | number;
   // commitId: string;
-  lineNumber: number;
+  line: number;
+  originalLine: number;
   comments: IComment[];
 }
 

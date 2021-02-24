@@ -17,10 +17,10 @@ export class CommentThread extends Widget {
     super({ node: CommentThread.createNode(props.thread, props.renderMime) });
 
     // Add event
-    // const buttons = this.node.getElementsByTagName('button');
-    // buttons[0].addEventListener('click', () => {
-    //   this.isExpanded = !this.isExpanded;
-    // });
+    const buttons = this.node.getElementsByTagName('button');
+    buttons[0].addEventListener('click', () => {
+      this.isExpanded = !this.isExpanded;
+    });
 
     // this._handleAddComment = props.handleAddComment;
     // this._handleRemove = props.handleRemove;

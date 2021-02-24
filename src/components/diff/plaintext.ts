@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
 import { Mode } from '@jupyterlab/codemirror';
 import { mergeView } from '@jupyterlab/git/lib/components/diff/mergeview';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
@@ -76,6 +77,27 @@ export class PlainTextDiff extends Widget {
     }
   }
 
+  protected updateOriginalView(
+    editor: CodeMirror.Editor,
+    from: number,
+    to: number
+  ): void {
+    // Add comments
+    this._props.threads
+      .filter(
+        thread =>
+          thread.originalLine !== null &&
+          from < thread.originalLine &&
+          thread.originalLine <= to
+      )
+      .forEach(thread => {
+        editor.addLineWidget(
+          thread.originalLine - 1,
+          PlainTextDiff.makeThreadWidget(thread, this._props.renderMime)
+        );
+      });
+  }
+
   protected updateView(
     editor: CodeMirror.Editor,
     from: number,
@@ -84,14 +106,17 @@ export class PlainTextDiff extends Widget {
     // Add comment gutters
     PlainTextDiff.setCommentGutter(editor, from, to);
     // Add comments
-    this._props.threads.forEach(thread => {
-      if (from < thread.lineNumber && thread.lineNumber <= to) {
+    this._props.threads
+      .filter(
+        thread =>
+          thread.line !== null && from < thread.line && thread.line <= to
+      )
+      .forEach(thread => {
         editor.addLineWidget(
-          thread.lineNumber - 1,
+          thread.line - 1,
           PlainTextDiff.makeThreadWidget(thread, this._props.renderMime)
         );
-      }
-    });
+      });
   }
 
   /**
@@ -127,9 +152,23 @@ export class PlainTextDiff extends Widget {
       }
     ) as MergeView.MergeViewEditor;
 
-    const { from, to } = this._mergeView.editor().getViewport();
-    this.updateView(this._mergeView.editor(), from, to);
-    this._mergeView.editor().on('viewportChange', this.updateView.bind(this));
+    {
+      // @ts-ignore
+      const { from, to } = this._mergeView.left.orig.getViewport();
+      // @ts-ignore
+      this.updateOriginalView(this._mergeView.left.orig, from, to);
+      // @ts-ignore
+      this._mergeView.left.orig.on(
+        'viewportChange',
+        this.updateOriginalView.bind(this)
+      );
+    }
+
+    {
+      const { from, to } = this._mergeView.editor().getViewport();
+      this.updateView(this._mergeView.editor(), from, to);
+      this._mergeView.editor().on('viewportChange', this.updateView.bind(this));
+    }
   }
 
   protected _mergeView: MergeView.MergeViewEditor;
