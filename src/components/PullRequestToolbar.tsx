@@ -14,13 +14,16 @@ export function PullRequestToolbar(
 ): JSX.Element {
   return (
     <div className="lm-Widget jp-Toolbar jp-scrollbar-tiny jp-PullRequestToolbar">
-      <h2>Pull Requests</h2>
-      <span className="jp-pullrequest-space"></span>
-      <ActionButton
-        icon={refreshIcon}
-        title="Refresh"
-        onClick={props.onRefresh}
-      />
+      <div className="jp-PullRequestToolbarHeader">
+        <h2>Pull Requests</h2>
+      </div>
+      <div className="jp-PullRequestToolbarItem">
+        <ActionButton
+          icon={refreshIcon}
+          title="Refresh"
+          onClick={props.onRefresh}
+        />
+      </div>
     </div>
   );
 }

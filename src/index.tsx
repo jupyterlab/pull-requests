@@ -76,7 +76,9 @@ function activate(
         });
         mainAreaItem.id = pullRequest.id;
         mainAreaItem.title.label = pullRequest.title;
+        mainAreaItem.title.caption = pullRequest.title;
         mainAreaItem.title.icon = pullRequestsIcon;
+        mainAreaItem.title.closable = true;
         shell.add(mainAreaItem, 'main');
       }
 
@@ -111,6 +113,7 @@ function activate(
         mainAreaItem.id = id;
         mainAreaItem.title.label = file.name;
         mainAreaItem.title.icon = diffIcon;
+        mainAreaItem.title.closable = true;
         shell.add(mainAreaItem, 'main');
       }
 

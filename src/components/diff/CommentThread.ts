@@ -63,12 +63,12 @@ export class CommentThread extends Widget {
   }
 
   protected static createCommentNode(comment: IComment): string {
-    return `<div className="jp-PullRequestCommentItem">
-    <div className="jp-PullRequestCommentItemImg">
+    return `<div class="jp-PullRequestCommentItem">
+    <div class="jp-PullRequestCommentItemImg">
       <img src=${comment.userPic}></img>
     </div>
-    <div className="jp-PullRequestCommentItemContent">
-      <div className="jp-PullRequestCommentItemContentTitle">
+    <div class="jp-PullRequestCommentItemContent">
+      <div class="jp-PullRequestCommentItemContentTitle">
         <h2>${comment.userName}</h2>
         <p>${moment(comment.updatedAt).fromNow()}</p>
       </div>
@@ -79,8 +79,8 @@ export class CommentThread extends Widget {
 
   protected static createNode(): HTMLDivElement {
     const div = document.createElement('div');
-    div.innerHTML = `<div className="jp-PullRequestComment">
-    <div className="jp-PullRequestCommentHeader">
+    div.innerHTML = `<div class="jp-PullRequestComment">
+    <div class="jp-PullRequestCommentHeader">
       <button></button>
     </div>
   </div>`;
@@ -99,19 +99,19 @@ export class CommentThread extends Widget {
     }
 
     container.innerHTML = `<textarea
-      className="jp-PullRequestInputForm jp-PullRequestInputFormTextArea"
+      class="jp-PullRequestInputForm jp-PullRequestInputFormTextArea"
       placeholder="Leave a comment"
       value=""
     />
-    <div className="jp-PullRequestInputButtonContainer">
+    <div class="jp-PullRequestInputButtonContainer">
       <button
-        className="jp-Button-flat jp-mod-styled jp-mod-reject"
+        class="jp-Button-flat jp-mod-styled jp-mod-reject"
       >
         Cancel
       </button>
       <button
         disabled=true
-        className="jp-PullRequest-CommentButton jp-Button-flat jp-mod-styled jp-mod-accept"
+        class="jp-PullRequest-CommentButton jp-Button-flat jp-mod-styled jp-mod-accept"
       >
         Comment
       </button>

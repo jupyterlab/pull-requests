@@ -12,14 +12,15 @@ import { JSONObject } from '@lumino/coreutils';
 import { Message } from '@lumino/messaging';
 import { Panel, Widget } from '@lumino/widgets';
 import { IDiffEntry } from 'nbdime/lib/diff/diffentries';
-import { NotebookDiffModel } from 'nbdime/lib/diff/model';
-import { CELLDIFF_CLASS, NotebookDiffWidget } from 'nbdime/lib/diff/widget';
+import { CellDiffModel, NotebookDiffModel } from 'nbdime/lib/diff/model';
+import { CELLDIFF_CLASS } from 'nbdime/lib/diff/widget';
 import {
   CHUNK_PANEL_CLASS,
   UNCHANGED_DIFF_CLASS
 } from 'nbdime/lib/diff/widget/common';
-import { IDiffOptions } from '../../tokens';
+import { IDiffOptions, IThread } from '../../tokens';
 import { requestAPI } from '../../utils';
+import { NotebookCommentDiffWidget } from './NotebookCommentDiffWidget';
 
 /**
  * Class of the outermost widget, the draggable tab
@@ -62,16 +63,9 @@ export class NotebookDiff extends Panel {
     }
 
     this.computeDiff(props.content.baseContent, props.content.headContent)
-      .then(
-        // model => {
-        //   this._diffWidget = new NotebookDiffWidget(model, props.renderMime);
-        //   this.node.append(this._diffWidget.node);
-        //   this._diffWidget.init();
-        // }
-        data => {
-          this.onData(data, props.renderMime);
-        }
-      )
+      .then(data => {
+        this.onData(data, props.renderMime, props.threads);
+      })
       .catch(error => {
         this.onError(error);
       });
@@ -92,6 +86,13 @@ export class NotebookDiff extends Panel {
     super.dispose();
   }
 
+  protected static mapThreadsOnChunks(
+    chunks: CellDiffModel[][],
+    threads: IThread[]
+  ): IThread[][] {
+    return chunks.map(chunk => []);
+  }
+
   /**
    * Handle `'activate-request'` messages.
    */
@@ -99,14 +100,26 @@ export class NotebookDiff extends Panel {
     this.scroller.node.focus();
   }
 
-  protected onData(data: JSONObject, renderMime: IRenderMimeRegistry): void {
+  protected onData(
+    data: JSONObject,
+    renderMime: IRenderMimeRegistry,
+    threads: IThread[]
+  ): void {
     if (this.isDisposed) {
       return;
     }
     const base = data['base'] as INotebookContent;
     const diff = (data['diff'] as any) as IDiffEntry[];
     const nbdModel = new NotebookDiffModel(base, diff);
-    const nbdWidget = new NotebookDiffWidget(nbdModel, renderMime);
+    const groupedComments = NotebookDiff.mapThreadsOnChunks(
+      nbdModel.chunkedCells,
+      threads
+    );
+    const nbdWidget = new NotebookCommentDiffWidget(
+      nbdModel,
+      groupedComments,
+      renderMime
+    );
 
     this.scroller.addWidget(nbdWidget);
     const work = nbdWidget.init();
@@ -126,7 +139,10 @@ export class NotebookDiff extends Panel {
       return;
     }
     const widget = new Widget();
-    widget.node.innerHTML = `Failed to fetch diff: ${error.message}`;
+    widget.node.innerHTML = `<h2 class="jp-PullRequestTabError">
+    <span style="color: 'var(--jp-ui-font-color1)';">
+      Error Loading File:
+    </span> ${error.message}</h2>`;
     this.scroller.addWidget(widget);
   }
 

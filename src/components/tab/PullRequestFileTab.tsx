@@ -1,8 +1,8 @@
 import { Spinner } from '@jupyterlab/apputils';
 import { PathExt } from '@jupyterlab/coreutils';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
-import { Widget } from '@lumino/widgets';
-import { IComment, IFileContent } from '../../tokens';
+import { Panel } from '@lumino/widgets';
+import { IFileContent, IThread } from '../../tokens';
 import { requestAPI } from '../../utils';
 import { NotebookDiff } from '../diff/notebook';
 import { PlainTextDiff } from '../diff/plaintext';
@@ -13,23 +13,24 @@ export interface IFileDiffWidgetProps {
   renderMime: IRenderMimeRegistry;
 }
 
-export class FileDiffWidget extends Widget {
+// FIXME change for a factory?
+export class FileDiffWidget extends Panel {
   constructor(props: IFileDiffWidgetProps) {
-    const node = FileDiffWidget.createNode();
-    super({ node });
-    this._spinner = FileDiffWidget.createSpinner();
-    this.node.append(this._spinner);
+    super();
+    this.addClass('jp-PullRequestTab');
+    this._spinner = new Spinner();
+    this.addWidget(this._spinner);
 
     this.loadDiff(props.pullRequestId, props.filename)
-      .then(([content, comments]) => {
+      .then(([content, threads]) => {
         this.showDiff(
           props.pullRequestId,
           props.filename,
           content,
-          comments,
+          threads,
           props.renderMime
         );
-        this._spinner.remove();
+        this._spinner.dispose();
       })
       .catch(reason => {
         let msg = `Load File Error (${reason.message})`;
@@ -38,7 +39,7 @@ export class FileDiffWidget extends Widget {
         ) {
           msg = `Diff for ${props.filename} is not supported.`;
         }
-        this._spinner.remove();
+        this._spinner.dispose();
         this.showError(msg);
       });
   }
@@ -46,7 +47,7 @@ export class FileDiffWidget extends Widget {
   protected async loadDiff(
     prId: string,
     filename: string
-  ): Promise<[IFileContent<any>, IComment[]]> {
+  ): Promise<[IFileContent<any>, IThread[]]> {
     return Promise.all([
       requestAPI<IFileContent<any>>(
         `pullrequests/files/content?id=${encodeURIComponent(
@@ -54,7 +55,7 @@ export class FileDiffWidget extends Widget {
         )}&filename=${encodeURIComponent(filename)}`,
         'GET'
       ),
-      requestAPI<IComment[]>(
+      requestAPI<IThread[]>(
         `pullrequests/files/comments?id=${encodeURIComponent(
           prId
         )}&filename=${encodeURIComponent(filename)}`,
@@ -67,30 +68,30 @@ export class FileDiffWidget extends Widget {
     prId: string,
     filename: string,
     content: IFileContent<any>,
-    comments: IComment[],
+    threads: IThread[],
     renderMime: IRenderMimeRegistry
   ): void {
     const fileExtension = PathExt.extname(filename).toLowerCase();
     if (fileExtension === '.ipynb') {
-      this.node.append(
+      this.addWidget(
         new NotebookDiff({
           prId,
           filename,
           content,
-          comments,
+          threads,
           renderMime
-        }).node
+        })
       );
     } else {
       try {
-        this.node.append(
+        this.addWidget(
           new PlainTextDiff({
             prId,
             filename,
             content,
-            comments,
+            threads,
             renderMime
-          }).node
+          })
         );
       } catch (reason) {
         //FIXME
@@ -100,23 +101,17 @@ export class FileDiffWidget extends Widget {
   }
 
   protected showError(message: string): void {
-    this.node.innerHTML = `<h2 className="jp-PullRequestTabError"><span style="color: 'var(--jp-ui-font-color1)';">Error Loading File:</span> ${message}</h2>`;
+    this.node.innerHTML = `<h2 class="jp-PullRequestTabError"><span style="color: 'var(--jp-ui-font-color1)';">Error Loading File:</span> ${message}</h2>`;
   }
 
-  private static createNode(): HTMLDivElement {
-    const div = document.createElement('div');
-    div.className = 'jp-PullRequestTab';
-    return div;
-  }
+  // private static createSpinner(): Widget {
+  //   const div = document.createElement('div');
+  //   div.className = 'jp-PullRequestTabLoadingContainer';
+  //   div.append(new Spinner().node);
+  //   return div;
+  // }
 
-  private static createSpinner(): HTMLDivElement {
-    const div = document.createElement('div');
-    div.className = 'jp-PullRequestTabLoadingContainer';
-    div.append(new Spinner().node);
-    return div;
-  }
-
-  private _spinner: HTMLDivElement;
+  private _spinner: Spinner;
 }
 
 // export class PullRequestFileTab extends React.Component<

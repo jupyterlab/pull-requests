@@ -2,13 +2,51 @@
 | JupyterLab Pull Requests Style
 |----------------------------------------------------------------------------*/
 
-@import url('difftext.css');
+@import url('~@jupyterlab/git/style/variables.css');
+@import url('~@jupyterlab/git/style/diff-common.css');
+@import url('~@jupyterlab/git/style/diff-text.css');
+
+.jp-PullRequestPanel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.jp-PullRequestToolbar {
+  flex: 0 0 auto;
+  border-bottom: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.jp-PullRequestToolbar .jp-PullRequestToolbarHeader {
+  padding: 0;
+}
+
+.jp-PullRequestToolbar .jp-PullRequestToolbarHeader h2 {
+  font-size: var(--jp-ui-font-size0);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--jp-ui-font-color1);
+  padding: 8px 12px;
+  margin: 0;
+  line-height: normal;
+}
+
+.jp-PullRequestToolbar .jp-PullRequestToolbarItem {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  padding: 2px 5px;
+}
 
 .jp-PullRequestBrowser {
+  flex: 1 1 auto;
   background-color: var(--jp-layout-color1);
   margin: 0;
-  height: 100vh;
   font-size: var(--jp-ui-font-size1);
+  overflow-y: auto;
 }
 
 .jp-PullRequestBrowser ul {
@@ -110,13 +148,6 @@
   margin-left: 4px;
 }
 
-.jp-Icon-13 {
-  margin: 0;
-  min-width: 13px;
-  min-height: 13px;
-  background-size: 13px;
-}
-
 .jp-PullRequestBrowserFileItem .jp-PullRequestBrowserFileItemDiffText {
   color: var(--jp-ui-font-color2);
   font-size: 11px;
@@ -131,34 +162,6 @@
   line-height: normal;
   background: var(--jp-rendermime-error-background);
   color: #e75c58;
-}
-
-.jp-PullRequestToolbar {
-  /* border-bottom: var(--jp-border-width) solid var(--jp-border-color2); */
-  border-bottom: none;
-  box-shadow: none;
-  padding: 0;
-}
-
-.jp-PullRequestToolbar .jp-PullRequestToolbarHeader {
-  padding: 0;
-}
-
-.jp-PullRequestToolbar .jp-PullRequestToolbarHeader h2 {
-  font-size: var(--jp-ui-font-size0);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--jp-ui-font-color1);
-  padding: 8px 12px;
-  margin: 0;
-  line-height: normal;
-}
-
-.jp-PullRequestToolbar .jp-PullRequestToolbarItem {
-  flex: 1;
-  justify-content: flex-end;
-  padding: 2px 5px;
 }
 
 .jp-PullRequestTab {
@@ -334,7 +337,15 @@
   border-radius: 3px;
 }
 
-.jp-PullRequestCommentDecoration {
+.jp-PullRequestTextDiff .CodeMirror-gutter.jp-PullRequestCommentDecoration,
+.jp-PullRequestTextDiff .CodeMirror-gutter-elt > .jp-PullRequestCommentDecoration {
+  background: transparent;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.jp-PullRequestCommentDecoration,
+.jp-PullRequestTextDiff .CodeMirror-gutter-elt > .jp-PullRequestCommentDecoration:hover {
   background-image: url(icons/pullrequest-plus.svg), linear-gradient(var(--jp-brand-color1), var(--jp-brand-color1));
   border-radius: var(--jp-border-radius);
   background-size: contain;
@@ -347,28 +358,20 @@
   transition: all .2s ease-in-out;
 }
 
+.jp-PullRequestTextDiff .cm-s-jupyter .CodeMirror-gutters {
+  background-color: var(--jp-layout-color2);
+}
+
 .jp-PullRequestCommentDecoration:hover {
   transform: scale(1.2);
 }
 
-.jp-PullRequestTab .monaco-editor .margin-view-overlays .line-numbers {
-  text-align: right !important;
+.jp-Notebook-diff {
+  overflow: visible;
 }
 
-[data-jp-theme-light='true'] .jp-PullRequestTab .monaco-editor .current-line ~ .line-numbers {
-  color: var(--jp-ui-font-color0);
-}
-
-[data-jp-theme-light='false'] .jp-PullRequestTab .monaco-editor .current-line ~ .line-numbers {
-  color: var(--jp-ui-font-color2);
-}
-
-.jp-PullRequestTab .monaco-diff-editor .editor.modified .margin {
-  z-index: 1;
-}
-
-.jp-PullRequestTab .monaco-diff-editor .editor.modified .overlayWidgets {
-  z-index: 2;
+.jp-PullRequestNBDiff {
+  overflow: visible;
 }
 
 .jp-Notebook-diff .CodeMirror-gutter.CodeMirror-linenumbers[style] {

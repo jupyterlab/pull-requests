@@ -76,7 +76,7 @@ export interface IDiffOptions {
   prId: string;
   filename: string;
   content: IFileContent<any>;
-  comments: IComment[];
+  threads: IThread[];
 
   /**
    * A rendermime instance to use to render markdown/outputs.

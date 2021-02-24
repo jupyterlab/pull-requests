@@ -23,3 +23,40 @@ export async function requestAPI<T>(
   }
   return response.json();
 }
+
+/**
+ * Generate a HTML node.
+ *
+ * @param tag Node tag
+ * @param attributes Node attributes
+ * @param text Node text content
+ * @param events Node events
+ * @returns HTMLElement
+ */
+export function generateNode(
+  tag: string,
+  attributes?: { [key: string]: string },
+  text?: string,
+  events?: {
+    [key: string]: EventListenerOrEventListenerObject;
+  }
+): HTMLElement {
+  const node = document.createElement(tag);
+  if (attributes) {
+    for (const name in attributes) {
+      node.setAttribute(name, attributes[name]);
+    }
+  }
+
+  if (text) {
+    node.textContent = text;
+  }
+
+  if (events) {
+    for (const event in events) {
+      node.addEventListener(event, events[event]);
+    }
+  }
+
+  return node;
+}

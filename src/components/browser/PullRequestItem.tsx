@@ -83,30 +83,31 @@ export function PullRequestItem(props: IPullRequestItemProps): JSX.Element {
 
   return (
     <li
-      className="jp-PullRequestBrowserItemListItem"
       key={pullRequest.id}
       onClick={(): void => {
         commands.execute(CommandIDs.prOpenDescription, { pullRequest } as any);
       }}
     >
-      <h2>{pullRequest.title}</h2>
-      <div className="jp-PullRequestBrowserItemListItemIconWrapper">
-        <ActionButton
-          icon={linkIcon}
-          onClick={(e): void => {
-            e.stopPropagation();
-            openLink(pullRequest.link);
-          }}
-          title="Open in new tab"
-        />
-        <ActionButton
-          icon={isExpanded ? caretUpIcon : caretDownIcon}
-          onClick={(e): void => {
-            e.stopPropagation();
-            toggleFilesExpanded();
-          }}
-          title={isExpanded ? 'Hide modified files' : 'Show modified files'}
-        />
+      <div className="jp-PullRequestBrowserItemListItem">
+        <h2>{pullRequest.title}</h2>
+        <div className="jp-PullRequestBrowserItemListItemIconWrapper">
+          <ActionButton
+            icon={linkIcon}
+            onClick={(e): void => {
+              e.stopPropagation();
+              openLink(pullRequest.link);
+            }}
+            title="Open in new tab"
+          />
+          <ActionButton
+            icon={isExpanded ? caretUpIcon : caretDownIcon}
+            onClick={(e): void => {
+              e.stopPropagation();
+              toggleFilesExpanded();
+            }}
+            title={isExpanded ? 'Hide modified files' : 'Show modified files'}
+          />
+        </div>
       </div>
       {isLoading ? (
         <BeatLoader
