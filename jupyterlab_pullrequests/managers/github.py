@@ -7,7 +7,7 @@ from tornado.httpclient import AsyncHTTPClient, HTTPClientError, HTTPRequest
 from tornado.httputil import url_concat
 from tornado.web import HTTPError
 
-from ..base import PRCommentNew, PRCommentReply
+from ..base import NewComment, CommentReply
 from ..log import get_logger
 from .manager import PullRequestsManager
 
@@ -151,10 +151,10 @@ class PullRequestsGithubManager(PullRequestsManager):
             data["inReplyToId"] = result["in_reply_to_id"]
         return data
 
-    async def get_file_comments(
-        self, pr_id: str, filename: str
-    ) -> List[Dict[str, str]]:
-
+    async def get_threads(
+        self, pr_id: str, filename: Optional[str] = None
+    ) -> List[dict]:
+        # FIXME
         git_url = url_path_join(pr_id, "/comments")
         results = await self.call_github(git_url)
         return [
@@ -164,10 +164,10 @@ class PullRequestsGithubManager(PullRequestsManager):
         ]
 
     async def post_file_comment(
-        self, pr_id: str, filename: str, body: Union[PRCommentReply, PRCommentNew]
+        self, pr_id: str, filename: str, body: Union[CommentReply, NewComment]
     ):
 
-        if isinstance(body, PRCommentReply):
+        if isinstance(body, CommentReply):
             body = {"body": body.text, "in_reply_to": body.in_reply_to}
         else:
             body = {

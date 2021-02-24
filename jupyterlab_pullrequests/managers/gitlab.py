@@ -8,7 +8,7 @@ from tornado.httpclient import AsyncHTTPClient, HTTPClientError, HTTPRequest
 from tornado.httputil import url_concat
 from tornado.web import HTTPError
 
-from ..base import PRCommentNew, PRCommentReply
+from ..base import NewComment, CommentReply
 from ..log import get_logger
 from .manager import PullRequestsManager
 
@@ -154,53 +154,58 @@ class PullRequestsGitLabManager(PullRequestsManager):
     # /pullrequests/files/comments Handler
     # -----------------------------------------------------------------------------
 
-    def file_comment_response(self, result: Dict[str, str]) -> Dict[str, str]:
+    def response_to_comment(self, result: Dict[str, str]) -> Dict[str, str]:
         data = {
             "id": result["id"],
-            "lineNumber": result["position"]["new_line"],
             "text": result["body"],
             "updatedAt": result["updated_at"],
             "userName": result["author"]["username"],
             "userPic": result["author"]["avatar_url"],
         }
-        if "in_reply_to_id" in result:
-            data["inReplyToId"] = result["in_reply_to_id"]
         return data
 
-    async def get_file_comments(
-        self, pr_id: str, filename: str
-    ) -> List[Dict[str, str]]:
-
+    async def get_threads(
+        self, pr_id: str, filename: Optional[str] = None
+    ) -> List[dict]:
         git_url = url_path_join(pr_id, "/discussions")
         results = await self._call_gitlab(git_url)
-        comments = []
+        discussions = []
         for discussion in results:
-            for idx, note in enumerate(discussion["notes"]):
-                if note["type"] == "DiffNote" and note["position"]["new_path"] == filename:
-                    if idx > 0:  # FIXME Change GitHub logic to fit GitLab logic
-                        note["in_reply_to_id"] = discussion["notes"][idx - 1]["id"]
-                    comments.append(self.file_comment_response(note))
+            thread = dict(id=discussion["id"], comments=[], lineNumber=None)
+            for note in discussion["notes"]:
+                if filename is None and note["type"] != "DiffNote":
+                    thread["comments"].append(self.response_to_comment(note))
+                elif note["type"] == "DiffNote" and note["position"]["new_path"] == filename:
+                    if thread["lineNumber"] is None:
+                        thread["lineNumber"] = note["position"]["new_line"]
+                    thread["comments"].append(self.response_to_comment(note))
+                else:
+                    break
+            else:
+                discussions.append(thread)
         
-        return comments
+        return discussions
 
     async def post_file_comment(
-        self, pr_id: str, filename: str, body: Union[PRCommentReply, PRCommentNew]
+        self, pr_id: str, filename: str, body: Union[CommentReply, NewComment]
     ):
-        if isinstance(body, PRCommentReply):
-            body = {"body": body.text}
-            git_url = url_path_join(pr_id, "discussions", "1", "notes")
-            response = await self._call_gitlab(git_url, method="POST", body=body)
-            return self.file_comment_response(response)
-        else:
-            body = {
-                "body": body.text,
-                "commitId": body.commit_id,
-                "path": body.filename,
-                "position": {"position_type": "text", "new_line": body.position},
-            }
-            git_url = url_path_join(pr_id, "discussions")
-            response = await self._call_gitlab(git_url, method="POST", body=body)
-            return self.file_comment_response(response)
+        get_logger().info(f"Get POST request with {pr_id}, {filename}, {body}")
+        pass
+        # if isinstance(body, CommentReply):
+        #     body = {"body": body.text}
+        #     git_url = url_path_join(pr_id, "discussions", "1", "notes")
+        #     response = await self._call_gitlab(git_url, method="POST", body=body)
+        #     return self.file_comment_response(response)
+        # else:
+        #     body = {
+        #         "body": body.text,
+        #         "commitId": body.commit_id,
+        #         "path": body.filename,
+        #         "position": {"position_type": "text", "new_line": body.position},
+        #     }
+        #     git_url = url_path_join(pr_id, "discussions")
+        #     response = await self._call_gitlab(git_url, method="POST", body=body)
+        #     return self.file_comment_response(response)
 
     async def _call_gitlab(
         self,

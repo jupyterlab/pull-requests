@@ -62,7 +62,7 @@ setup_args = dict(
     long_description_content_type="text/markdown",
     cmdclass=cmdclass,
     packages=setuptools.find_packages(),
-    install_requires=["jupyterlab~=2.0", "nbdime"],
+    install_requires=["dataclasses;python_version<'3.7'", "jupyterlab~=2.0", "nbdime"],
     python_requires=">=3.6",
     tests_require=tests_require,
     extras_require={"test": tests_require},

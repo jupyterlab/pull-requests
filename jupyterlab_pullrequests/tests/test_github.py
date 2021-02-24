@@ -13,7 +13,7 @@ from tornado.httpclient import (
 )
 from tornado.web import HTTPError, MissingArgumentError
 
-from jupyterlab_pullrequests.base import PRCommentReply
+from jupyterlab_pullrequests.base import CommentReply
 from jupyterlab_pullrequests.managers.github import PullRequestsGithubManager
 
 client = AsyncHTTPClient()
@@ -206,7 +206,7 @@ class TestGetFileComments(TestCase):
     async def test_call(self, mock_call_github):
         manager = PullRequestsGithubManager()
         mock_call_github.return_value = read_sample_response("github_comments_get.json")
-        result = await manager.get_file_comments(
+        result = await manager.get_threads(
             "https://api.github.com/repos/octocat/repo/pulls/1", "test.ipynb"
         )
         mock_call_github.assert_called_with(
@@ -235,7 +235,7 @@ class TestPostFileComments(TestCase):
         mock_call_github.return_value = read_sample_response(
             "github_comments_post.json"
         )
-        body = PRCommentReply("test text", 123)
+        body = CommentReply("test text", 123)
         result = await manager.post_file_comment(
             "https://api.github.com/repos/octocat/repo/pulls/1", "test.ipynb", body
         )
@@ -264,10 +264,10 @@ class TestPostFileComments(TestCase):
         mock_call_github.return_value = read_sample_response(
             "github_comments_post.json"
         )
-        PRCommentNew = namedtuple(
-            "PRCommentNew", ["text", "commit_id", "filename", "position"]
+        NewComment = namedtuple(
+            "NewComment", ["text", "commit_id", "filename", "position"]
         )
-        body = PRCommentNew("test text", 123, "test.ipynb", 3)
+        body = NewComment("test text", 123, "test.ipynb", 3)
         result = await manager.post_file_comment(
             "https://api.github.com/repos/octocat/repo/pulls/1", "test.ipynb", body
         )

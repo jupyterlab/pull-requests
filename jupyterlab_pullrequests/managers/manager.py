@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import abc
 import json
-from typing import Dict, NoReturn
+from typing import Dict, List, NoReturn, Optional
 
 import nbformat
 import tornado
@@ -63,14 +63,16 @@ class PullRequestsManager(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    async def get_file_comments(self, pr_id: str, filename: str) -> list:
-        """ "Get the comments on a file.
+    async def get_threads(
+        self, pr_id: str, filename: Optional[str] = None
+    ) -> List[dict]:
+        """Get the discussions on a file or the pull request.
 
         Args:
             pr_id: PR ID endpoint
-            filename: The file name
+            filename: The file name; None to get the discussion on the pull requests
         Returns:
-            The file comments
+            The discussions
         """
         raise NotImplementedError()
 

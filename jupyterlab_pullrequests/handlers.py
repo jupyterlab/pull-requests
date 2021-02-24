@@ -12,7 +12,7 @@ import tornado.escape as escape
 from notebook.base.handlers import APIHandler
 from notebook.utils import url_path_join
 
-from .base import PRCommentNew, PRCommentReply, PRConfig
+from .base import NewComment, CommentReply, PRConfig
 from .log import get_logger
 from .managers import MANAGERS
 from .managers.manager import PullRequestsManager
@@ -120,26 +120,26 @@ class PullRequestsFileContentHandler(PullRequestsAPIHandler):
 
 class PullRequestsFileCommentsHandler(PullRequestsAPIHandler):
     """
-    Returns file comments
+    Handle comments
     """
 
     @tornado.web.authenticated
     async def get(self):
         pr_id = get_request_attr_value(self, "id")
-        filename = get_request_attr_value(self, "filename")
-        content = await self._manager.get_file_comments(pr_id, filename)
+        filename = self.get_query_argument("filename", None)
+        content = await self._manager.get_threads(pr_id, filename)
         self.finish(json.dumps(content))
 
     @tornado.web.authenticated
     async def post(self):
         pr_id = get_request_attr_value(self, "id")
-        filename = get_request_attr_value(self, "filename")
+        filename = self.get_query_argument("filename", None)
         data = get_body_value(self)
         try:
             if "in_reply_to" in data:
-                body = PRCommentReply(data["text"], data["in_reply_to"])
+                body = CommentReply(data["text"], data["in_reply_to"])
             else:
-                body = PRCommentNew(
+                body = NewComment(
                     data["text"], data["commit_id"], data["filename"], data["position"]
                 )
         except KeyError as e:
