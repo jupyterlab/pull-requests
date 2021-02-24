@@ -1,8 +1,12 @@
 import { Widget } from '@lumino/widgets';
 import { IComment, IThread } from '../../tokens';
 import moment from 'moment';
+import { generateNode } from '../../utils';
+import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { caretUpIcon } from '@jupyterlab/ui-components';
 
 export interface ICommentThreadProps {
+  renderMime: IRenderMimeRegistry;
   thread: IThread;
   handleRemove: () => void;
   handleAddComment: (comment: IComment) => void;
@@ -10,13 +14,13 @@ export interface ICommentThreadProps {
 
 export class CommentThread extends Widget {
   constructor(props: ICommentThreadProps) {
-    super({ node: CommentThread.createNode() });
+    super({ node: CommentThread.createNode(props.thread, props.renderMime) });
 
     // Add event
-    const buttons = this.node.getElementsByTagName('button');
-    buttons[0].addEventListener('click', () => {
-      this.isExpanded = !this.isExpanded;
-    });
+    // const buttons = this.node.getElementsByTagName('button');
+    // buttons[0].addEventListener('click', () => {
+    //   this.isExpanded = !this.isExpanded;
+    // });
 
     // this._handleAddComment = props.handleAddComment;
     // this._handleRemove = props.handleRemove;
@@ -62,28 +66,69 @@ export class CommentThread extends Widget {
     }
   }
 
-  protected static createCommentNode(comment: IComment): string {
-    return `<div class="jp-PullRequestCommentItem">
-    <div class="jp-PullRequestCommentItemImg">
-      <img src=${comment.userPic}></img>
-    </div>
-    <div class="jp-PullRequestCommentItemContent">
-      <div class="jp-PullRequestCommentItemContentTitle">
-        <h2>${comment.userName}</h2>
-        <p>${moment(comment.updatedAt).fromNow()}</p>
-      </div>
-      <p>${comment.text}</p>
-    </div>
-  </div>`;
+  protected static createCommentNode(
+    comment: IComment,
+    renderMime: IRenderMimeRegistry
+  ): HTMLElement {
+    const head = generateNode('div', { class: 'jp-PullRequestCommentItem' });
+    head
+      .appendChild(
+        generateNode('div', { class: 'jp-PullRequestCommentItemImg' })
+      )
+      .appendChild(
+        generateNode('img', { src: comment.userPicture, altText: 'Avatar' })
+      );
+    const content = head.appendChild(
+      generateNode('div', { class: 'jp-PullRequestCommentItemContent' })
+    );
+    const div = content.appendChild(
+      generateNode('div', { class: 'jp-PullRequestCommentItemContentTitle' })
+    );
+    div.appendChild(generateNode('h2', null, comment.userName));
+    div.appendChild(
+      generateNode(
+        'p',
+        { title: new Date(comment.updatedAt).toString() },
+        moment(comment.updatedAt).fromNow()
+      )
+    );
+
+    // Add rendered comment
+    const markdownRenderer = renderMime.createRenderer('text/markdown');
+    content.appendChild(markdownRenderer.node);
+    markdownRenderer.renderModel({
+      data: {
+        'text/markdown': comment.text
+      },
+      trusted: false,
+      metadata: {},
+      setData: () => null
+    });
+
+    return head;
   }
 
-  protected static createNode(): HTMLDivElement {
-    const div = document.createElement('div');
-    div.innerHTML = `<div class="jp-PullRequestComment">
-    <div class="jp-PullRequestCommentHeader">
-      <button></button>
-    </div>
-  </div>`;
+  protected static createNode(
+    thread: IThread,
+    renderMime: IRenderMimeRegistry
+  ): HTMLElement {
+    const div = generateNode('div', { class: 'jp-PullRequestComment' });
+    div
+      .appendChild(
+        generateNode('div', {
+          class: 'jp-PullRequestCommentHeader'
+        })
+      )
+      .appendChild(generateNode('button'))
+      .appendChild(caretUpIcon.element({ tag: 'span' }));
+
+    const commentContainer = div.appendChild(generateNode('div'));
+
+    thread.comments.forEach(comment => {
+      commentContainer.appendChild(
+        CommentThread.createCommentNode(comment, renderMime)
+      );
+    });
     return div;
   }
 
@@ -133,6 +178,6 @@ export class CommentThread extends Widget {
   // private _handleAddComment: (comment: IComment) => void;
   private _inputShown: boolean;
   private _inputText: string;
-  private _isExpanded: boolean;
+  private _isExpanded = true;
   private _thread: IThread;
 }

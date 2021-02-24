@@ -31,12 +31,11 @@ export interface IFileContent<T> {
 }
 
 export interface IComment {
-  id: number;
-  lineNumber: number;
+  id: number | string;
   text: string;
   updatedAt: string;
   userName: string;
-  userPic?: string;
+  userPicture?: string;
 }
 
 export interface ICommentReply {
@@ -52,8 +51,8 @@ export interface INewComment {
 }
 
 export interface IThread {
-  id: string;
-  commitId: string;
+  id: string | number;
+  // commitId: string;
   lineNumber: number;
   comments: IComment[];
 }

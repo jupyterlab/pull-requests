@@ -23,7 +23,7 @@ export class PullRequestCommentThreadModel {
       this.lineNumber = given;
       this.comment = null;
     } else {
-      this.lineNumber = given.lineNumber;
+      this.lineNumber = 0;
       this.comment = given;
     }
   }
@@ -60,7 +60,7 @@ export class PullRequestCommentThreadModel {
       updatedAt: jsonresult['updated_at'],
       lineNumber: jsonresult['line_number'],
       userName: jsonresult['user_name'],
-      userPic: jsonresult['user_pic']
+      userPicture: jsonresult['user_pic']
     };
     if (this.comment === null) {
       this.comment = comment;

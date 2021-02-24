@@ -145,7 +145,7 @@ class PullRequestsGithubManager(PullRequestsManager):
             "text": result["body"],
             "updatedAt": result["updated_at"],
             "userName": result["user"]["login"],
-            "userPic": result["user"]["avatar_url"],
+            "userPicture": result["user"]["avatar_url"],
         }
         if "in_reply_to_id" in result:
             data["inReplyToId"] = result["in_reply_to_id"]

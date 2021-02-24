@@ -160,7 +160,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
             "text": result["body"],
             "updatedAt": result["updated_at"],
             "userName": result["author"]["username"],
-            "userPic": result["author"]["avatar_url"],
+            "userPicture": result["author"]["avatar_url"],
         }
         return data
 

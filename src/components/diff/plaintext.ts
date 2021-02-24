@@ -1,9 +1,11 @@
 import { Mode } from '@jupyterlab/codemirror';
 import { mergeView } from '@jupyterlab/git/lib/components/diff/mergeview';
+import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { Widget } from '@lumino/widgets';
 import { MergeView } from 'codemirror';
-import { IDiffOptions } from '../../tokens';
+import { IDiffOptions, IThread } from '../../tokens';
 import { generateNode } from '../../utils';
+import { CommentThread } from './CommentThread';
 
 export class PlainTextDiff extends Widget {
   constructor(props: IDiffOptions) {
@@ -30,6 +32,19 @@ export class PlainTextDiff extends Widget {
       })
     );
     return head;
+  }
+
+  protected static makeThreadWidget(
+    thread: IThread,
+    renderMime: IRenderMimeRegistry
+  ): HTMLElement {
+    const widget = new CommentThread({
+      renderMime,
+      thread,
+      handleRemove: () => null,
+      handleAddComment: () => null
+    });
+    return widget.node;
   }
 
   /**
@@ -59,6 +74,24 @@ export class PlainTextDiff extends Widget {
         PlainTextDiff.makeCommentDecoration()
       );
     }
+  }
+
+  protected updateView(
+    editor: CodeMirror.Editor,
+    from: number,
+    to: number
+  ): void {
+    // Add comment gutters
+    PlainTextDiff.setCommentGutter(editor, from, to);
+    // Add comments
+    this._props.threads.forEach(thread => {
+      if (from < thread.lineNumber && thread.lineNumber <= to) {
+        editor.addLineWidget(
+          thread.lineNumber - 1,
+          PlainTextDiff.makeThreadWidget(thread, this._props.renderMime)
+        );
+      }
+    });
   }
 
   /**
@@ -95,10 +128,8 @@ export class PlainTextDiff extends Widget {
     ) as MergeView.MergeViewEditor;
 
     const { from, to } = this._mergeView.editor().getViewport();
-    PlainTextDiff.setCommentGutter(this._mergeView.editor(), from, to);
-    this._mergeView
-      .editor()
-      .on('viewportChange', PlainTextDiff.setCommentGutter);
+    this.updateView(this._mergeView.editor(), from, to);
+    this._mergeView.editor().on('viewportChange', this.updateView.bind(this));
   }
 
   protected _mergeView: MergeView.MergeViewEditor;
