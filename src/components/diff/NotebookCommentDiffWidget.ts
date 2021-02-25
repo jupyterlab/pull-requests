@@ -4,11 +4,13 @@ import { NotebookDiffModel } from 'nbdime/lib/diff/model';
 import {
   CellDiffWidget,
   MetadataDiffWidget,
+  // MetadataDiffWidget,
   NotebookDiffWidget
 } from 'nbdime/lib/diff/widget';
 import { CHUNK_PANEL_CLASS } from 'nbdime/lib/diff/widget/common';
 import { IThread } from '../../tokens';
 import { generateNode } from '../../utils';
+import { CommentThread } from './CommentThread';
 
 export class NotebookCommentDiffWidget extends NotebookDiffWidget {
   constructor(
@@ -17,6 +19,7 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
     rendermime: IRenderMimeRegistry
   ) {
     super(model, rendermime);
+    this.__renderMime = rendermime;
     this._threads = comments;
   }
 
@@ -52,6 +55,13 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
       widget.hasClass(CHUNK_PANEL_CLASS) ||
       widget instanceof MetadataDiffWidget
     ) {
+      let currentPosition = this._chunkIndex;
+      if (widget instanceof MetadataDiffWidget) {
+        currentPosition = this._threads.length - 1;
+      } else {
+        this._chunkIndex += 1;
+      }
+
       const cellDiff = generateNode('div', { class: 'jp-PullRequestCellDiff' });
       const head = generateNode('div', { class: 'jp-PullRequestNBDiff' });
       head
@@ -60,8 +70,6 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
           generateNode('div', { class: 'jp-PullRequestCellDiffContent' })
         )
         .appendChild(widget.node);
-
-      const currentPosition = this._position;
       cellDiff
         .appendChild(
           generateNode('div', {
@@ -82,13 +90,15 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
           generateNode('div', { class: 'jp-PullRequestCommentDecoration' })
         );
 
-      this._threads[currentPosition]?.forEach(comment => {
-        // head.appendChild();
-        //     <PullRequestCommentThread
-        //       key={i}
-        //       thread={comment}
-        //       handleRemove={() => this.removeComment(index, comment)}
-        //     />
+      this._threads[currentPosition]?.forEach(thread => {
+        head.appendChild(
+          new CommentThread({
+            renderMime: this.__renderMime,
+            thread,
+            handleAddComment: () => null,
+            handleRemove: () => null
+          }).node
+        );
       });
 
       widget = new Widget({
@@ -96,13 +106,12 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
       });
     }
     super.addWidget(widget);
-
-    this._position += 1;
   }
 
   protected _threads: IThread[][];
   // Current chunk position
-  private _position = 0;
+  private _chunkIndex = 0;
+  protected __renderMime: IRenderMimeRegistry;
 }
 
 // export class ModifiedChunkPair {

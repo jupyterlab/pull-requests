@@ -11,6 +11,7 @@ import { ServerConnection } from '@jupyterlab/services';
 import { JSONObject } from '@lumino/coreutils';
 import { Message } from '@lumino/messaging';
 import { Panel, Widget } from '@lumino/widgets';
+import jsonMap from 'json-source-map';
 import { IDiffEntry } from 'nbdime/lib/diff/diffentries';
 import { CellDiffModel, NotebookDiffModel } from 'nbdime/lib/diff/model';
 import { CELLDIFF_CLASS } from 'nbdime/lib/diff/widget';
@@ -18,7 +19,7 @@ import {
   CHUNK_PANEL_CLASS,
   UNCHANGED_DIFF_CLASS
 } from 'nbdime/lib/diff/widget/common';
-import { IDiffOptions, IThread } from '../../tokens';
+import { IDiffOptions, INotebookMapping, IThread } from '../../tokens';
 import { requestAPI } from '../../utils';
 import { NotebookCommentDiffWidget } from './NotebookCommentDiffWidget';
 
@@ -75,10 +76,17 @@ export class NotebookDiff extends Panel {
     baseContent: string,
     headContent: string
   ): Promise<JSONObject> {
-    return requestAPI<JSONObject>('pullrequests/files/nbdiff', 'POST', {
-      previousContent: baseContent,
-      currentContent: headContent
-    });
+    const data = await requestAPI<JSONObject>(
+      'pullrequests/files/nbdiff',
+      'POST',
+      {
+        previousContent: baseContent,
+        currentContent: headContent
+      }
+    );
+    data['baseMapping'] = Private.computeNotebookMapping(baseContent) as any;
+    data['headMapping'] = Private.computeNotebookMapping(headContent) as any;
+    return data;
   }
 
   dispose(): void {
@@ -87,10 +95,93 @@ export class NotebookDiff extends Panel {
   }
 
   protected static mapThreadsOnChunks(
+    baseMapping: INotebookMapping,
+    headMapping: INotebookMapping,
     chunks: CellDiffModel[][],
     threads: IThread[]
   ): IThread[][] {
-    return chunks.map(chunk => []);
+    // Last element will be for the notebook metadata
+    const threadsByChunk = new Array<IThread[]>(chunks.length + 1);
+    for (let index = 0; index < threadsByChunk.length; index++) {
+      threadsByChunk[index] = new Array<IThread>();
+    }
+    if (threads.length === 0) {
+      return threadsByChunk;
+    }
+
+    let lastChunk = 0;
+    let lastBaseCell = -1;
+    let lastHeadCell = -1;
+    let lastThread = -1;
+    // Handle thread set before the cells
+    let thread: IThread;
+    do {
+      lastThread += 1;
+      thread = threads[lastThread];
+    } while (
+      lastThread < threads.length &&
+      thread.line < headMapping.cells[0].start &&
+      thread.originalLine < baseMapping.cells[0].start
+    );
+
+    if (lastThread > 0) {
+      // There are thread before the cells
+      // They will be added on the metadata diff
+      threadsByChunk[threadsByChunk.length - 1] = threads.slice(0, lastThread);
+    }
+
+    // Handle threads on cells
+    while (lastThread < threads.length && lastChunk < chunks.length) {
+      let thread = threads[lastThread];
+      const chunk = chunks[lastChunk];
+
+      for (const cellDiff of chunk) {
+        if (cellDiff.source.base) {
+          lastBaseCell += 1;
+          const baseRange = baseMapping.cells[lastBaseCell];
+          while (
+            thread &&
+            baseRange?.start <= thread.originalLine &&
+            thread.originalLine <= baseRange?.end
+          ) {
+            threadsByChunk[lastChunk].push(thread);
+            lastThread += 1;
+            thread = threads[lastThread];
+            if (!thread) {
+              break;
+            }
+          }
+        }
+        if (cellDiff.source.remote) {
+          lastHeadCell += 1;
+          const headRange = headMapping.cells[lastHeadCell];
+          while (
+            thread &&
+            headRange?.start <= thread.line &&
+            thread.line <= headRange?.end
+          ) {
+            threadsByChunk[lastChunk].push(thread);
+            lastThread += 1;
+            thread = threads[lastThread];
+            if (!thread) {
+              break;
+            }
+          }
+        }
+      }
+      lastChunk += 1;
+    }
+
+    // Handle remaining threads
+    if (lastThread < threads.length) {
+      // There are thread after the cells
+      // They will be added on the metadata diff
+      threadsByChunk[threadsByChunk.length - 1].push(
+        ...threads.slice(lastThread, threads.length)
+      );
+    }
+
+    return threadsByChunk;
   }
 
   /**
@@ -112,6 +203,8 @@ export class NotebookDiff extends Panel {
     const diff = (data['diff'] as any) as IDiffEntry[];
     const nbdModel = new NotebookDiffModel(base, diff);
     const groupedComments = NotebookDiff.mapThreadsOnChunks(
+      data.baseMapping as any,
+      data.headMapping as any,
       nbdModel.chunkedCells,
       threads
     );
@@ -138,6 +231,7 @@ export class NotebookDiff extends Panel {
     if (this.isDisposed) {
       return;
     }
+    console.error(error);
     const widget = new Widget();
     widget.node.innerHTML = `<h2 class="jp-PullRequestTabError">
     <span style="color: 'var(--jp-ui-font-color1)';">
@@ -150,6 +244,25 @@ export class NotebookDiff extends Panel {
 }
 
 namespace Private {
+  export function computeNotebookMapping(content: string): INotebookMapping {
+    const parsedContent = jsonMap.parse(content) as {
+      data: any;
+      pointers: any;
+    };
+
+    return {
+      metadata: {
+        start: parsedContent.pointers['/metadata'].key.line,
+        end: parsedContent.pointers['/metadata'].valueEnd.line
+      },
+      cells: parsedContent.data.cells.map((cell: any, index: number) => {
+        return {
+          start: parsedContent.pointers[`/cells/${index}`].value.line,
+          end: parsedContent.pointers[`/cells/${index}`].valueEnd.line
+        };
+      })
+    };
+  }
   /**
    * Create a header widget for the diff view.
    */

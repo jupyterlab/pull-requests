@@ -72,6 +72,22 @@ export interface IPullRequestGroup {
   error?: string;
 }
 
+export interface IRange {
+  start: number;
+  end: number;
+}
+
+export interface INotebookMapping {
+  /**
+   * Notebook metadata last line in the notebook file.
+   */
+  metadata: IRange;
+  /**
+   * Mapping hashed cell content - last line of the cell in the notebook file.
+   */
+  cells: IRange[];
+}
+
 export interface IDiffOptions {
   prId: string;
   filename: string;
