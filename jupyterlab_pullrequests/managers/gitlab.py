@@ -214,7 +214,6 @@ class PullRequestsGitLabManager(PullRequestsManager):
             data = {"body": body.text}
             git_url = url_path_join(pr_id, "discussions", body.inReplyTo, "notes")
             response = await self._call_gitlab(git_url, method="POST", body=data)
-            get_logger().info(str(response))
             return self.response_to_comment(response)
         else:
             data = {"body": body.text}
