@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 import { Mode } from '@jupyterlab/codemirror';
 import { mergeView } from '@jupyterlab/git/lib/components/diff/mergeview';
-import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { Widget } from '@lumino/widgets';
 import { MergeView } from 'codemirror';
-import { IDiffOptions, IThread } from '../../tokens';
+import { IComment, IDiffOptions, IThread } from '../../tokens';
 import { generateNode } from '../../utils';
 import { CommentThread } from './CommentThread';
 
@@ -35,18 +34,6 @@ export class PlainTextDiff extends Widget {
     return head;
   }
 
-  protected static makeThreadWidget(
-    thread: IThread,
-    renderMime: IRenderMimeRegistry
-  ): HTMLElement {
-    const widget = new CommentThread({
-      renderMime,
-      thread,
-      handleRemove: () => null
-    });
-    return widget.node;
-  }
-
   /**
    * Create comment decoration node
    */
@@ -61,61 +48,20 @@ export class PlainTextDiff extends Widget {
    * @param from First line in the view port
    * @param to Last line in the view port
    */
-  protected static setCommentGutter(
+  protected setCommentGutter(
     editor: CodeMirror.Editor,
     from: number,
-    to: number
+    to: number,
+    side: 'line' | 'originalLine'
   ): void {
     editor.clearGutter('jp-PullRequestCommentDecoration');
     for (let lineIdx = from; lineIdx < to; lineIdx++) {
-      editor.setGutterMarker(
-        lineIdx,
-        'jp-PullRequestCommentDecoration',
-        PlainTextDiff.makeCommentDecoration()
-      );
+      const div = PlainTextDiff.makeCommentDecoration();
+      div.addEventListener('click', () => {
+        this.createThread(editor, lineIdx, side);
+      });
+      editor.setGutterMarker(lineIdx, 'jp-PullRequestCommentDecoration', div);
     }
-  }
-
-  protected updateOriginalView(
-    editor: CodeMirror.Editor,
-    from: number,
-    to: number
-  ): void {
-    // Add comments
-    this._props.threads
-      .filter(
-        thread =>
-          thread.originalLine !== null &&
-          from < thread.originalLine &&
-          thread.originalLine <= to
-      )
-      .forEach(thread => {
-        editor.addLineWidget(
-          thread.originalLine - 1,
-          PlainTextDiff.makeThreadWidget(thread, this._props.renderMime)
-        );
-      });
-  }
-
-  protected updateView(
-    editor: CodeMirror.Editor,
-    from: number,
-    to: number
-  ): void {
-    // Add comment gutters
-    PlainTextDiff.setCommentGutter(editor, from, to);
-    // Add comments
-    this._props.threads
-      .filter(
-        thread =>
-          thread.line !== null && from < thread.line && thread.line <= to
-      )
-      .forEach(thread => {
-        editor.addLineWidget(
-          thread.line - 1,
-          PlainTextDiff.makeThreadWidget(thread, this._props.renderMime)
-        );
-      });
   }
 
   /**
@@ -155,19 +101,75 @@ export class PlainTextDiff extends Widget {
       // @ts-ignore
       const { from, to } = this._mergeView.left.orig.getViewport();
       // @ts-ignore
-      this.updateOriginalView(this._mergeView.left.orig, from, to);
+      this.updateView(this._mergeView.left.orig, from, to, 'originalLine');
       // @ts-ignore
       this._mergeView.left.orig.on(
         'viewportChange',
-        this.updateOriginalView.bind(this)
+        (editor: CodeMirror.Editor, from: number, to: number) => {
+          this.updateView(editor, from, to, 'originalLine');
+        }
       );
     }
 
     {
       const { from, to } = this._mergeView.editor().getViewport();
-      this.updateView(this._mergeView.editor(), from, to);
-      this._mergeView.editor().on('viewportChange', this.updateView.bind(this));
+      this.updateView(this._mergeView.editor(), from, to, 'line');
+      this._mergeView
+        .editor()
+        .on(
+          'viewportChange',
+          (editor: CodeMirror.Editor, from: number, to: number) => {
+            this.updateView(editor, from, to, 'line');
+          }
+        );
     }
+  }
+
+  protected createThread(
+    editor: CodeMirror.Editor,
+    lineNo: number,
+    side: 'line' | 'originalLine'
+  ): void {
+    const thread: IThread = {
+      comments: new Array<IComment>(),
+      pullRequestId: this._props.prId,
+      filename: this._props.filename
+    };
+    thread[side] = lineNo + 1;
+    editor.addLineWidget(lineNo, this.makeThreadWidget(thread));
+  }
+
+  protected makeThreadWidget(thread: IThread): HTMLElement {
+    const widget = new CommentThread({
+      renderMime: this._props.renderMime,
+      thread,
+      handleRemove: () => {
+        const threadIndex = this._props.threads.findIndex(
+          thread => thread.id === thread.id
+        );
+        this._props.threads.splice(threadIndex, 1);
+      }
+    });
+    return widget.node;
+  }
+
+  protected updateView(
+    editor: CodeMirror.Editor,
+    from: number,
+    to: number,
+    side: 'line' | 'originalLine'
+  ): void {
+    // Add comment gutters
+    this.setCommentGutter(editor, from, to, side);
+    // Add comments
+    this._props.threads
+      .filter(
+        thread =>
+          thread[side] !== null && from < thread[side] && thread[side] <= to
+      )
+      .forEach(thread => {
+        editor.addLineWidget(thread[side] - 1, this.makeThreadWidget(thread));
+      });
   }
 
   protected _mergeView: MergeView.MergeViewEditor;

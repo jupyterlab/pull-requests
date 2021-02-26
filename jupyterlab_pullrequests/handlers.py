@@ -140,7 +140,7 @@ class PullRequestsFileCommentsHandler(PullRequestsAPIHandler):
                 body = CommentReply(data["text"], data["discussionId"])
             else:
                 body = NewComment(
-                    data["text"], data["commit_id"], data["filename"], data["position"]
+                    data["text"], filename, data.get("line"), data.get("originalLine")
                 )
         except KeyError as e:
             raise tornado.web.HTTPError(

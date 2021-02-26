@@ -53,10 +53,10 @@ export interface INewComment {
 export interface IThread {
   comments: IComment[];
   filename?: string;
-  id: string | number;
+  id?: string | number;
   // commitId: string;
-  line: number;
-  originalLine: number;
+  line?: number;
+  originalLine?: number;
   pullRequestId: string;
 }
 

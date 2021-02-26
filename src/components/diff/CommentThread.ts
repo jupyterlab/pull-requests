@@ -190,6 +190,7 @@ export class CommentThread extends Widget {
     } else {
       body = { ...body, discussionId: this._thread.id };
     }
+
     let endpoint = `pullrequests/files/comments?id=${encodeURIComponent(
       this._thread.pullRequestId
     )}`;
@@ -206,6 +207,10 @@ export class CommentThread extends Widget {
         userName: response.userName,
         userPicture: response.userPicture
       };
+      // Update discussion reference
+      if (response.inReplyTo) {
+        this._thread.id = response.inReplyTo;
+      }
       this._thread.comments.push(comment);
 
       this._threadsContainer.replaceChild(

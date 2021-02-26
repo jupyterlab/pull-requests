@@ -14,9 +14,9 @@ class CommentReply(NamedTuple):
 
 class NewComment(NamedTuple):
     text: str
-    commitId: str
     filename: Optional[str]
-    position: Optional[int]
+    line: Optional[int]
+    originalLine: Optional[int]
 
 
 # @dataclass

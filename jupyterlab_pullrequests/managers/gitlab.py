@@ -1,3 +1,4 @@
+import asyncio
 import json
 from http import HTTPStatus
 from urllib.parse import quote
@@ -23,6 +24,9 @@ class PullRequestsGitLabManager(PullRequestsManager):
             access_token: Versioning service access token
         """
         super().__init__(base_api_url=base_api_url, access_token=access_token)
+        self._merge_requests_cache = (
+            {}
+        )  # Creating new file discussion required some commit sha's so we will cache them
 
     async def get_current_user(self) -> Dict[str, str]:
         git_url = url_path_join(self._base_api_url, "user")
@@ -59,6 +63,9 @@ class PullRequestsGitLabManager(PullRequestsManager):
                 "merge_requests",
                 str(result["iid"]),
             )
+            # We need to request specifically the single MR endpoint to get the diff_refs
+            # and some other information for
+            self._merge_requests_cache[url] = await self._call_gitlab(url)
             data.append(
                 {
                     "id": url,
@@ -68,6 +75,9 @@ class PullRequestsGitLabManager(PullRequestsManager):
                     "link": result["web_url"],
                 }
             )
+
+        all_mrs = await asyncio.gather(*[self._call_gitlab(d["id"]) for d in data])
+        self._merge_requests_cache = {d["id"]: e for d, e in zip(data, all_mrs)}
 
         return data
 
@@ -105,7 +115,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
 
     async def get_pr_links(self, pr_id: str, filename: str) -> Dict[str, str]:
 
-        data = await self._call_gitlab(pr_id)
+        data = self._merge_requests_cache[pr_id]
         base_url = url_concat(
             url_path_join(
                 self._base_api_url,
@@ -128,8 +138,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
             ),
             {"ref": data["source_branch"]},
         )
-        commit_id = data["diff_refs"]["head_sha"]
-        return {"baseUrl": base_url, "headUrl": head_url, "commitId": commit_id}
+        return {"baseUrl": base_url, "headUrl": head_url}
 
     async def get_link_content(self, file_url: str):
         try:
@@ -147,7 +156,6 @@ class PullRequestsGitLabManager(PullRequestsManager):
         return {
             "baseContent": base_content,
             "headContent": head_content,
-            "commitId": links["commitId"],
         }
 
     # -----------------------------------------------------------------------------
@@ -202,24 +210,38 @@ class PullRequestsGitLabManager(PullRequestsManager):
     async def post_file_comment(
         self, pr_id: str, filename: str, body: Union[CommentReply, NewComment]
     ):
-        get_logger().info(f"Get POST request with {pr_id}, {filename}, {body}")
-
         if isinstance(body, CommentReply):
             data = {"body": body.text}
             git_url = url_path_join(pr_id, "discussions", body.inReplyTo, "notes")
             response = await self._call_gitlab(git_url, method="POST", body=data)
             get_logger().info(str(response))
             return self.response_to_comment(response)
-        # else:
-        #     body = {
-        #         "body": body.text,
-        #         "commitId": body.commit_id,
-        #         "path": body.filename,
-        #         "position": {"position_type": "text", "new_line": body.position},
-        #     }
-        #     git_url = url_path_join(pr_id, "discussions")
-        #     response = await self._call_gitlab(git_url, method="POST", body=body)
-        #     return self.file_comment_response(response)
+        else:
+            data = {"body": body.text}
+            if body.line is not None:
+                data["position"] = {
+                    "position_type": "text",
+                    "new_line": body.line,
+                    "new_path": filename,
+                }
+                data["position"].update(self._merge_requests_cache[pr_id]["diff_refs"])
+            elif body.originalLine is not None:
+                data["position"] = {
+                    "position_type": "text",
+                    "old_line": body.originalLine,
+                    "old_path": filename,
+                }
+                data["position"].update(
+                    self._merge_requests_cache[pr_id]["diff_refs"].copy()
+                )
+
+            git_url = url_path_join(pr_id, "discussions")
+            response = await self._call_gitlab(git_url, method="POST", body=data)
+            
+            comment = self.response_to_comment(response["notes"][0])
+            # Add the discussion ID created by GitLab
+            comment["inReplyTo"] = response["id"]
+            return comment
 
     async def _call_gitlab(
         self,
@@ -237,7 +259,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
 
         headers = {
             "Authorization": f"Bearer {self._access_token}",
-            "Accept": "application/json"
+            "Accept": "application/json",
         }
 
         if body is not None:
