@@ -1,10 +1,11 @@
 import { Widget } from '@lumino/widgets';
 import { IComment, IThread } from '../../tokens';
 import moment from 'moment';
-import { generateNode } from '../../utils';
+import { generateNode, requestAPI } from '../../utils';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { caretDownIcon, caretUpIcon } from '@jupyterlab/ui-components';
 import { InputComment } from './InputComment';
+import { showErrorMessage } from '@jupyterlab/apputils';
 
 /**
  * CommentThread widget properties
@@ -178,8 +179,45 @@ export class CommentThread extends Widget {
    *
    * @param comment Comment text
    */
-  protected handleAddComment(comment: string): void {
-    // FIXME post comment and append it to the thread
+  protected async handleAddComment(text: string): Promise<void> {
+    let body: object = { text };
+    if (this._thread.comments.length === 0) {
+      body = {
+        ...body,
+        line: this._thread.line,
+        originalLine: this._thread.originalLine
+      };
+    } else {
+      body = { ...body, discussionId: this._thread.id };
+    }
+    let endpoint = `pullrequests/files/comments?id=${encodeURIComponent(
+      this._thread.pullRequestId
+    )}`;
+    if (this._thread.filename) {
+      endpoint += `&filename=${encodeURIComponent(this._thread.filename)}`;
+    }
+    try {
+      const response = await requestAPI<any>(endpoint, 'POST', body);
+
+      const comment: IComment = {
+        id: response.id,
+        text: response.text,
+        updatedAt: response.updateAt,
+        userName: response.userName,
+        userPicture: response.userPicture
+      };
+      this._thread.comments.push(comment);
+
+      this._threadsContainer.replaceChild(
+        CommentThread.createCommentNode(comment, this._renderMime),
+        this._threadsContainer.lastChild
+      );
+      this._inputShown = false;
+      this._threadsContainer.appendChild(this.createReplyButton());
+    } catch (reason) {
+      console.error(reason);
+      showErrorMessage('Error', 'Failed to add the comment.');
+    }
   }
 
   /**

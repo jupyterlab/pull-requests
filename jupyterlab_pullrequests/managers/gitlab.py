@@ -172,7 +172,12 @@ class PullRequestsGitLabManager(PullRequestsManager):
         discussions = []
         for discussion in results:
             thread = dict(
-                id=discussion["id"], comments=[], line=None, originalLine=None
+                id=discussion["id"],
+                comments=[],
+                filename=filename,
+                line=None,
+                originalLine=None,
+                pullRequestId=pr_id,
             )
             for note in discussion["notes"]:
                 if filename is None and note["type"] != "DiffNote":
@@ -198,12 +203,13 @@ class PullRequestsGitLabManager(PullRequestsManager):
         self, pr_id: str, filename: str, body: Union[CommentReply, NewComment]
     ):
         get_logger().info(f"Get POST request with {pr_id}, {filename}, {body}")
-        pass
-        # if isinstance(body, CommentReply):
-        #     body = {"body": body.text}
-        #     git_url = url_path_join(pr_id, "discussions", "1", "notes")
-        #     response = await self._call_gitlab(git_url, method="POST", body=body)
-        #     return self.file_comment_response(response)
+
+        if isinstance(body, CommentReply):
+            data = {"body": body.text}
+            git_url = url_path_join(pr_id, "discussions", body.inReplyTo, "notes")
+            response = await self._call_gitlab(git_url, method="POST", body=data)
+            get_logger().info(str(response))
+            return self.response_to_comment(response)
         # else:
         #     body = {
         #         "body": body.text,
@@ -231,7 +237,12 @@ class PullRequestsGitLabManager(PullRequestsManager):
 
         headers = {
             "Authorization": f"Bearer {self._access_token}",
+            "Accept": "application/json"
         }
+
+        if body is not None:
+            headers["Content-Type"] = "application/json"
+            body = json.dumps(body)
 
         if not url.startswith(self._base_api_url):
             url = "/".join((self._base_api_url.rstrip("/"), url.lstrip("/")))
@@ -245,7 +256,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
                 validate_cert=True,
                 user_agent="JupyterLab Pull Requests",
                 method=method.upper(),
-                body=None if body is None else json.dumps(body),
+                body=body,
                 headers=headers,
             )
         except BaseException as e:

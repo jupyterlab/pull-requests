@@ -136,8 +136,8 @@ class PullRequestsFileCommentsHandler(PullRequestsAPIHandler):
         filename = self.get_query_argument("filename", None)
         data = get_body_value(self)
         try:
-            if "in_reply_to" in data:
-                body = CommentReply(data["text"], data["in_reply_to"])
+            if "discussionId" in data:
+                body = CommentReply(data["text"], data["discussionId"])
             else:
                 body = NewComment(
                     data["text"], data["commit_id"], data["filename"], data["position"]
