@@ -138,47 +138,81 @@ class PullRequestsGithubManager(PullRequestsManager):
     # /pullrequests/files/comments Handler
     # -----------------------------------------------------------------------------
 
-    def file_comment_response(self, result: Dict[str, str]) -> Dict[str, str]:
+    def response_to_comment(self, result: Dict[str, str]) -> Dict[str, str]:
         data = {
             "id": result["id"],
-            "lineNumber": result["position"],
+            # "lineNumber": result["position"],
             "text": result["body"],
             "updatedAt": result["updated_at"],
             "userName": result["user"]["login"],
             "userPicture": result["user"]["avatar_url"],
         }
-        if "in_reply_to_id" in result:
-            data["inReplyToId"] = result["in_reply_to_id"]
+        # if "in_reply_to_id" in result:
+        #     data["inReplyToId"] = result["in_reply_to_id"]
         return data
 
     async def get_threads(
         self, pr_id: str, filename: Optional[str] = None
     ) -> List[dict]:
-        # FIXME
         git_url = url_path_join(pr_id, "/comments")
-        results = await self.call_github(git_url)
-        return [
-            self.file_comment_response(result)
-            for result in results
-            if result["path"] == filename
-        ]
+        if filename is None:
+            results = await self.call_github(git_url.replace("pulls", "issues"))
+            return [
+                {
+                    "id": result["id"],
+                    "comments": [self.response_to_comment(result)],
+                    "pullRequestId": pr_id,
+                }
+                for result in results
+            ]
+        else:
+            results = await self.call_github(git_url)
+
+            threads = []
+            replies = []
+            for result in results:
+                if result["path"] == filename:
+                    if "in_reply_to_id" in result:
+                        replies.append(result)
+                    else:
+                        threads.append([result])
+
+            has_changed = True
+            while len(replies) > 0 and has_changed:
+                has_changed = False
+                for reply in replies.copy():
+                    for comments in threads:
+                        if comments[-1]["id"] == reply["in_reply_to_id"]:
+                            comments.append(reply)
+                            replies.remove(reply)
+                            has_changed = True
+
+            return [{
+                "id": thread[-1]["id"],  # Set discussion id as the last comment id
+                "comments": [self.response_to_comment(c) for c in thread],
+                "filename": filename,
+                "line": thread[0]["line"],
+                "originalLine": thread[0]["original_line"] if thread[0]["line"] is None else None,
+                "pullRequestId": pr_id
+            } for thread in threads]
 
     async def post_file_comment(
         self, pr_id: str, filename: str, body: Union[CommentReply, NewComment]
     ):
 
         if isinstance(body, CommentReply):
-            body = {"body": body.text, "in_reply_to": body.in_reply_to}
+            body = {"body": body.text, "in_reply_to": body.inReplyTo}
         else:
             body = {
                 "body": body.text,
-                "commit_id": body.commitId,
-                "path": body.filename,
-                "position": body.position,
+                # "commit_id": body.commitId,
+                "path": filename,
+                "position": body.line or body.originalLine,
             }
         git_url = url_path_join(pr_id, "comments")
         response = await self.call_github(git_url, method="POST", body=body)
-        return self.file_comment_response(response)
+        print(response)
+        return self.response_to_comment(response)
 
     # -----------------------------------------------------------------------------
     # Handler utilities
@@ -203,7 +237,9 @@ class PullRequestsGithubManager(PullRequestsManager):
             "Authorization": f"token {self._access_token}",
         }
 
-        if not git_url.startswith(self._base_api_url):
+        if not git_url.startswith(self._base_api_url) and not git_url.startswith(
+            "http"
+        ):
             git_url = "/".join((self._base_api_url.rstrip("/"), git_url.lstrip("/")))
 
         if params is not None:
