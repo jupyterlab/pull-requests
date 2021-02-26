@@ -3,69 +3,89 @@ import { IComment, IThread } from '../../tokens';
 import moment from 'moment';
 import { generateNode } from '../../utils';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
-import { caretUpIcon } from '@jupyterlab/ui-components';
+import { caretDownIcon, caretUpIcon } from '@jupyterlab/ui-components';
+import { InputComment } from './InputComment';
 
+/**
+ * CommentThread widget properties
+ */
 export interface ICommentThreadProps {
+  /**
+   * RenderMime registry
+   */
   renderMime: IRenderMimeRegistry;
+  /**
+   * Thread to be displayed
+   */
   thread: IThread;
+  /**
+   * Callback when the thread is removed
+   */
   handleRemove: () => void;
-  handleAddComment: (comment: IComment) => void;
 }
 
+/**
+ * CommentThread widget
+ */
 export class CommentThread extends Widget {
   constructor(props: ICommentThreadProps) {
-    super({ node: CommentThread.createNode(props.thread, props.renderMime) });
-
-    // Add event
-    const buttons = this.node.getElementsByTagName('button');
-    buttons[0].addEventListener('click', () => {
-      this.isExpanded = !this.isExpanded;
-    });
-
-    // this._handleAddComment = props.handleAddComment;
-    // this._handleRemove = props.handleRemove;
+    super();
+    this.addClass('jp-PullRequestCommentItem');
+    this._handleRemove = props.handleRemove;
+    this._inputShown = props.thread.comments.length === 0;
     this._thread = props.thread;
+    this._renderMime = props.renderMime;
+
+    this.initNode();
   }
 
-  get inputText(): string {
-    return this._inputText;
-  }
-  set inputText(v: string) {
-    this._inputText = v;
-  }
-
+  /**
+   * Is the thread expanded?
+   */
   get isExpanded(): boolean {
     return this._isExpanded;
   }
   set isExpanded(v: boolean) {
-    this._isExpanded = v;
     if (this._isExpanded !== v) {
-      const header = this.node.getElementsByClassName(
-        'jp-PullRequestCommentHeader'
-      )[0];
-      // Clean up
-      const ps = header.getElementsByTagName('p');
-      for (const p of ps) {
-        p.remove();
-      }
-      if (this._thread.comments.length > 0) {
-        const firstComment = this._thread.comments[0];
-        const p = document.createElement('p');
-        p.innerText = `${firstComment.userName}: ${firstComment.text}`;
-        header.prepend(p);
+      this._isExpanded = v;
+      if (this._isExpanded) {
+        this.addThreadView();
+      } else {
+        this._threadsContainer.textContent = '';
+        this._threadsContainer.appendChild(
+          generateNode(
+            'p',
+            null,
+            `${this._thread.comments[0].userName} ${this._thread.comments[0].text}`
+          )
+        );
       }
     }
   }
 
+  /**
+   * Is the input comment widget shown?
+   */
   get inputShown(): boolean {
     return this._inputShown;
   }
   set inputShown(v: boolean) {
-    if (this._inputShown === v) {
+    if (this._inputShown !== v) {
       this._inputShown = v;
+      this._threadsContainer.replaceChild(
+        this._inputShown ? this.createCommentInput() : this.createReplyButton(),
+        this._threadsContainer.lastChild
+      );
     }
   }
 
+  /**
+   * Create a comment HTML view
+   *
+   * @param comment Comment
+   * @param renderMime Rendermime registry
+   * @returns The HTML element
+   */
   protected static createCommentNode(
     comment: IComment,
     renderMime: IRenderMimeRegistry
@@ -108,76 +128,92 @@ export class CommentThread extends Widget {
     return head;
   }
 
-  protected static createNode(
-    thread: IThread,
-    renderMime: IRenderMimeRegistry
-  ): HTMLElement {
-    const div = generateNode('div', { class: 'jp-PullRequestComment' });
-    div
-      .appendChild(
-        generateNode('div', {
-          class: 'jp-PullRequestCommentHeader'
-        })
-      )
-      .appendChild(generateNode('button'))
+  /**
+   * Initialize the widget node
+   */
+  protected initNode(): void {
+    const expandButton = generateNode('button') as HTMLButtonElement;
+    this.node
+      .appendChild(expandButton)
       .appendChild(caretUpIcon.element({ tag: 'span' }));
 
-    const commentContainer = div.appendChild(generateNode('div'));
+    this._threadsContainer = generateNode('div', {
+      class: 'jp-PullRequestComments'
+    }) as HTMLDivElement;
 
-    thread.comments.forEach(comment => {
-      commentContainer.appendChild(
-        CommentThread.createCommentNode(comment, renderMime)
+    this.node.appendChild(this._threadsContainer);
+    this.addThreadView();
+
+    // Add event
+    expandButton.addEventListener('click', () => {
+      expandButton.replaceChild(
+        this.isExpanded
+          ? caretDownIcon.element({ tag: 'span' })
+          : caretUpIcon.element({ tag: 'span' }),
+        expandButton.firstChild
+      );
+      this.isExpanded = !this.isExpanded;
+    });
+  }
+
+  /**
+   * Add the thread view in the widget
+   */
+  protected addThreadView(): void {
+    this._threadsContainer.textContent = '';
+    this._thread.comments.forEach(comment => {
+      this._threadsContainer.appendChild(
+        CommentThread.createCommentNode(comment, this._renderMime)
       );
     });
-    return div;
-  }
-
-  protected static insertInputNode(
-    container: HTMLElement,
-    onCommentChanged: (event: Event) => void,
-    onCancel: () => void,
-    onSubmit: () => void
-  ): void {
-    // Clean up
-    for (const child of container.children) {
-      child.remove();
-    }
-
-    container.innerHTML = `<textarea
-      class="jp-PullRequestInputForm jp-PullRequestInputFormTextArea"
-      placeholder="Leave a comment"
-      value=""
-    />
-    <div class="jp-PullRequestInputButtonContainer">
-      <button
-        class="jp-Button-flat jp-mod-styled jp-mod-reject"
-      >
-        Cancel
-      </button>
-      <button
-        disabled=true
-        class="jp-PullRequest-CommentButton jp-Button-flat jp-mod-styled jp-mod-accept"
-      >
-        Comment
-      </button>
-    </div>`;
-
-    // Add events
-    container
-      .getElementsByTagName('textarea')[0]
-      .addEventListener('change', onCommentChanged);
-
-    const buttons = container.getElementsByTagName('button');
-    const actions = [onSubmit, onCancel];
-    for (const button of buttons) {
-      button.addEventListener('click', actions.pop());
+    if (this._inputShown) {
+      this._threadsContainer.appendChild(this.createCommentInput());
+    } else {
+      this._threadsContainer.appendChild(this.createReplyButton());
     }
   }
 
-  // private _handleRemove: () => void;
-  // private _handleAddComment: (comment: IComment) => void;
+  /**
+   * Handle new comment submission
+   *
+   * @param comment Comment text
+   */
+  protected handleAddComment(comment: string): void {
+    // FIXME post comment and append it to the thread
+  }
+
+  /**
+   * Handle cancel event
+   *
+   * If the thread has no comment, this results in its removal.
+   */
+  protected handleCancelComment(): void {
+    if (this._thread.comments.length === 0) {
+      this._handleRemove();
+    } else {
+      this.inputShown = false;
+    }
+  }
+
+  private createCommentInput(): HTMLElement {
+    return new InputComment({
+      handleSubmit: this.handleAddComment.bind(this),
+      handleCancel: this.handleCancelComment.bind(this)
+    }).node;
+  }
+
+  private createReplyButton(): HTMLElement {
+    return generateNode('button', { class: '' }, 'Reply...', {
+      click: () => {
+        this.inputShown = true;
+      }
+    });
+  }
+
+  private _handleRemove: () => void;
   private _inputShown: boolean;
-  private _inputText: string;
   private _isExpanded = true;
+  private _renderMime: IRenderMimeRegistry;
   private _thread: IThread;
+  private _threadsContainer: HTMLDivElement;
 }

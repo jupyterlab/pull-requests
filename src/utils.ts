@@ -1,15 +1,22 @@
 import { URLExt } from '@jupyterlab/coreutils';
 import { ServerConnection } from '@jupyterlab/services';
 
-// API request wrapper
+/**
+ * API request wrapper
+ *
+ * @param url Endpoint to call
+ * @param method Request method
+ * @param body Request body
+ * @returns JSON body of the response
+ */
 export async function requestAPI<T>(
   url: string,
   method: string,
-  request?: object
+  body?: object
 ): Promise<T> {
   const fullRequest = {
     method: method,
-    body: JSON.stringify(request)
+    body: JSON.stringify(body)
   };
   const setting = ServerConnection.makeSettings();
   const fullUrl = URLExt.join(setting.baseUrl, url);
@@ -35,7 +42,7 @@ export async function requestAPI<T>(
  */
 export function generateNode(
   tag: string,
-  attributes?: { [key: string]: string },
+  attributes?: { [key: string]: any },
   text?: string,
   events?: {
     [key: string]: EventListenerOrEventListenerObject;

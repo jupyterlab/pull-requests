@@ -95,7 +95,6 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
           new CommentThread({
             renderMime: this.__renderMime,
             thread,
-            handleAddComment: () => null,
             handleRemove: () => null
           }).node
         );
@@ -113,52 +112,3 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
   private _chunkIndex = 0;
   protected __renderMime: IRenderMimeRegistry;
 }
-
-// export class ModifiedChunkPair {
-//   constructor(addedCell: CellDiffModel, removedCell: CellDiffModel) {
-//     this.addedCell = addedCell;
-//     this.removedCell = removedCell;
-//   }
-
-//   isEmpty(): boolean {
-//     return this.addedCell === null && this.removedCell === null;
-//   }
-
-//   toArray(): CellDiffModel[] {
-//     const arr: CellDiffModel[] = [];
-//     if (this.addedCell !== null) {
-//       arr.push(this.addedCell);
-//     }
-//     if (this.removedCell !== null) {
-//       arr.push(this.removedCell);
-//     }
-//     return arr;
-//   }
-
-//   addedCell: CellDiffModel;
-//   removedCell: CellDiffModel;
-// }
-
-// export interface IPullRequestLineNumber {
-//   lineNumberStart: number;
-//   lineNumberEnd: number;
-// }
-
-// export class PullRequestChunkModel {
-//   constructor(
-//     chunk: CellDiffModel[],
-//     file: PullRequestFileModel,
-//     comments: PullRequestCommentThreadModel[] = [],
-//     lineNumber?: IPullRequestLineNumber
-//   ) {
-//     this.chunk = chunk;
-//     this.file = file;
-//     this.lineNumber = lineNumber;
-//     this.comments = comments;
-//   }
-
-//   chunk: CellDiffModel[];
-//   file: PullRequestFileModel;
-//   lineNumber?: IPullRequestLineNumber;
-//   comments?: PullRequestCommentThreadModel[];
-// }

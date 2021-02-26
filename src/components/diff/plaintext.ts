@@ -42,8 +42,7 @@ export class PlainTextDiff extends Widget {
     const widget = new CommentThread({
       renderMime,
       thread,
-      handleRemove: () => null,
-      handleAddComment: () => null
+      handleRemove: () => null
     });
     return widget.node;
   }
