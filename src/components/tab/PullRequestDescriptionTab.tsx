@@ -1,6 +1,8 @@
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { Widget } from '@lumino/widgets';
-import { IPullRequest } from '../../tokens';
+import { IPullRequest, IThread } from '../../tokens';
+import { requestAPI } from '../../utils';
+import { CommentThread } from '../diff/CommentThread';
 
 export interface IPullRequestDescriptionTabProps {
   pullRequest: IPullRequest;
@@ -29,6 +31,29 @@ export class PullRequestDescriptionTab extends Widget {
       metadata: {},
       setData: () => null
     });
+
+    this.loadComments(props.pullRequest.id, props.renderMimeRegistry);
+  }
+
+  protected loadComments(prId: string, renderMime: IRenderMimeRegistry): void {
+    requestAPI<IThread[]>(
+      `pullrequests/files/comments?id=${encodeURIComponent(prId)}`,
+      'GET'
+    )
+      .then(threads => {
+        threads.forEach(thread => {
+          this.node.append(
+            new CommentThread({
+              renderMime,
+              thread,
+              handleRemove: () => null
+            }).node
+          );
+        });
+      })
+      .catch(reason => {
+        console.error(reason);
+      });
   }
 
   private static create(
