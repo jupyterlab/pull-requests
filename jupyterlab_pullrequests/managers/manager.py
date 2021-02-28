@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import abc
 import json
+import http
 from typing import Dict, List, NoReturn, Optional
 
 import nbformat
 import tornado
 from nbdime import diff_notebooks
+from notebook.utils import url_path_join
+
+from ..log import get_logger
 
 
 class PullRequestsManager(abc.ABC):
@@ -112,3 +116,75 @@ class PullRequestsManager(abc.ABC):
         )
 
         return {"base": prev_nb, "diff": thediff}
+
+    async def _call_service(
+        self,
+        url: str,
+        load_json: bool = True,
+        method: str = "GET",
+        body=None,
+        params: Optional[Dict[str, str]] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ):
+        if not self._access_token:
+            raise tornado.web.HTTPError(
+                status_code=http.HTTPStatus.BAD_REQUEST,
+                reason="No access token specified.",
+            )
+
+        if body is not None:
+            if headers is None:
+                headers = {}
+            headers["Content-Type"] = "application/json"
+            body = json.dumps(body)
+
+        if not url.startswith(self._base_api_url):
+            url = "/".join((self._base_api_url.rstrip("/"), url.lstrip("/")))
+
+        if params is not None:
+            url = tornado.httputil.url_concat(url, params)
+
+        # User agents required for Github API, see https://developer.github.com/v3/#user-agent-required
+        try:
+            request = tornado.httpclient.HTTPRequest(
+                url,
+                validate_cert=True,
+                user_agent="JupyterLab Pull Requests",
+                method=method.upper(),
+                body=body,
+                headers=headers,
+            )
+        except BaseException as e:
+            get_logger().error("Failed to create http request", exc_info=e)
+            raise tornado.web.HTTPError(
+                status_code=http.HTTPStatus.INTERNAL_SERVER_ERROR,
+                reason=f"Invalid _call_service '{method}': {e}",
+            ) from e
+
+        try:
+            get_logger().debug(f"{method.upper()} {url}")
+            response = await self._client.fetch(request)
+            result = response.body.decode("utf-8")
+            if load_json:
+                return json.loads(result)
+            else:
+                return result
+        except tornado.httpclient.HTTPClientError as e:
+            get_logger().debug(
+                f"Failed to fetch {request.method} {request.url}", exc_info=e
+            )
+            raise tornado.web.HTTPError(
+                status_code=e.code, reason=f"Invalid response in '{url}': {e}"
+            ) from e
+        except ValueError as e:
+            get_logger().error("Failed to fetch http request", exc_info=e)
+            raise tornado.web.HTTPError(
+                status_code=http.HTTPStatus.BAD_REQUEST,
+                reason=f"Invalid response in '{url}': {e}",
+            ) from e
+        except Exception as e:
+            get_logger().error("Failed to fetch http request", exc_info=e)
+            raise tornado.web.HTTPError(
+                status_code=http.HTTPStatus.INTERNAL_SERVER_ERROR,
+                reason=f"Unknown error in '{url}': {e}",
+            ) from e

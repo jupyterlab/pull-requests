@@ -1,16 +1,13 @@
 import asyncio
 import json
-from http import HTTPStatus
-from urllib.parse import quote
 from typing import Dict, List, NoReturn, Optional, Union
+from urllib.parse import quote
 
 from notebook.utils import url_path_join
-from tornado.httpclient import AsyncHTTPClient, HTTPClientError, HTTPRequest
 from tornado.httputil import url_concat
 from tornado.web import HTTPError
 
-from ..base import NewComment, CommentReply
-from ..log import get_logger
+from ..base import CommentReply, NewComment
 from .manager import PullRequestsManager
 
 
@@ -24,9 +21,16 @@ class PullRequestsGitLabManager(PullRequestsManager):
             access_token: Versioning service access token
         """
         super().__init__(base_api_url=base_api_url, access_token=access_token)
-        self._merge_requests_cache = (
-            {}
-        )  # Creating new file discussion required some commit sha's so we will cache them
+        # Creating new file discussion required some commit sha's so we will cache them
+        self._merge_requests_cache = {}
+
+
+    async def _get_merge_requests(self, id_: str) -> dict:
+        merge_request = self._merge_requests_cache.get(id_)
+        if merge_request is None:
+            merge_request = await self._call_gitlab(id_)
+            self._merge_requests_cache[id_] = merge_request
+        return merge_request
 
     async def get_current_user(self) -> Dict[str, str]:
         git_url = url_path_join(self._base_api_url, "user")
@@ -63,9 +67,6 @@ class PullRequestsGitLabManager(PullRequestsManager):
                 "merge_requests",
                 str(result["iid"]),
             )
-            # We need to request specifically the single MR endpoint to get the diff_refs
-            # and some other information for
-            self._merge_requests_cache[url] = await self._call_gitlab(url)
             data.append(
                 {
                     "id": url,
@@ -76,8 +77,8 @@ class PullRequestsGitLabManager(PullRequestsManager):
                 }
             )
 
-        all_mrs = await asyncio.gather(*[self._call_gitlab(d["id"]) for d in data])
-        self._merge_requests_cache = {d["id"]: e for d, e in zip(data, all_mrs)}
+        # Reset cache
+        self._merge_requests_cache = {}
 
         return data
 
@@ -115,7 +116,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
 
     async def get_pr_links(self, pr_id: str, filename: str) -> Dict[str, str]:
 
-        data = self._merge_requests_cache[pr_id]
+        data = self._get_merge_requests(pr_id)
         base_url = url_concat(
             url_path_join(
                 self._base_api_url,
@@ -223,7 +224,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
                     "new_line": body.line,
                     "new_path": filename,
                 }
-                data["position"].update(self._merge_requests_cache[pr_id]["diff_refs"])
+                data["position"].update(self._get_merge_requests(pr_id)["diff_refs"])
             elif body.originalLine is not None:
                 data["position"] = {
                     "position_type": "text",
@@ -231,7 +232,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
                     "old_path": filename,
                 }
                 data["position"].update(
-                    self._merge_requests_cache[pr_id]["diff_refs"].copy()
+                    self._get_merge_requests(pr_id)["diff_refs"].copy()
                 )
 
             git_url = url_path_join(pr_id, "discussions")
@@ -250,67 +251,16 @@ class PullRequestsGitLabManager(PullRequestsManager):
         body=None,
         params: Optional[Dict[str, str]] = None,
     ):
-        if not self._access_token:
-            raise HTTPError(
-                status_code=HTTPStatus.BAD_REQUEST,
-                reason="No Github access token specified.",
-            )
-
         headers = {
             "Authorization": f"Bearer {self._access_token}",
             "Accept": "application/json",
         }
 
-        if body is not None:
-            headers["Content-Type"] = "application/json"
-            body = json.dumps(body)
-
-        if not url.startswith(self._base_api_url):
-            url = "/".join((self._base_api_url.rstrip("/"), url.lstrip("/")))
-
-        if params is not None:
-            url = url_concat(url, params)
-
-        try:
-            request = HTTPRequest(
-                url,
-                validate_cert=True,
-                user_agent="JupyterLab Pull Requests",
-                method=method.upper(),
-                body=body,
-                headers=headers,
-            )
-        except BaseException as e:
-            get_logger().error("Failed to create http request", exc_info=e)
-            raise HTTPError(
-                status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-                reason=f"Invalid _call_gitlab '{method}': {e}",
-            ) from e
-
-        try:
-            get_logger().debug(f"{method.upper()} {url}")
-            response = await self._client.fetch(request)
-            result = response.body.decode("utf-8")
-            if load_json:
-                return json.loads(result)
-            else:
-                return result
-        except HTTPClientError as e:
-            get_logger().debug(
-                f"Failed to fetch {request.method} {request.url}", exc_info=e
-            )
-            raise HTTPError(
-                status_code=e.code, reason=f"Invalid response in '{url}': {e}"
-            ) from e
-        except ValueError as e:
-            get_logger().error("Failed to fetch http request", exc_info=e)
-            raise HTTPError(
-                status_code=HTTPStatus.BAD_REQUEST,
-                reason=f"Invalid response in '{url}': {e}",
-            ) from e
-        except Exception as e:
-            get_logger().error("Failed to fetch http request", exc_info=e)
-            raise HTTPError(
-                status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-                reason=f"Unknown error in '{url}': {e}",
-            ) from e
+        return await super()._call_service(
+            url,
+            load_json=load_json,
+            method=method,
+            body=body,
+            params=params,
+            headers=headers,
+        )
