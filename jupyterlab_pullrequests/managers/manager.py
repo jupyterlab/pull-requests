@@ -161,8 +161,8 @@ class PullRequestsManager(abc.ABC):
                 reason=f"Invalid _call_service '{method}': {e}",
             ) from e
 
+        get_logger().debug(f"{method.upper()} {url}")
         try:
-            get_logger().debug(f"{method.upper()} {url}")
             response = await self._client.fetch(request)
             result = response.body.decode("utf-8")
             if load_json:
@@ -173,6 +173,7 @@ class PullRequestsManager(abc.ABC):
             get_logger().debug(
                 f"Failed to fetch {request.method} {request.url}", exc_info=e
             )
+            get_logger().debug(e.response.body.decode("utf-8") if e.response is not None else None)
             raise tornado.web.HTTPError(
                 status_code=e.code, reason=f"Invalid response in '{url}': {e}"
             ) from e

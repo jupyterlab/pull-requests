@@ -24,7 +24,6 @@ class PullRequestsGitLabManager(PullRequestsManager):
         # Creating new file discussion required some commit sha's so we will cache them
         self._merge_requests_cache = {}
 
-
     async def _get_merge_requests(self, id_: str) -> dict:
         merge_request = self._merge_requests_cache.get(id_)
         if merge_request is None:

@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List, NoReturn, Optional, Union
+from typing import Dict, List, NoReturn, Optional, Tuple, Union
 
 from notebook.utils import url_path_join
 from tornado.httputil import url_concat
@@ -19,6 +19,14 @@ class PullRequestsGithubManager(PullRequestsManager):
             access_token: Versioning service access token
         """
         super().__init__(base_api_url=base_api_url, access_token=access_token)
+        self._pull_requests_cache = {}
+
+    async def _get_pull_requests(self, pr_id: str) -> dict:
+        pull_request = self._pull_requests_cache.get(pr_id)
+        if pull_request is None:
+            pull_request = await self._call_github(pr_id)
+            self._pull_requests_cache[pr_id] = pull_request
+        return pull_request
 
     async def get_current_user(self) -> Dict[str, str]:
         git_url = url_path_join(self._base_api_url, "user")
@@ -58,6 +66,9 @@ class PullRequestsGithubManager(PullRequestsManager):
                 }
             )
 
+        # Reset cache
+        self._pull_requests_cache = {}
+
         return data
 
     # -----------------------------------------------------------------------------
@@ -84,9 +95,9 @@ class PullRequestsGithubManager(PullRequestsManager):
     # /pullrequests/files/content Handler
     # -----------------------------------------------------------------------------
 
-    async def get_pr_links(self, pr_id: str, filename: str) -> Dict[str, str]:
+    async def get_pr_links(self, pr_id: str, filename: str) -> Tuple[str, str]:
 
-        data = await self._call_github(pr_id)
+        data = await self._get_pull_requests(pr_id)
         base_url = url_concat(
             url_path_join(data["base"]["repo"]["url"], "contents", filename),
             {"ref": data["base"]["ref"]},
@@ -95,8 +106,7 @@ class PullRequestsGithubManager(PullRequestsManager):
             url_path_join(data["head"]["repo"]["url"], "contents", filename),
             {"ref": data["head"]["ref"]},
         )
-        commit_id = data["head"]["sha"]
-        return {"baseUrl": base_url, "headUrl": head_url, "commitId": commit_id}
+        return base_url, head_url
 
     async def get_content(self, link: str):
         try:
@@ -111,15 +121,14 @@ class PullRequestsGithubManager(PullRequestsManager):
 
     async def get_file_content(self, pr_id: str, filename: str) -> Dict[str, str]:
 
-        links = await self.get_pr_links(pr_id, filename)
+        base_url, head_url = await self.get_pr_links(pr_id, filename)
 
-        base_content = await self.get_content(links["baseUrl"])
-        head_content = await self.get_content(links["headUrl"])
+        base_content = await self.get_content(base_url)
+        head_content = await self.get_content(head_url)
 
         return {
             "baseContent": base_content,
             "headContent": head_content,
-            "commitId": links["commitId"],
         }
 
     # -----------------------------------------------------------------------------
@@ -189,20 +198,23 @@ class PullRequestsGithubManager(PullRequestsManager):
     async def post_file_comment(
         self, pr_id: str, filename: Optional[str], body: Union[CommentReply, NewComment]
     ):
-        # FIXME
-        if isinstance(body, CommentReply):
-            body = {"body": body.text, "in_reply_to": body.inReplyTo}
+        if filename is None:
+            pass  # FIXME
         else:
-            body = {
-                "body": body.text,
-                # "commit_id": body.commitId,
-                "path": filename,
-                "position": body.line or body.originalLine,
-            }
-        git_url = url_path_join(pr_id, "comments")
-        response = await self._call_github(git_url, method="POST", body=body)
-        print(response)
-        return self.response_to_comment(response)
+            if isinstance(body, CommentReply):
+                body = {"body": body.text, "in_reply_to": body.inReplyTo}
+            else:
+                body = {
+                    "body": body.text,
+                    "commit_id": await self._get_pull_requests(pr_id)["head"]["sha"],
+                    "path": filename,
+                    "line": body.line or body.originalLine,
+                    "side": "RIGHT" if body.line is not None else "LEFT",
+                }
+
+            git_url = url_path_join(pr_id, "comments")
+            response = await self._call_github(git_url, method="POST", body=body)
+            return self.response_to_comment(response)
 
     # -----------------------------------------------------------------------------
     # Handler utilities

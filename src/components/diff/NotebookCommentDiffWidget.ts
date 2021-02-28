@@ -32,7 +32,6 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
     // const commentToAdd: PullRequestCommentThreadModel = new PullRequestCommentThreadModel(
     //   '',
     //   this.props.file.name,
-    //   this.props.file.commitId,
     //   this.state.prChunks[i].lineNumber.lineNumberStart
     // );
     // const prChunks = [...this.state.prChunks];

@@ -24,10 +24,9 @@ export interface IFile {
   status: string;
 }
 
-export interface IFileContent<T> {
-  baseContent: T;
-  headContent: T;
-  commitId: string;
+export interface IFileContent {
+  baseContent: string;
+  headContent: string;
 }
 
 export interface IComment {
@@ -54,7 +53,6 @@ export interface IThread {
   comments: IComment[];
   filename?: string;
   id?: string | number;
-  // commitId: string;
   line?: number;
   originalLine?: number;
   pullRequestId: string;
@@ -93,7 +91,7 @@ export interface INotebookMapping {
 export interface IDiffOptions {
   prId: string;
   filename: string;
-  content: IFileContent<any>;
+  content: IFileContent;
   threads: IThread[];
 
   /**
