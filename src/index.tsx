@@ -71,7 +71,7 @@ function activate(
         mainAreaItem = new MainAreaWidget<PullRequestDescriptionTab>({
           content: new PullRequestDescriptionTab({
             pullRequest,
-            renderMimeRegistry: renderMime
+            renderMime
           })
         });
         mainAreaItem.id = pullRequest.id;
