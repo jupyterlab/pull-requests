@@ -1,5 +1,9 @@
 import { Widget } from '@lumino/widgets';
+import CodeMirror from 'codemirror';
+
 import { generateNode } from '../../utils';
+
+import 'codemirror/addon/display/placeholder.js';
 
 /**
  * InputComment widget properties
@@ -58,8 +62,8 @@ export class InputComment extends Widget {
    *
    * @param event Input event
    */
-  protected handleInputChange(event: Event): void {
-    this.comment = (event.target as any).value;
+  protected handleInputChange(editor: CodeMirror.Editor): void {
+    this.comment = editor.getValue();
   }
 
   /**
@@ -110,18 +114,19 @@ export class InputComment extends Widget {
     );
 
     const head = this.node.appendChild(generateNode('div'));
-    head.appendChild(
-      generateNode(
-        'textarea',
-        {
-          class: 'jp-PullRequestInputForm jp-PullRequestInputFormTextArea',
-          placeholder: 'Leave a comment',
-          value: ''
-        },
-        null,
-        { input: this.handleInputChange.bind(this) }
-      )
-    );
+    const editor = head.appendChild(
+      generateNode('textarea', {
+        class: 'jp-PullRequestInputForm jp-PullRequestInputFormTextArea',
+        placeholder: 'Leave a comment',
+        value: ''
+      })
+    ) as HTMLTextAreaElement;
+    const cm = CodeMirror.fromTextArea(editor, {
+      mode: 'markdown',
+      theme: 'jupyter'
+    });
+    cm.on('change', this.handleInputChange.bind(this));
+
     head.appendChild(buttonsContainer);
   }
 
