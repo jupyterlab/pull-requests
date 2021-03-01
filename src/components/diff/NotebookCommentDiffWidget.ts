@@ -4,7 +4,6 @@ import { NotebookDiffModel } from 'nbdime/lib/diff/model';
 import {
   CellDiffWidget,
   MetadataDiffWidget,
-  // MetadataDiffWidget,
   NotebookDiffWidget
 } from 'nbdime/lib/diff/widget';
 import { CHUNK_PANEL_CLASS } from 'nbdime/lib/diff/widget/common';
@@ -127,6 +126,7 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
           thread_ => thread.id === thread_.id
         );
         threads.splice(threadIndex, 1);
+        widget.node.parentElement.removeChild(widget.node);
         widget.dispose();
       }
     });

@@ -154,6 +154,7 @@ export class PlainTextDiff extends Widget {
           thread_ => thread.id === thread_.id
         );
         this._props.threads.splice(threadIndex, 1);
+        widget.node.parentElement.removeChild(widget.node);
         widget.dispose();
       }
     });
