@@ -119,6 +119,17 @@ export class NotebookDiff extends Panel {
       };
     }
 
+    // Sort thread by line and originalLine order
+    const sortedThreads = [...threads].sort((a: IThread, b: IThread) => {
+      if (a.line !== null && b.line !== null) {
+        return a.line - b.line;
+      }
+      if (a.originalLine !== null && b.originalLine !== null) {
+        return a.originalLine - b.originalLine;
+      }
+      return 0;
+    });
+
     let lastBaseCell = -1;
     let lastHeadCell = -1;
     let lastThread = -1;
@@ -126,9 +137,9 @@ export class NotebookDiff extends Panel {
     let thread: IThread;
     do {
       lastThread += 1;
-      thread = threads[lastThread];
+      thread = sortedThreads[lastThread];
     } while (
-      lastThread < threads.length &&
+      lastThread < sortedThreads.length &&
       thread.line < headMapping.cells[0].start &&
       thread.originalLine < baseMapping.cells[0].start
     );
@@ -136,62 +147,72 @@ export class NotebookDiff extends Panel {
     if (lastThread > 0) {
       // There are thread before the cells
       // They will be added on the metadata diff
-      threadsByChunk[threadsByChunk.length - 1].threads = threads.slice(
+      threadsByChunk[threadsByChunk.length - 1].threads = sortedThreads.splice(
         0,
         lastThread
       );
     }
 
     // Handle threads on cells
-
     for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
       const chunk = chunks[chunkIndex];
-      let thread = threads[lastThread];
 
       for (const cellDiff of chunk) {
+        let inThisBaseChunk = true;
+        let inThisHeadChunk = true;
+        let currentThread = 0;
         if (cellDiff.source.base !== null) {
           lastBaseCell += 1;
-          const baseRange = baseMapping.cells[lastBaseCell];
-          threadsByChunk[chunkIndex].originalRange = baseRange;
-          while (
-            thread &&
-            baseRange?.start <= thread.originalLine &&
-            thread.originalLine <= baseRange?.end
-          ) {
-            threadsByChunk[chunkIndex].threads.push(thread);
-            lastThread += 1;
-            thread = threads[lastThread];
-            if (!thread) {
-              break;
-            }
-          }
         }
         if (cellDiff.source.remote !== null) {
           lastHeadCell += 1;
-          const headRange = headMapping.cells[lastHeadCell];
-          threadsByChunk[chunkIndex].range = headRange;
-          while (
-            thread &&
-            headRange?.start <= thread.line &&
-            thread.line <= headRange?.end
-          ) {
-            threadsByChunk[chunkIndex].threads.push(thread);
-            lastThread += 1;
-            thread = threads[lastThread];
-            if (!thread) {
-              break;
+        }
+        while (
+          (inThisBaseChunk || inThisHeadChunk) &&
+          currentThread < sortedThreads.length
+        ) {
+          const thread = sortedThreads[currentThread];
+          if (cellDiff.source.base !== null) {
+            const baseRange = baseMapping.cells[lastBaseCell];
+            threadsByChunk[chunkIndex].originalRange = baseRange;
+            if (
+              baseRange?.start <= thread.originalLine - 1 &&
+              thread.originalLine - 1 <= baseRange?.end
+            ) {
+              threadsByChunk[chunkIndex].threads.push(
+                ...sortedThreads.splice(currentThread, 1)
+              );
+              continue;
+            } else {
+              inThisBaseChunk = false;
             }
           }
+          if (cellDiff.source.remote !== null) {
+            const headRange = headMapping.cells[lastHeadCell];
+            threadsByChunk[chunkIndex].range = headRange;
+            if (
+              headRange?.start <= thread.line - 1 &&
+              thread.line - 1 <= headRange?.end
+            ) {
+              threadsByChunk[chunkIndex].threads.push(
+                ...sortedThreads.splice(currentThread, 1)
+              );
+              continue;
+            } else {
+              inThisHeadChunk = false;
+            }
+          }
+          currentThread++;
         }
       }
     }
 
     // Handle remaining threads
-    if (lastThread < threads.length) {
+    if (lastThread < sortedThreads.length) {
       // There are thread after the cells
       // They will be added on the metadata diff
       threadsByChunk[threadsByChunk.length - 1].threads.push(
-        ...threads.slice(lastThread, threads.length)
+        ...sortedThreads.slice(lastThread, sortedThreads.length)
       );
     }
     threadsByChunk[threadsByChunk.length - 1].range = headMapping.metadata;
