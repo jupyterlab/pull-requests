@@ -289,7 +289,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
                     (await self._get_merge_requests(pr_id))["diff_refs"].copy()
                 )
             else:
-                data["commit_id"] = self._get_merge_requests(pr_id)["diff_refs"][
+                data["commit_id"] = (await self._get_merge_requests(pr_id))["diff_refs"][
                     "head_sha"
                 ]
 
