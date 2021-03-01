@@ -173,9 +173,14 @@ class PullRequestsManager(abc.ABC):
             get_logger().debug(
                 f"Failed to fetch {request.method} {request.url}", exc_info=e
             )
-            get_logger().debug(e.response.body.decode("utf-8") if e.response is not None else None)
+            error_body = (e.response.body or b"{}").decode("utf-8") if e.response is not None else "{}"
+            get_logger().debug(error_body)
+            if load_json:
+                message = json.loads(error_body).get("message", str(e))
+            else:
+                message = str(e)
             raise tornado.web.HTTPError(
-                status_code=e.code, reason=f"Invalid response in '{url}': {e}"
+                status_code=e.code, reason=f"Invalid response in '{url}': {message}"
             ) from e
         except ValueError as e:
             get_logger().error("Failed to fetch http request", exc_info=e)
