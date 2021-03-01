@@ -19,7 +19,12 @@ import {
   CHUNK_PANEL_CLASS,
   UNCHANGED_DIFF_CLASS
 } from 'nbdime/lib/diff/widget/common';
-import { IDiffOptions, INotebookMapping, IThread } from '../../tokens';
+import {
+  IDiffOptions,
+  INotebookMapping,
+  IThread,
+  IThreadCell
+} from '../../tokens';
 import { requestAPI } from '../../utils';
 import { NotebookCommentDiffWidget } from './NotebookCommentDiffWidget';
 
@@ -65,7 +70,13 @@ export class NotebookDiff extends Panel {
 
     this.computeDiff(props.content.baseContent, props.content.headContent)
       .then(data => {
-        this.onData(data, props.renderMime, props.threads);
+        this.onData(
+          props.prId,
+          props.filename,
+          data,
+          props.renderMime,
+          props.threads
+        );
       })
       .catch(error => {
         this.onError(error);
@@ -99,17 +110,15 @@ export class NotebookDiff extends Panel {
     headMapping: INotebookMapping,
     chunks: CellDiffModel[][],
     threads: IThread[]
-  ): IThread[][] {
+  ): IThreadCell[] {
     // Last element will be for the notebook metadata
-    const threadsByChunk = new Array<IThread[]>(chunks.length + 1);
+    const threadsByChunk = new Array<IThreadCell>(chunks.length + 1);
     for (let index = 0; index < threadsByChunk.length; index++) {
-      threadsByChunk[index] = new Array<IThread>();
-    }
-    if (threads.length === 0) {
-      return threadsByChunk;
+      threadsByChunk[index] = {
+        threads: new Array<IThread>()
+      };
     }
 
-    let lastChunk = 0;
     let lastBaseCell = -1;
     let lastHeadCell = -1;
     let lastThread = -1;
@@ -127,24 +136,29 @@ export class NotebookDiff extends Panel {
     if (lastThread > 0) {
       // There are thread before the cells
       // They will be added on the metadata diff
-      threadsByChunk[threadsByChunk.length - 1] = threads.slice(0, lastThread);
+      threadsByChunk[threadsByChunk.length - 1].threads = threads.slice(
+        0,
+        lastThread
+      );
     }
 
     // Handle threads on cells
-    while (lastThread < threads.length && lastChunk < chunks.length) {
+
+    for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+      const chunk = chunks[chunkIndex];
       let thread = threads[lastThread];
-      const chunk = chunks[lastChunk];
 
       for (const cellDiff of chunk) {
-        if (cellDiff.source.base) {
+        if (cellDiff.source.base !== null) {
           lastBaseCell += 1;
           const baseRange = baseMapping.cells[lastBaseCell];
+          threadsByChunk[chunkIndex].originalRange = baseRange;
           while (
             thread &&
             baseRange?.start <= thread.originalLine &&
             thread.originalLine <= baseRange?.end
           ) {
-            threadsByChunk[lastChunk].push(thread);
+            threadsByChunk[chunkIndex].threads.push(thread);
             lastThread += 1;
             thread = threads[lastThread];
             if (!thread) {
@@ -152,15 +166,16 @@ export class NotebookDiff extends Panel {
             }
           }
         }
-        if (cellDiff.source.remote) {
+        if (cellDiff.source.remote !== null) {
           lastHeadCell += 1;
           const headRange = headMapping.cells[lastHeadCell];
+          threadsByChunk[chunkIndex].range = headRange;
           while (
             thread &&
             headRange?.start <= thread.line &&
             thread.line <= headRange?.end
           ) {
-            threadsByChunk[lastChunk].push(thread);
+            threadsByChunk[chunkIndex].threads.push(thread);
             lastThread += 1;
             thread = threads[lastThread];
             if (!thread) {
@@ -169,17 +184,19 @@ export class NotebookDiff extends Panel {
           }
         }
       }
-      lastChunk += 1;
     }
 
     // Handle remaining threads
     if (lastThread < threads.length) {
       // There are thread after the cells
       // They will be added on the metadata diff
-      threadsByChunk[threadsByChunk.length - 1].push(
+      threadsByChunk[threadsByChunk.length - 1].threads.push(
         ...threads.slice(lastThread, threads.length)
       );
     }
+    threadsByChunk[threadsByChunk.length - 1].range = headMapping.metadata;
+    threadsByChunk[threadsByChunk.length - 1].originalRange =
+      baseMapping.metadata;
 
     return threadsByChunk;
   }
@@ -192,6 +209,8 @@ export class NotebookDiff extends Panel {
   }
 
   protected onData(
+    prId: string,
+    filename: string,
     data: JSONObject,
     renderMime: IRenderMimeRegistry,
     threads: IThread[]
@@ -209,6 +228,8 @@ export class NotebookDiff extends Panel {
       threads
     );
     const nbdWidget = new NotebookCommentDiffWidget(
+      prId,
+      filename,
       nbdModel,
       groupedComments,
       renderMime

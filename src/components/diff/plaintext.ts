@@ -130,24 +130,31 @@ export class PlainTextDiff extends Widget {
     lineNo: number,
     side: 'line' | 'originalLine'
   ): void {
-    const thread: IThread = {
-      comments: new Array<IComment>(),
-      pullRequestId: this._props.prId,
-      filename: this._props.filename
-    };
-    thread[side] = lineNo + 1;
-    editor.addLineWidget(lineNo, this.makeThreadWidget(thread));
+    const newThread = this._props.threads.find(
+      thread_ => thread_[side] === lineNo + 1 && thread_.comments.length === 0
+    );
+    if (!newThread) {
+      const thread: IThread = {
+        comments: new Array<IComment>(),
+        pullRequestId: this._props.prId,
+        filename: this._props.filename
+      };
+      thread[side] = lineNo + 1;
+      this._props.threads.push(thread);
+      editor.addLineWidget(lineNo, this.makeThreadWidget(thread));
+    }
   }
 
   protected makeThreadWidget(thread: IThread): HTMLElement {
     const widget = new CommentThread({
       renderMime: this._props.renderMime,
       thread,
-      handleRemove: () => {
+      handleRemove: (): void => {
         const threadIndex = this._props.threads.findIndex(
-          thread => thread.id === thread.id
+          thread_ => thread.id === thread_.id
         );
         this._props.threads.splice(threadIndex, 1);
+        widget.dispose();
       }
     });
     return widget.node;

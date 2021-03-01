@@ -47,9 +47,9 @@ export class FileDiffWidget extends Panel {
   protected async loadDiff(
     prId: string,
     filename: string
-  ): Promise<[IFileContent<any>, IThread[]]> {
+  ): Promise<[IFileContent, IThread[]]> {
     return Promise.all([
-      requestAPI<IFileContent<any>>(
+      requestAPI<IFileContent>(
         `pullrequests/files/content?id=${encodeURIComponent(
           prId
         )}&filename=${encodeURIComponent(filename)}`,
@@ -67,7 +67,7 @@ export class FileDiffWidget extends Panel {
   protected showDiff(
     prId: string,
     filename: string,
-    content: IFileContent<any>,
+    content: IFileContent,
     threads: IThread[],
     renderMime: IRenderMimeRegistry
   ): void {

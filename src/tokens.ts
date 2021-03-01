@@ -58,6 +58,12 @@ export interface IThread {
   pullRequestId: string;
 }
 
+export interface IThreadCell {
+  originalRange?: IRange;
+  range?: IRange;
+  threads: IThread[];
+}
+
 export interface IPullRequest {
   id: string;
   title: string;

@@ -1,5 +1,9 @@
 import asyncio
+import difflib
+import http
 import json
+import re
+from hashlib import sha1
 from typing import Dict, List, NoReturn, Optional, Tuple, Union
 from urllib.parse import quote
 
@@ -9,6 +13,9 @@ from tornado.web import HTTPError
 
 from ..base import CommentReply, NewComment
 from .manager import PullRequestsManager
+from ..log import get_logger
+
+INVALID_LINE_CODE = re.compile(r'line_code=>\[.*"must be a valid line code".*\]')
 
 
 class PullRequestsGitLabManager(PullRequestsManager):
@@ -23,12 +30,61 @@ class PullRequestsGitLabManager(PullRequestsManager):
         super().__init__(base_api_url=base_api_url, access_token=access_token)
         # Creating new file discussion required some commit sha's so we will cache them
         self._merge_requests_cache = {}
+        self._file_diff_cache = {}
 
-    async def _get_merge_requests(self, id_: str) -> dict:
-        merge_request = self._merge_requests_cache.get(id_)
+    async def _get_file_diff(self, pr_id: str, filename: str) -> List[difflib.Match]:
+        try:
+            import diff_match_patch
+        except ImportError as e:
+            get_logger().error(
+                "diff-match-patch package is needed by GitLab to post comments.",
+                exc_info=e,
+            )
+            raise HTTPError(
+                status_code=http.HTTPStatus.INTERNAL_SERVER_ERROR,
+                reason=f"diff-match-patch package is needed by GitLab to post comments. Please install it using pip or conda.",
+            ) from e
+
+        file_diff = self._file_diff_cache.get((pr_id, filename))
+        if file_diff is None:
+            content = await self.get_file_content(pr_id, filename)
+
+            # Compute the diff using Myers algorithm
+            dmp = diff_match_patch.diff_match_patch()
+            (text1, text2, linearray) = dmp.diff_linesToChars(
+                content["baseContent"],
+                content["headContent"],
+            )
+            diffs = dmp.diff_main(text1, text2, False)
+            # Convert the diff back to original text.
+            dmp.diff_charsToLines(diffs, linearray)
+            # Eliminate freak matches (e.g. blank lines)
+            dmp.diff_cleanupSemantic(diffs)
+
+            # Convert to Match object
+            file_diff = []
+            a = 0
+            b = 0
+            for diff in diffs:
+                size = diff[1].count('\n')
+                if diff[0] == 0:
+                    file_diff.append(difflib.Match(a=a, b=b, size=size))
+                    a += size
+                    b += size
+                elif diff[0] == -1:
+                    a += size
+                else:  # diff[0] == 1
+                    b += size
+
+            self._file_diff_cache[(pr_id, filename)] = file_diff
+
+        return file_diff
+
+    async def _get_merge_requests(self, pr_id: str) -> dict:
+        merge_request = self._merge_requests_cache.get(pr_id)
         if merge_request is None:
-            merge_request = await self._call_gitlab(id_)
-            self._merge_requests_cache[id_] = merge_request
+            merge_request = await self._call_gitlab(pr_id)
+            self._merge_requests_cache[pr_id] = merge_request
         return merge_request
 
     async def get_current_user(self) -> Dict[str, str]:
@@ -113,49 +169,41 @@ class PullRequestsGitLabManager(PullRequestsManager):
     # /pullrequests/files/content Handler
     # -----------------------------------------------------------------------------
 
-    async def get_pr_links(self, pr_id: str, filename: str) -> Tuple[str, str]:
-
-        data = self._get_merge_requests(pr_id)
-        base_url = url_concat(
+    async def __get_content(self, project_id: int, filename: str, sha: str) -> str:
+        url = url_concat(
             url_path_join(
                 self._base_api_url,
                 "projects",
-                str(data["target_project_id"]),
+                str(project_id),
                 "repository/files",
                 quote(filename, safe=""),
                 "raw",
             ),
-            {"ref": data["diff_refs"]["base_sha"]},
+            {"ref": sha},
         )
-        head_url = url_concat(
-            url_path_join(
-                self._base_api_url,
-                "projects",
-                str(data["source_project_id"]),
-                "repository/files",
-                quote(filename, safe=""),
-                "raw",
-            ),
-            {"ref": data["diff_refs"]["head_sha"]},
-        )
-        return base_url, head_url
 
-    async def get_content(self, file_url: str):
         try:
-            return await self._call_gitlab(file_url, False)
+            return await self._call_gitlab(url, False)
         except HTTPError:
             return ""
 
     async def get_file_content(self, pr_id: str, filename: str) -> Dict[str, str]:
+        merge_request = await self._get_merge_requests(pr_id)
 
-        base_url, head_url = await self.get_pr_links(pr_id, filename)
-
-        base_content = await self.get_content(base_url)
-        head_content = await self.get_content(head_url)
+        # Invalid diff cache
+        self._file_diff_cache[(pr_id, filename)] = None
 
         return {
-            "baseContent": base_content,
-            "headContent": head_content,
+            "baseContent": await self.__get_content(
+                merge_request["target_project_id"],
+                filename,
+                merge_request["diff_refs"]["base_sha"],
+            ),
+            "headContent": await self.__get_content(
+                merge_request["source_project_id"],
+                filename,
+                merge_request["diff_refs"]["head_sha"],
+            ),
         }
 
     # -----------------------------------------------------------------------------
@@ -188,7 +236,12 @@ class PullRequestsGitLabManager(PullRequestsManager):
                 pullRequestId=pr_id,
             )
             for note in discussion["notes"]:
-                if filename is None and note["type"] != "DiffNote":
+                if (
+                    filename is None
+                    and note["type"] != "DiffNote"
+                    # Remove auto comment on commit
+                    and "[Compare with previous version]" not in note["body"]
+                ):
                     thread["comments"].append(self.response_to_comment(note))
                 elif (
                     note["type"] == "DiffNote"
@@ -223,7 +276,9 @@ class PullRequestsGitLabManager(PullRequestsManager):
                     "new_line": body.line,
                     "new_path": filename,
                 }
-                data["position"].update(self._get_merge_requests(pr_id)["diff_refs"])
+                data["position"].update(
+                    (await self._get_merge_requests(pr_id))["diff_refs"]
+                )
             elif body.originalLine is not None:
                 data["position"] = {
                     "position_type": "text",
@@ -231,7 +286,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
                     "old_path": filename,
                 }
                 data["position"].update(
-                    self._get_merge_requests(pr_id)["diff_refs"].copy()
+                    (await self._get_merge_requests(pr_id))["diff_refs"].copy()
                 )
             else:
                 data["commit_id"] = self._get_merge_requests(pr_id)["diff_refs"][
@@ -239,7 +294,47 @@ class PullRequestsGitLabManager(PullRequestsManager):
                 ]
 
             git_url = url_path_join(pr_id, "discussions")
-            response = await self._call_gitlab(git_url, method="POST", body=data)
+
+            try:
+                response = await self._call_gitlab(git_url, method="POST", body=data)
+            except HTTPError as error:
+                if (
+                    filename is not None
+                    and error.status_code == http.HTTPStatus.BAD_REQUEST
+                    and INVALID_LINE_CODE.search(error.reason) is not None
+                ):
+                    # When targeting an unmodified line to create a thread, both line and original line needs
+                    # to be passed. So GitLab can compute the infamous line_code that otherwise shows up
+                    # in the unfriendly error message.
+                    #
+                    # To hopefully get a similar diff than GitLab, we start over from the file content. And we
+                    # apply the Myers algorithm
+                    matches = await self._get_file_diff(pr_id, filename)
+                    new_line = body.line
+                    old_line = body.originalLine
+                    if body.line is None:
+                        for m in matches:
+                            if old_line < m.a or old_line >= m.a + m.size:
+                                continue
+                            new_line = old_line - m.a + m.b
+                            break
+                    elif body.originalLine is None:
+                        for m in matches:
+                            if new_line < m.b or new_line >= m.b + m.size:
+                                continue
+                            old_line = new_line + m.a - m.b
+                            break
+
+                    data["position"]["new_line"] = new_line
+                    data["position"]["new_path"] = filename
+                    data["position"]["old_line"] = old_line
+                    data["position"]["old_path"] = None
+
+                    response = await self._call_gitlab(
+                        git_url, method="POST", body=data
+                    )
+                else:
+                    raise error
 
             comment = self.response_to_comment(response["notes"][0])
             # Add the discussion ID created by GitLab
@@ -258,7 +353,6 @@ class PullRequestsGitLabManager(PullRequestsManager):
             "Authorization": f"Bearer {self._access_token}",
             "Accept": "application/json",
         }
-
         return await super()._call_service(
             url,
             load_json=load_json,

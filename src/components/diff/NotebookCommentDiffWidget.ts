@@ -8,37 +8,44 @@ import {
   NotebookDiffWidget
 } from 'nbdime/lib/diff/widget';
 import { CHUNK_PANEL_CLASS } from 'nbdime/lib/diff/widget/common';
-import { IThread } from '../../tokens';
+import { IComment, IThread, IThreadCell } from '../../tokens';
 import { generateNode } from '../../utils';
 import { CommentThread } from './CommentThread';
 
 export class NotebookCommentDiffWidget extends NotebookDiffWidget {
   constructor(
+    prId: string,
+    filename: string,
     model: NotebookDiffModel,
-    comments: IThread[][],
+    comments: IThreadCell[],
     rendermime: IRenderMimeRegistry
   ) {
     super(model, rendermime);
+    this._filename = filename;
+    this._prId = prId;
     this.__renderMime = rendermime;
     this._threads = comments;
   }
 
-  addComment(index?: number): void {
-    // for (const comment of this.state.prChunks[i].comments) {
-    //   if (isNull(comment.comment)) {
-    //     return;
-    //   }
-    // }
-    // const commentToAdd: PullRequestCommentThreadModel = new PullRequestCommentThreadModel(
-    //   '',
-    //   this.props.file.name,
-    //   this.state.prChunks[i].lineNumber.lineNumberStart
-    // );
-    // const prChunks = [...this.state.prChunks];
-    // const prChunk = { ...prChunks[i] };
-    // prChunk.comments = [...prChunk.comments, commentToAdd];
-    // prChunks[i] = prChunk;
-    // this.setState({ prChunks: prChunks });
+  addComment(
+    chunkIndex: number,
+    widget: Widget,
+    lineNo: number,
+    side: 'line' | 'originalLine'
+  ): void {
+    const threadsForChunk = this._threads[chunkIndex].threads;
+    const hasNewThread =
+      threadsForChunk[threadsForChunk.length - 1]?.comments.length === 0;
+    if (!hasNewThread) {
+      const thread: IThread = {
+        comments: new Array<IComment>(),
+        pullRequestId: this._prId,
+        filename: this._filename
+      };
+      thread[side] = lineNo + 1;
+      threadsForChunk.push(thread);
+      widget.node.appendChild(this.makeThreadWidget(thread, threadsForChunk));
+    }
   }
 
   /**
@@ -69,6 +76,15 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
           generateNode('div', { class: 'jp-PullRequestCellDiffContent' })
         )
         .appendChild(widget.node);
+
+      // Create widget shell
+      widget = new Widget({
+        node: head as any
+      });
+
+      const line = this._threads[currentPosition].range?.end;
+      const originalLine = this._threads[currentPosition].originalRange?.end;
+
       cellDiff
         .appendChild(
           generateNode('div', {
@@ -81,7 +97,13 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
             { class: 'jp-PullRequestCellDiffComment' },
             null,
             {
-              click: () => this.addComment(currentPosition)
+              click: () =>
+                this.addComment(
+                  currentPosition,
+                  widget,
+                  line || originalLine || 0,
+                  line ? 'line' : 'originalLine'
+                )
             }
           )
         )
@@ -89,25 +111,33 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
           generateNode('div', { class: 'jp-PullRequestCommentDecoration' })
         );
 
-      this._threads[currentPosition]?.forEach(thread => {
-        head.appendChild(
-          new CommentThread({
-            renderMime: this.__renderMime,
-            thread,
-            handleRemove: () => null
-          }).node
-        );
-      });
-
-      widget = new Widget({
-        node: head as any
+      this._threads[currentPosition].threads.forEach((thread, _, array) => {
+        head.appendChild(this.makeThreadWidget(thread, array));
       });
     }
     super.addWidget(widget);
   }
 
-  protected _threads: IThread[][];
+  private makeThreadWidget(thread: IThread, threads: IThread[]): HTMLElement {
+    const widget = new CommentThread({
+      renderMime: this.__renderMime,
+      thread,
+      handleRemove: (): void => {
+        const threadIndex = threads.findIndex(
+          thread_ => thread.id === thread_.id
+        );
+        threads.splice(threadIndex, 1);
+        widget.dispose();
+      }
+    });
+
+    return widget.node;
+  }
+
+  protected _filename: string;
+  protected _prId: string;
+  protected __renderMime: IRenderMimeRegistry;
+  protected _threads: IThreadCell[];
   // Current chunk position
   private _chunkIndex = 0;
-  protected __renderMime: IRenderMimeRegistry;
 }

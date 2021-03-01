@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import List, NamedTuple, Optional
 
 from traitlets import Enum, Unicode, default
@@ -17,23 +16,6 @@ class NewComment(NamedTuple):
     filename: Optional[str]
     line: Optional[int]
     originalLine: Optional[int]
-
-
-# @dataclass
-# class Comment:
-#     id: str
-#     text: str
-#     updatedAt: str
-#     userName: str
-#     userPicture: str
-
-
-# @dataclass
-# class Discussion:
-#     id: str
-#     comments: List[Comment]
-#     line: Optional[int] = None
-#     originalLine: Optional[int] = None
 
 
 class PRConfig(Configurable):
