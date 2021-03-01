@@ -100,11 +100,11 @@ class PullRequestsGithubManager(PullRequestsManager):
         data = await self._get_pull_requests(pr_id)
         base_url = url_concat(
             url_path_join(data["base"]["repo"]["url"], "contents", filename),
-            {"ref": data["base"]["ref"]},
+            {"ref": data["base"]["sha"]},
         )
         head_url = url_concat(
             url_path_join(data["head"]["repo"]["url"], "contents", filename),
-            {"ref": data["head"]["ref"]},
+            {"ref": data["head"]["sha"]},
         )
         return base_url, head_url
 

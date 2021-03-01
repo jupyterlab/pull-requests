@@ -1,6 +1,6 @@
 import asyncio
 import json
-from typing import Dict, List, NoReturn, Optional, Union
+from typing import Dict, List, NoReturn, Optional, Tuple, Union
 from urllib.parse import quote
 
 from notebook.utils import url_path_join
@@ -113,7 +113,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
     # /pullrequests/files/content Handler
     # -----------------------------------------------------------------------------
 
-    async def get_pr_links(self, pr_id: str, filename: str) -> Dict[str, str]:
+    async def get_pr_links(self, pr_id: str, filename: str) -> Tuple[str, str]:
 
         data = self._get_merge_requests(pr_id)
         base_url = url_concat(
@@ -125,7 +125,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
                 quote(filename, safe=""),
                 "raw",
             ),
-            {"ref": data["target_branch"]},
+            {"ref": data["diff_refs"]["base_sha"]},
         )
         head_url = url_concat(
             url_path_join(
@@ -136,11 +136,11 @@ class PullRequestsGitLabManager(PullRequestsManager):
                 quote(filename, safe=""),
                 "raw",
             ),
-            {"ref": data["source_branch"]},
+            {"ref": data["diff_refs"]["head_sha"]},
         )
-        return {"baseUrl": base_url, "headUrl": head_url}
+        return base_url, head_url
 
-    async def get_link_content(self, file_url: str):
+    async def get_content(self, file_url: str):
         try:
             return await self._call_gitlab(file_url, False)
         except HTTPError:
@@ -148,10 +148,10 @@ class PullRequestsGitLabManager(PullRequestsManager):
 
     async def get_file_content(self, pr_id: str, filename: str) -> Dict[str, str]:
 
-        links = await self.get_pr_links(pr_id, filename)
+        base_url, head_url = await self.get_pr_links(pr_id, filename)
 
-        base_content = await self.get_link_content(links["baseUrl"])
-        head_content = await self.get_link_content(links["headUrl"])
+        base_content = await self.get_content(base_url)
+        head_content = await self.get_content(head_url)
 
         return {
             "baseContent": base_content,
@@ -233,10 +233,14 @@ class PullRequestsGitLabManager(PullRequestsManager):
                 data["position"].update(
                     self._get_merge_requests(pr_id)["diff_refs"].copy()
                 )
+            else:
+                data["commit_id"] = self._get_merge_requests(pr_id)["diff_refs"][
+                    "head_sha"
+                ]
 
             git_url = url_path_join(pr_id, "discussions")
             response = await self._call_gitlab(git_url, method="POST", body=data)
-            
+
             comment = self.response_to_comment(response["notes"][0])
             # Add the discussion ID created by GitLab
             comment["inReplyTo"] = response["id"]

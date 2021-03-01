@@ -1,0 +1,15 @@
+- [ ] Fix discussion on notebook
+- [x] Fix using ref from commit sha rather than branch to ensure consistency when requesting file content and discussion
+- [ ] Use Widget panel and handle life cycle for discussion
+- [ ] Fix styling
+- [ ] Fix use effect on panel
+- [ ] Use codemirror as new comment editor
+- [ ] Take into account review from Nick
+- [ ] Use model to support diff view - this will allow refresh
+- [ ] Switch to virtual tree
+- [ ] Organize PR by project
+- [ ] Document the code
+- [ ] Tests
+- [ ] Update README
+- [ ] Publish beta
+- [ ] TBC Switch to current folder remote
