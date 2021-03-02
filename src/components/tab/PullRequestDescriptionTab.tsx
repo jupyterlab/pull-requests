@@ -116,10 +116,11 @@ export class PullRequestDescriptionTab extends Panel {
                 thread_ => thread.id === thread_.id
               );
               this.threads.splice(threadIndex, 1);
-              this.layout.removeWidget(widget);
+              widget.parent = null;
               widget.dispose();
             }
           });
+
           this.insertWidget(this.widgets.length - 1, widget);
         }
       }

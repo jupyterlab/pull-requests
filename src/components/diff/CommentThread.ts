@@ -60,7 +60,7 @@ export class CommentThread extends Panel {
       } else {
         const msg = this._thread.comments[0]
           ? `${this._thread.comments[0].userName} ${this._thread.comments[0].text}`
-          : 'Start a new discussion';
+          : 'Leave a comment';
         const node = generateNode('p', null, msg);
         this.addWidget(new Widget({ node }));
       }
