@@ -37,13 +37,16 @@ export class CommentWidget extends Widget {
       generateNode('div', { class: 'jp-PullRequestCommentItemContent' })
     );
     const div = content.appendChild(
-      generateNode('div', { class: 'jp-PullRequestCommentItemContentTitle' })
+      generateNode('p', { class: 'jp-PullRequestCommentItemContentTitle' })
     );
-    div.appendChild(generateNode('h2', null, comment.userName));
+    div.appendChild(generateNode('strong', null, comment.userName));
     div.appendChild(
       generateNode(
-        'p',
-        { title: new Date(comment.updatedAt).toString() },
+        'span',
+        {
+          class: 'jp-PullRequestGrayedText',
+          title: new Date(comment.updatedAt).toString()
+        },
         moment(comment.updatedAt).fromNow()
       )
     );

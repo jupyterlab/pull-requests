@@ -2,9 +2,7 @@
 | JupyterLab Pull Requests Style
 |----------------------------------------------------------------------------*/
 
-@import url('~@jupyterlab/git/style/variables.css');
-@import url('~@jupyterlab/git/style/diff-common.css');
-@import url('~@jupyterlab/git/style/diff-text.css');
+@import url('~@jupyterlab/git/style/index.css');
 
 .jp-PullRequestPanel {
   height: 100%;
@@ -74,7 +72,10 @@
   margin: 0;
 }
 
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserItemListItem {
+.jp-PullRequestBrowser
+  .jp-PullRequestBrowserItem
+  .jp-PullRequestBrowserItemList
+  .jp-PullRequestBrowserItemListItem {
   display: flex;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -82,11 +83,18 @@
   margin: auto;
 }
 
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserItemListItem:hover {
+.jp-PullRequestBrowser
+  .jp-PullRequestBrowserItem
+  .jp-PullRequestBrowserItemList
+  .jp-PullRequestBrowserItemListItem:hover {
   background-color: var(--jp-layout-color2);
 }
 
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserItemListItem h2 {
+.jp-PullRequestBrowser
+  .jp-PullRequestBrowserItem
+  .jp-PullRequestBrowserItemList
+  .jp-PullRequestBrowserItemListItem
+  h2 {
   font-size: var(--jp-ui-font-size1);
   color: var(--jp-ui-font-color1);
   font-weight: 400;
@@ -98,18 +106,29 @@
   text-overflow: ellipsis;
 }
 
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserItemListItem .jp-PullRequestBrowserItemListItemIconWrapper {
+.jp-PullRequestBrowser
+  .jp-PullRequestBrowserItem
+  .jp-PullRequestBrowserItemList
+  .jp-PullRequestBrowserItemListItem
+  .jp-PullRequestBrowserItemListItemIconWrapper {
   display: flex;
   flex: 1;
   justify-content: flex-end;
   padding: 4px 12px 4px 4px;
 }
 
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserItemListItem span {
+.jp-PullRequestBrowser
+  .jp-PullRequestBrowserItem
+  .jp-PullRequestBrowserItemList
+  .jp-PullRequestBrowserItemListItem
+  span {
   margin: 0;
 }
 
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserFileItem {
+.jp-PullRequestBrowser
+  .jp-PullRequestBrowserItem
+  .jp-PullRequestBrowserItemList
+  .jp-PullRequestBrowserFileItem {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -118,7 +137,10 @@
   padding: 4px 12px 4px 12px;
 }
 
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserFileItem:hover {
+.jp-PullRequestBrowser
+  .jp-PullRequestBrowserItem
+  .jp-PullRequestBrowserItemList
+  .jp-PullRequestBrowserFileItem:hover {
   background-color: var(--jp-layout-color2);
 }
 
@@ -153,7 +175,9 @@
   font-size: 11px;
 }
 
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemError {
+.jp-PullRequestBrowser
+  .jp-PullRequestBrowserItem
+  .jp-PullRequestBrowserItemError {
   font-size: var(--jp-ui-font-size0);
   font-weight: 400;
   letter-spacing: 1px;
@@ -168,6 +192,7 @@
   width: 100%;
   height: 100%;
   overflow: auto;
+  padding: 0px 10px;
 }
 
 .jp-PullRequestTab .jp-PullRequestDescriptionTab {
@@ -243,36 +268,43 @@
   font-weight: 400;
 }
 
-.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestInputContainer .jp-PullRequestInputButtonContainer {
+.jp-PullRequestInputButtonContainer {
   display: flex;
   flex: 1;
   justify-content: flex-end;
 }
 
-.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestInputContainer .jp-PullRequestInputButtonContainer button {
+.jp-PullRequestInputButtonContainer button {
   margin-top: 4px;
   margin-left: 4px;
 }
 
-.jp-PullRequestInputContainer button.jp-Button-flat.jp-mod-styled.jp-mod-accept:disabled {
+.jp-PullRequestInputContainer
+  button.jp-Button-flat.jp-mod-styled.jp-mod-accept:disabled {
   opacity: 0.4;
 }
 
-.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestInputForm {
-  color: var(--jp-ui-font-color0);
+.jp-PullRequestGrayedText {
+  color: var(--jp-ui-font-color2);
+}
+
+.jp-PullRequestReplyButton {
   font-size: var(--jp-ui-font-size1);
   background-color: var(--jp-layout-color1);
   border: var(--jp-border-width) solid var(--jp-border-color0);
   background-position: right 8px center;
   background-repeat: no-repeat;
   border-radius: 3px;
-  box-shadow: inset 0 1px 2px var(--jp-layout-inverse-color1);
   line-height: 20px;
-  min-height: 34px;
   outline: none;
   padding: 6px 8px;
-  vertical-align: middle;
   width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  cursor: text;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestInputFormButton {
@@ -292,61 +324,95 @@
   padding: 8px;
   width: 100%;
   resize: none;
-  box-sizing:border-box;
+  box-sizing: border-box;
+}
+
+.jp-PullRequestThread {
+  display: flex;
+  margin: 10px 0px;
+  flex-direction: column;
+  border: var(--jp-border-width) solid var(--jp-border-color0);
+  border-radius: 5px;
+  box-shadow: var(--jp-elevation-z2);
+
+  background-color: var(--jp-layout-color0);
+  font-family: var(--jp-ui-font-family);
+  font-size: var(--jp-ui-font-size1);
+  color: var(--jp-ui-font-color1);
+}
+
+.jp-PullRequestCommentItem:last-of-type {
+  background-color: var(--jp-layout-color2);
 }
 
 .jp-PullRequestCommentItem {
-  display: flex;
-  margin: 0;
-  padding: 8px 16px;
+  padding: 8px;
+  padding-left: 20px;
 }
 
-.jp-PullRequestCommentItem .jp-PullRequestCommentItemContent {
+.jp-PullRequestExpandButton {
+  position: absolute;
+  left: 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  line-height: 0px;
+  outline: none;
+  padding: 0px;
+  width: 16px;
+  z-index: 1;
+}
+
+.jp-PullRequestExpandButton svg {
+  width: 20px;
+}
+
+.jp-PullRequestExpandButton:hover .jp-icon3 {
+  fill: var(--jp-inverse-layout-color2);
+}
+
+.jp-PullRequestCommentItemContent {
+  margin-left: 33px;
   display: block;
-  padding-left: 16px;
 }
 
-.jp-PullRequestCommentItem .jp-PullRequestCommentItemContent h2 {
-  font-size: var(--jp-ui-font-size1);
-  color: var(--jp-ui-font-color0);
-  font-weight: 600;
-  margin: 0;
-}
-
-.jp-PullRequestCommentItem .jp-PullRequestCommentItemContent p {
-  font-size: var(--jp-ui-font-size1);
+p.jp-PullRequestCommentItemContentTitle {
   color: var(--jp-ui-font-color1);
-  font-weight: 400;
-  padding-top: 4px;
-  margin: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-.jp-PullRequestCommentItem .jp-PullRequestCommentItemContent .jp-PullRequestCommentItemContentTitle {
-  display: flex;
+.jp-PullRequestCommentItemContentTitle strong {
+  font-weight: 600;
+  margin-right: 8px;
 }
 
-.jp-PullRequestCommentItem .jp-PullRequestCommentItemContent .jp-PullRequestCommentItemContentTitle p {
-  color: var(--jp-ui-font-color2);
-  margin-left: 4px;
-  padding: 0;
+.jp-PullRequestCommentItemImg {
+  position: absolute;
 }
 
-.jp-PullRequestCommentItem .jp-PullRequestCommentItemImg img {
+.jp-PullRequestCommentItemImg img {
   height: 28px;
   width: 28px;
-  border-radius: 3px;
+  border-radius: 14px;
 }
 
 .jp-PullRequestTextDiff .CodeMirror-gutter.jp-PullRequestCommentDecoration,
-.jp-PullRequestTextDiff .CodeMirror-gutter-elt > .jp-PullRequestCommentDecoration {
+.jp-PullRequestTextDiff
+  .CodeMirror-gutter-elt
+  > .jp-PullRequestCommentDecoration {
   background: transparent;
   width: 18px !important;
   height: 18px !important;
 }
 
 .jp-PullRequestCommentDecoration,
-.jp-PullRequestTextDiff .CodeMirror-gutter-elt > .jp-PullRequestCommentDecoration:hover {
-  background-image: url(icons/pullrequest-plus.svg), linear-gradient(var(--jp-brand-color1), var(--jp-brand-color1));
+.jp-PullRequestTextDiff
+  .CodeMirror-gutter-elt
+  > .jp-PullRequestCommentDecoration:hover {
+  background-image: url(icons/pullrequest-plus.svg),
+    linear-gradient(var(--jp-brand-color1), var(--jp-brand-color1));
   border-radius: var(--jp-border-radius);
   background-size: contain;
   background-repeat: no-repeat;
@@ -355,7 +421,7 @@
   height: 18px !important;
   margin-left: 2px;
   z-index: 1;
-  transition: all .2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
 .jp-PullRequestTextDiff .cm-s-jupyter .CodeMirror-gutters {
@@ -365,6 +431,43 @@
 .jp-PullRequestCommentDecoration:hover {
   transform: scale(1.2);
 }
+
+.jp-PullRequestCellDiffContent {
+  display: flex;
+}
+
+.jp-PullRequestCellDiffContent > .lm-Widget:first-child {
+  flex: 1 1 auto;
+}
+
+.jp-PullRequestCellDiffCommentContainer {
+  width: 16px;
+  margin-right: 8px;
+  margin-left: 8px;
+  flex: 0 0 auto;
+}
+
+.jp-PullRequestCellDiffComment {
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--jp-brand-color1);
+  border-radius: var(--jp-border-radius);
+  border-left: 0;
+  transition: all 0.2s ease-in-out;
+}
+
+.jp-PullRequestCellDiffComment:hover {
+  transform: scale(1.1);
+}
+
+.jp-PullRequestCellDiffCommentContainer .jp-PullRequestCommentDecoration {
+  position: absolute;
+  margin-left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/*
 
 .jp-Notebook-diff {
   overflow: visible;
@@ -389,13 +492,6 @@
 .jp-PullRequestCellDiff {
   display: flex;
   padding-bottom: 10px;
-}
-
-.jp-PullRequestCellDiffCommentContainer {
-  position: relative;
-  width: 16px;
-  margin-right: 8px;
-  margin-left: 8px;
 }
 
 .jp-PullRequestCellDiff .jp-PullRequestCellDiffCommentContainer .jp-PullRequestCellDiffComment {
@@ -427,4 +523,4 @@
     width: 49%;
     margin-left: 50%;
   }
-}
+} */

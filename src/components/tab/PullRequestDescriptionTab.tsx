@@ -95,37 +95,50 @@ export class PullRequestDescriptionTab extends Panel {
   }
 
   private addNewThreadButton(): void {
-    const button = generateNode('button', {}, 'Start a new discussion', {
-      click: () => {
-        // Append an empty thread to start a new discussion
-        const hasNewThread =
-          this.threads[this.threads.length - 1]?.comments.length === 0;
-        if (!hasNewThread) {
-          const thread: IThread = {
-            comments: new Array<IComment>(),
-            pullRequestId: this.pullRequestId
-          };
+    const node = generateNode('div', { class: 'jp-PullRequestThread' });
+    node
+      .appendChild(generateNode('div', { class: 'jp-PullRequestCommentItem' }))
+      .appendChild(
+        generateNode('div', { class: 'jp-PullRequestCommentItemContent' })
+      )
+      .appendChild(
+        generateNode(
+          'button',
+          { class: 'jp-PullRequestReplyButton jp-PullRequestGrayedText' },
+          'Start a new discussion',
+          {
+            click: () => {
+              // Append an empty thread to start a new discussion
+              const hasNewThread =
+                this.threads[this.threads.length - 1]?.comments.length === 0;
+              if (!hasNewThread) {
+                const thread: IThread = {
+                  comments: new Array<IComment>(),
+                  pullRequestId: this.pullRequestId
+                };
 
-          this.threads.push(thread);
+                this.threads.push(thread);
 
-          const widget = new CommentThread({
-            thread,
-            renderMime: this.renderMime,
-            handleRemove: (): void => {
-              const threadIndex = this.threads.findIndex(
-                thread_ => thread.id === thread_.id
-              );
-              this.threads.splice(threadIndex, 1);
-              widget.parent = null;
-              widget.dispose();
+                const widget = new CommentThread({
+                  thread,
+                  renderMime: this.renderMime,
+                  handleRemove: (): void => {
+                    const threadIndex = this.threads.findIndex(
+                      thread_ => thread.id === thread_.id
+                    );
+                    this.threads.splice(threadIndex, 1);
+                    widget.parent = null;
+                    widget.dispose();
+                  }
+                });
+
+                this.insertWidget(this.widgets.length - 1, widget);
+              }
             }
-          });
-
-          this.insertWidget(this.widgets.length - 1, widget);
-        }
-      }
-    });
-    this.addWidget(new Widget({ node: button }));
+          }
+        )
+      );
+    this.addWidget(new Widget({ node }));
   }
 
   protected pullRequestId: string;

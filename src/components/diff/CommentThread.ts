@@ -31,7 +31,7 @@ export interface ICommentThreadProps {
 export class CommentThread extends Panel {
   constructor(props: ICommentThreadProps) {
     super();
-    this.addClass('jp-PullRequestCommentItem');
+    this.addClass('jp-PullRequestThread');
     this._handleRemove = props.handleRemove;
     this._inputShown = props.thread.comments.length === 0;
     this._thread = props.thread;
@@ -59,9 +59,22 @@ export class CommentThread extends Panel {
         this.addThreadView();
       } else {
         const msg = this._thread.comments[0]
-          ? `${this._thread.comments[0].userName} ${this._thread.comments[0].text}`
+          ? `<strong>${this._thread.comments[0].userName}</strong> ${this._thread.comments[0].text}`
           : 'Leave a comment';
-        const node = generateNode('p', null, msg);
+
+        const node = generateNode('div', {
+          class: 'jp-PullRequestCommentItem'
+        });
+        const p = node
+          .appendChild(
+            generateNode('div', { class: 'jp-PullRequestCommentItemContent' })
+          )
+          .appendChild(
+            generateNode('p', {
+              class: 'jp-PullRequestCommentItemContentTitle'
+            })
+          );
+        p.innerHTML = msg;
         this.addWidget(new Widget({ node }));
       }
     }
@@ -91,8 +104,12 @@ export class CommentThread extends Panel {
    * Initialize the widget node
    */
   protected initNode(): void {
-    const expandButton = generateNode('button') as HTMLButtonElement;
-    expandButton.appendChild(caretUpIcon.element({ tag: 'span' }));
+    const expandButton = generateNode('button', {
+      class: 'jp-PullRequestExpandButton'
+    }) as HTMLButtonElement;
+    expandButton.appendChild(
+      caretUpIcon.element({ tag: 'span', title: 'Collapse Discussion' })
+    );
     this.addWidget(new Widget({ node: expandButton }));
 
     this.addThreadView();
@@ -105,6 +122,9 @@ export class CommentThread extends Panel {
           : caretUpIcon.element({ tag: 'span' }),
         expandButton.firstChild
       );
+      expandButton.title = this.isExpanded
+        ? 'Expand Discussion'
+        : 'Collapse Discussion';
       this.isExpanded = !this.isExpanded;
     });
   }
@@ -189,18 +209,32 @@ export class CommentThread extends Panel {
   }
 
   private createCommentInput(): InputComment {
-    return new InputComment({
+    const widget = new InputComment({
       handleSubmit: this.handleAddComment.bind(this),
       handleCancel: this.handleCancelComment.bind(this)
     });
+    widget.addClass('jp-PullRequestCommentItem');
+    return widget;
   }
 
   private createReplyButton(): Widget {
-    const node = generateNode('button', { class: '' }, 'Reply...', {
-      click: () => {
-        this.inputShown = true;
-      }
-    });
+    const node = generateNode('div', { class: 'jp-PullRequestCommentItem' });
+    node
+      .appendChild(
+        generateNode('div', { class: 'jp-PullRequestCommentItemContent' })
+      )
+      .appendChild(
+        generateNode(
+          'button',
+          { class: 'jp-PullRequestReplyButton jp-PullRequestGrayedText' },
+          'Reply...',
+          {
+            click: () => {
+              this.inputShown = true;
+            }
+          }
+        )
+      );
     return new Widget({
       node
     });

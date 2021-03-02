@@ -113,7 +113,9 @@ export class InputComment extends Widget {
       )
     );
 
-    const head = this.node.appendChild(generateNode('div'));
+    const head = this.node.appendChild(
+      generateNode('div', { class: 'jp-PullRequestCommentItemContent' })
+    );
     const editor = head.appendChild(
       generateNode('textarea', {
         class: 'jp-PullRequestInputForm jp-PullRequestInputFormTextArea',
