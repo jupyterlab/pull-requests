@@ -95,8 +95,12 @@ export class NotebookDiff extends Panel {
         currentContent: headContent
       }
     );
-    data['baseMapping'] = Private.computeNotebookMapping(baseContent) as any;
-    data['headMapping'] = Private.computeNotebookMapping(headContent) as any;
+    data['baseMapping'] = Private.computeNotebookMapping(
+      baseContent || '{}'
+    ) as any;
+    data['headMapping'] = Private.computeNotebookMapping(
+      headContent || '{}'
+    ) as any;
     return data;
   }
 
@@ -294,15 +298,17 @@ namespace Private {
 
     return {
       metadata: {
-        start: parsedContent.pointers['/metadata'].key.line,
-        end: parsedContent.pointers['/metadata'].valueEnd.line
+        start: parsedContent.pointers['/metadata']?.key.line,
+        end: parsedContent.pointers['/metadata']?.valueEnd.line
       },
-      cells: parsedContent.data.cells.map((cell: any, index: number) => {
-        return {
-          start: parsedContent.pointers[`/cells/${index}`].value.line,
-          end: parsedContent.pointers[`/cells/${index}`].valueEnd.line
-        };
-      })
+      cells: (parsedContent.data.cells || []).map(
+        (cell: any, index: number) => {
+          return {
+            start: parsedContent.pointers[`/cells/${index}`].value.line,
+            end: parsedContent.pointers[`/cells/${index}`].valueEnd.line
+          };
+        }
+      )
     };
   }
   /**
