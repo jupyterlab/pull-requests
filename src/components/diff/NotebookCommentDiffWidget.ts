@@ -1,5 +1,5 @@
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
-import { Widget } from '@lumino/widgets';
+import { Panel, Widget } from '@lumino/widgets';
 import { NotebookDiffModel } from 'nbdime/lib/diff/model';
 import {
   CellDiffWidget,
@@ -28,7 +28,7 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
 
   addComment(
     chunkIndex: number,
-    widget: Widget,
+    widget: Panel,
     lineNo: number,
     side: 'line' | 'originalLine'
   ): void {
@@ -43,7 +43,7 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
       };
       thread[side] = lineNo + 1;
       threadsForChunk.push(thread);
-      widget.node.appendChild(this.makeThreadWidget(thread, threadsForChunk));
+      widget.addWidget(this.makeThreadWidget(thread, threadsForChunk));
     }
   }
 
@@ -67,29 +67,26 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
         this._chunkIndex += 1;
       }
 
-      const cellDiff = generateNode('div', { class: 'jp-PullRequestCellDiff' });
-      const head = generateNode('div', { class: 'jp-PullRequestNBDiff' });
-      head
-        .appendChild(cellDiff)
-        .appendChild(
-          generateNode('div', { class: 'jp-PullRequestCellDiffContent' })
-        )
-        .appendChild(widget.node);
+      const commentButton = generateNode('div', {
+        class: 'jp-PullRequestCellDiffCommentContainer'
+      });
 
-      // Create widget shell
-      widget = new Widget({
-        node: head as any
+      const cellDiff = new Panel();
+      cellDiff.addClass('jp-PullRequestCellDiffContent');
+      cellDiff.addWidget(widget);
+      cellDiff.addWidget(new Widget({ node: commentButton }));
+
+      const chunkWidget = new Panel();
+      chunkWidget.addWidget(cellDiff);
+
+      this._threads[currentPosition].threads.forEach((thread, _, array) => {
+        chunkWidget.addWidget(this.makeThreadWidget(thread, array));
       });
 
       const line = this._threads[currentPosition].range?.end;
       const originalLine = this._threads[currentPosition].originalRange?.end;
 
-      cellDiff
-        .appendChild(
-          generateNode('div', {
-            class: 'jp-PullRequestCellDiffCommentContainer'
-          })
-        )
+      commentButton
         .appendChild(
           generateNode(
             'div',
@@ -99,7 +96,7 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
               click: () =>
                 this.addComment(
                   currentPosition,
-                  widget,
+                  chunkWidget,
                   line || originalLine || 0,
                   line ? 'line' : 'originalLine'
                 )
@@ -110,14 +107,12 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
           generateNode('div', { class: 'jp-PullRequestCommentDecoration' })
         );
 
-      this._threads[currentPosition].threads.forEach((thread, _, array) => {
-        head.appendChild(this.makeThreadWidget(thread, array));
-      });
+      widget = chunkWidget;
     }
     super.addWidget(widget);
   }
 
-  private makeThreadWidget(thread: IThread, threads: IThread[]): HTMLElement {
+  private makeThreadWidget(thread: IThread, threads: IThread[]): Widget {
     const widget = new CommentThread({
       renderMime: this.__renderMime,
       thread,
@@ -126,12 +121,12 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
           thread_ => thread.id === thread_.id
         );
         threads.splice(threadIndex, 1);
-        widget.node.parentElement.removeChild(widget.node);
+        widget.parent = null;
         widget.dispose();
       }
     });
 
-    return widget.node;
+    return widget;
   }
 
   protected _filename: string;

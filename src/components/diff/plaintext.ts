@@ -13,6 +13,18 @@ export class PlainTextDiff extends Widget {
     this._props = props;
   }
 
+  dispose(): void {
+    if (this.isDisposed) {
+      return;
+    }
+    while (this._threadWidgets.length > 0) {
+      const widget = this._threadWidgets.pop();
+      widget.node.remove();
+      widget.dispose();
+    }
+    super.dispose();
+  }
+
   /**
    * Callback to create the diff widget once the widget
    * is attached so CodeMirror get proper size.
@@ -39,6 +51,20 @@ export class PlainTextDiff extends Widget {
    */
   protected static makeCommentDecoration(): HTMLElement {
     return generateNode('div', { class: 'jp-PullRequestCommentDecoration' });
+  }
+
+  protected addThreadWidget(widget: Widget): void {
+    this._threadWidgets.push(widget);
+  }
+
+  protected removeThreadWidget(widget: Widget): void {
+    widget.node.remove();
+    this._threadWidgets
+      .splice(
+        this._threadWidgets.findIndex(widget_ => widget_ === widget),
+        1
+      )[0]
+      .dispose();
   }
 
   /**
@@ -154,10 +180,10 @@ export class PlainTextDiff extends Widget {
           thread_ => thread.id === thread_.id
         );
         this._props.threads.splice(threadIndex, 1);
-        widget.node.parentElement.removeChild(widget.node);
-        widget.dispose();
+        this.removeThreadWidget(widget);
       }
     });
+    this.addThreadWidget(widget);
     return widget.node;
   }
 
@@ -182,4 +208,5 @@ export class PlainTextDiff extends Widget {
 
   protected _mergeView: MergeView.MergeViewEditor;
   protected _props: IDiffOptions;
+  private _threadWidgets: Widget[] = [];
 }

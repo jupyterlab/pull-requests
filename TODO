@@ -1,12 +1,12 @@
 - [x] Fix discussion on notebook
   - Not all discussion are set in the UI
 - [x] Fix using ref from commit sha rather than branch to ensure consistency when requesting file content and discussion
-- [ ] Use Widget panel and handle life cycle for discussion
+- [x] Use Widget panel and handle life cycle for discussion
 - [ ] Fix styling
 - [ ] Fix use effect on panel
 - [ ] Fix notebooks
-  - Hide unchanged cells (and the comments structure)
-  - Support added and removed notebooks (currently JSON error as content on one side is "")
+  - [ ] Hide unchanged cells (and the comments structure)
+  - [x] Support added and removed notebooks (currently JSON error as content on one side is "")
 - [x] Use codemirror as new comment editor
 - [ ] Take advantage of builtin feature of MainAreaWidget (spinner)
 - [ ] Simplify number of div to include add button on notebook (and to fix hiding it when unchanged cells are collapsed)

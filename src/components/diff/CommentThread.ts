@@ -1,11 +1,11 @@
-import { Widget } from '@lumino/widgets';
+import { Panel, Widget } from '@lumino/widgets';
 import { IComment, IThread } from '../../tokens';
-import moment from 'moment';
 import { generateNode, requestAPI } from '../../utils';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { caretDownIcon, caretUpIcon } from '@jupyterlab/ui-components';
 import { InputComment } from './InputComment';
 import { showErrorMessage } from '@jupyterlab/apputils';
+import { CommentWidget } from './CommentWidget';
 
 /**
  * CommentThread widget properties
@@ -28,7 +28,7 @@ export interface ICommentThreadProps {
 /**
  * CommentThread widget
  */
-export class CommentThread extends Widget {
+export class CommentThread extends Panel {
   constructor(props: ICommentThreadProps) {
     super();
     this.addClass('jp-PullRequestCommentItem');
@@ -49,17 +49,20 @@ export class CommentThread extends Widget {
   set isExpanded(v: boolean) {
     if (this._isExpanded !== v) {
       this._isExpanded = v;
+      // Keep the first widget aka the expand button
+      while (this.widgets.length > 1) {
+        const latestWidget = this.widgets[this.widgets.length - 1];
+        latestWidget.parent = null;
+        latestWidget.dispose();
+      }
       if (this._isExpanded) {
         this.addThreadView();
       } else {
-        this._threadsContainer.textContent = '';
-        this._threadsContainer.appendChild(
-          generateNode(
-            'p',
-            null,
-            `${this._thread.comments[0].userName} ${this._thread.comments[0].text}`
-          )
-        );
+        const msg = this._thread.comments[0]
+          ? `${this._thread.comments[0].userName} ${this._thread.comments[0].text}`
+          : 'Start a new discussion';
+        const node = generateNode('p', null, msg);
+        this.addWidget(new Widget({ node }));
       }
     }
   }
@@ -73,60 +76,15 @@ export class CommentThread extends Widget {
   set inputShown(v: boolean) {
     if (this._inputShown !== v) {
       this._inputShown = v;
-      this._threadsContainer.replaceChild(
-        this._inputShown ? this.createCommentInput() : this.createReplyButton(),
-        this._threadsContainer.lastChild
+
+      const latestWidget = this.widgets[this.widgets.length - 1];
+      latestWidget.parent = null;
+      latestWidget.dispose();
+
+      this.addWidget(
+        this._inputShown ? this.createCommentInput() : this.createReplyButton()
       );
     }
-  }
-
-  /**
-   * Create a comment HTML view
-   *
-   * @param comment Comment
-   * @param renderMime Rendermime registry
-   * @returns The HTML element
-   */
-  protected static createCommentNode(
-    comment: IComment,
-    renderMime: IRenderMimeRegistry
-  ): HTMLElement {
-    const head = generateNode('div', { class: 'jp-PullRequestCommentItem' });
-    head
-      .appendChild(
-        generateNode('div', { class: 'jp-PullRequestCommentItemImg' })
-      )
-      .appendChild(
-        generateNode('img', { src: comment.userPicture, altText: 'Avatar' })
-      );
-    const content = head.appendChild(
-      generateNode('div', { class: 'jp-PullRequestCommentItemContent' })
-    );
-    const div = content.appendChild(
-      generateNode('div', { class: 'jp-PullRequestCommentItemContentTitle' })
-    );
-    div.appendChild(generateNode('h2', null, comment.userName));
-    div.appendChild(
-      generateNode(
-        'p',
-        { title: new Date(comment.updatedAt).toString() },
-        moment(comment.updatedAt).fromNow()
-      )
-    );
-
-    // Add rendered comment
-    const markdownRenderer = renderMime.createRenderer('text/markdown');
-    content.appendChild(markdownRenderer.node);
-    markdownRenderer.renderModel({
-      data: {
-        'text/markdown': comment.text
-      },
-      trusted: false,
-      metadata: {},
-      setData: () => null
-    });
-
-    return head;
   }
 
   /**
@@ -134,15 +92,9 @@ export class CommentThread extends Widget {
    */
   protected initNode(): void {
     const expandButton = generateNode('button') as HTMLButtonElement;
-    this.node
-      .appendChild(expandButton)
-      .appendChild(caretUpIcon.element({ tag: 'span' }));
+    expandButton.appendChild(caretUpIcon.element({ tag: 'span' }));
+    this.addWidget(new Widget({ node: expandButton }));
 
-    this._threadsContainer = generateNode('div', {
-      class: 'jp-PullRequestComments'
-    }) as HTMLDivElement;
-
-    this.node.appendChild(this._threadsContainer);
     this.addThreadView();
 
     // Add event
@@ -161,16 +113,13 @@ export class CommentThread extends Widget {
    * Add the thread view in the widget
    */
   protected addThreadView(): void {
-    this._threadsContainer.textContent = '';
     this._thread.comments.forEach(comment => {
-      this._threadsContainer.appendChild(
-        CommentThread.createCommentNode(comment, this._renderMime)
-      );
+      this.addWidget(new CommentWidget(comment, this._renderMime));
     });
     if (this._inputShown) {
-      this._threadsContainer.appendChild(this.createCommentInput());
+      this.addWidget(this.createCommentInput());
     } else {
-      this._threadsContainer.appendChild(this.createReplyButton());
+      this.addWidget(this.createReplyButton());
     }
   }
 
@@ -213,12 +162,13 @@ export class CommentThread extends Widget {
       }
       this._thread.comments.push(comment);
 
-      this._threadsContainer.replaceChild(
-        CommentThread.createCommentNode(comment, this._renderMime),
-        this._threadsContainer.lastChild
-      );
+      const latestWidget = this.widgets[this.widgets.length - 1];
+      latestWidget.parent = null;
+      latestWidget.dispose();
+
+      this.addWidget(new CommentWidget(comment, this._renderMime));
       this._inputShown = false;
-      this._threadsContainer.appendChild(this.createReplyButton());
+      this.addWidget(this.createReplyButton());
     } catch (reason) {
       console.error(reason);
       showErrorMessage('Error', 'Failed to add the comment.');
@@ -238,18 +188,21 @@ export class CommentThread extends Widget {
     }
   }
 
-  private createCommentInput(): HTMLElement {
+  private createCommentInput(): InputComment {
     return new InputComment({
       handleSubmit: this.handleAddComment.bind(this),
       handleCancel: this.handleCancelComment.bind(this)
-    }).node;
+    });
   }
 
-  private createReplyButton(): HTMLElement {
-    return generateNode('button', { class: '' }, 'Reply...', {
+  private createReplyButton(): Widget {
+    const node = generateNode('button', { class: '' }, 'Reply...', {
       click: () => {
         this.inputShown = true;
       }
+    });
+    return new Widget({
+      node
     });
   }
 
@@ -258,5 +211,4 @@ export class CommentThread extends Widget {
   private _isExpanded = true;
   private _renderMime: IRenderMimeRegistry;
   private _thread: IThread;
-  private _threadsContainer: HTMLDivElement;
 }
