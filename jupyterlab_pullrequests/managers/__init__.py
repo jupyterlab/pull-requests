@@ -1,4 +1,5 @@
-from .github import PullRequestsGithubManager
-from .gitlab import PullRequestsGitLabManager
+from .github import GitHubManager
+from .gitlab import GitLabManager
 
-MANAGERS = {"github": PullRequestsGithubManager, "gitlab": PullRequestsGitLabManager}
+# Supported third-party services
+MANAGERS = {"github": GitHubManager, "gitlab": GitLabManager}

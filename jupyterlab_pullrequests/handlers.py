@@ -53,10 +53,10 @@ class PullRequestsAPIHandler(APIHandler):
 
 class ListPullRequestsUserHandler(PullRequestsAPIHandler):
     """
-    Returns array of a user's PRs
+    Returns array of a user's pull requests
     Takes parameter 'filter' with following options
-        - 'created' returns all PRs authenticated user has created
-        - 'assigned' returns all PRs assigned to authenticated user
+        - 'created' returns all pull requests authenticated user has created
+        - 'assigned' returns all pull requests assigned to authenticated user
     """
 
     def validate_request(self, pr_filter):
@@ -84,8 +84,8 @@ class ListPullRequestsUserHandler(PullRequestsAPIHandler):
 
 class ListPullRequestsFilesHandler(PullRequestsAPIHandler):
     """
-    Returns array of a PR's files
-    Takes parameter 'id' with the id of the PR
+    Returns array of a pull request's files
+    Takes parameter 'id' with the id of the pull request
     """
 
     @tornado.web.authenticated
@@ -109,7 +109,7 @@ class PullRequestsFileContentHandler(PullRequestsAPIHandler):
     async def get(self):
         pr_id = get_request_attr_value(self, "id")
         filename = get_request_attr_value(self, "filename")
-        content = await self._manager.get_file_content(pr_id, filename)
+        content = await self._manager.get_file_diff(pr_id, filename)
         self.finish(json.dumps(content))
 
 

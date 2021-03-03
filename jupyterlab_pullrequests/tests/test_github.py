@@ -14,7 +14,7 @@ from tornado.httpclient import (
 from tornado.web import HTTPError, MissingArgumentError
 
 from jupyterlab_pullrequests.base import CommentReply
-from jupyterlab_pullrequests.managers.github import PullRequestsGithubManager
+from jupyterlab_pullrequests.managers.github import GitHubManager
 
 client = AsyncHTTPClient()
 HERE = pathlib.Path(__file__).parent.resolve()
@@ -31,18 +31,18 @@ def read_sample_response(filename):
 @pytest.mark.asyncio
 class TestGetCurrentUser(TestCase):
     async def test_pat_empty(self):
-        manager = PullRequestsGithubManager(access_token="")
+        manager = GitHubManager(access_token="")
         with (pytest.raises(HTTPError)) as e:
             await manager.get_current_user()
         assert e.value.status_code == HTTPStatus.BAD_REQUEST
         assert "No Github access token specified" in e.value.reason
 
     @patch(
-        "jupyterlab_pullrequests.managers.github.PullRequestsGithubManager.call_github",
+        "jupyterlab_pullrequests.managers.github.GitHubManager.call_github",
         new_callable=CoroutineMock,
     )
     async def test_pat_valid(self, mock_call_github):
-        manager = PullRequestsGithubManager(access_token="valid")
+        manager = GitHubManager(access_token="valid")
         mock_call_github.return_value = read_sample_response("github_current_user.json")
         result = await manager.get_current_user()
         assert result == {"username": "timnlupo"}
@@ -51,33 +51,33 @@ class TestGetCurrentUser(TestCase):
 @pytest.mark.asyncio
 class TestListPRs(TestCase):
     @patch(
-        "jupyterlab_pullrequests.managers.github.PullRequestsGithubManager.call_github",
+        "jupyterlab_pullrequests.managers.github.GitHubManager.call_github",
         new_callable=CoroutineMock,
     )
     async def test_created(self, mock_call_github):
-        manager = PullRequestsGithubManager()
+        manager = GitHubManager()
         await manager.list_prs("octocat", "created")
         mock_call_github.assert_called_with(
             "https://api.github.com/search/issues?q=+state:open+type:pr+author:octocat"
         )
 
     @patch(
-        "jupyterlab_pullrequests.managers.github.PullRequestsGithubManager.call_github",
+        "jupyterlab_pullrequests.managers.github.GitHubManager.call_github",
         new_callable=CoroutineMock,
     )
     async def test_assigned(self, mock_call_github):
-        manager = PullRequestsGithubManager()
+        manager = GitHubManager()
         await manager.list_prs("notoctocat", "assigned")
         mock_call_github.assert_called_with(
             "https://api.github.com/search/issues?q=+state:open+type:pr+assignee:notoctocat"
         )
 
     @patch(
-        "jupyterlab_pullrequests.managers.github.PullRequestsGithubManager.call_github",
+        "jupyterlab_pullrequests.managers.github.GitHubManager.call_github",
         new_callable=CoroutineMock,
     )
     async def test_result(self, mock_call_github):
-        manager = PullRequestsGithubManager()
+        manager = GitHubManager()
         mock_call_github.return_value = read_sample_response("github_list_prs.json")
         result = await manager.list_prs("octocat", "assigned")
         assert result == [
@@ -99,11 +99,11 @@ class TestListPRs(TestCase):
 @pytest.mark.asyncio
 class TestListFiles(TestCase):
     @patch(
-        "jupyterlab_pullrequests.managers.github.PullRequestsGithubManager.call_github",
+        "jupyterlab_pullrequests.managers.github.GitHubManager.call_github",
         new_callable=CoroutineMock,
     )
     async def test_call(self, mock_call_github):
-        manager = PullRequestsGithubManager()
+        manager = GitHubManager()
         mock_call_github.return_value = read_sample_response("github_list_files.json")
         result = await manager.list_files(
             "https://api.github.com/repos/octocat/repo/pulls/1"
@@ -124,12 +124,12 @@ class TestListFiles(TestCase):
 @pytest.mark.asyncio
 class TestGetFileContent(TestCase):
     @patch(
-        "jupyterlab_pullrequests.managers.github.PullRequestsGithubManager.call_github",
+        "jupyterlab_pullrequests.managers.github.GitHubManager.call_github",
         new_callable=CoroutineMock,
     )
     @pytest.mark.asyncio
     async def test_get_file_content(self, mock_call_github):
-        manager = PullRequestsGithubManager()
+        manager = GitHubManager()
         mock_call_github.side_effect = [
             read_sample_response("github_pr_links.json"),
             read_sample_response("github_validate_pr_link.json"),
@@ -137,7 +137,7 @@ class TestGetFileContent(TestCase):
             "test code content",
             "test new code content",
         ]
-        result = await manager.get_file_content("valid-prid", "valid-filename")
+        result = await manager.get_file_diff("valid-prid", "valid-filename")
         assert mock_call_github.call_count == 5
         assert result == {
             "base_content": "test code content",
@@ -146,22 +146,22 @@ class TestGetFileContent(TestCase):
         }
 
     @patch(
-        "jupyterlab_pullrequests.managers.github.PullRequestsGithubManager.get_link_content",
+        "jupyterlab_pullrequests.managers.github.GitHubManager.get_link_content",
         new_callable=CoroutineMock,
     )
     @patch(
-        "jupyterlab_pullrequests.managers.github.PullRequestsGithubManager.validate_pr_link",
+        "jupyterlab_pullrequests.managers.github.GitHubManager.validate_pr_link",
         new_callable=CoroutineMock,
     )
     @patch(
-        "jupyterlab_pullrequests.managers.github.PullRequestsGithubManager.get_pr_links",
+        "jupyterlab_pullrequests.managers.github.GitHubManager.get_pr_links",
         new_callable=CoroutineMock,
     )
     @pytest.mark.asyncio
     async def test_get_file_content_calls(
         self, mock_get_pr_links, mock_validate_pr_link, mock_get_single_content
     ):
-        manager = PullRequestsGithubManager()
+        manager = GitHubManager()
         mock_get_pr_links.return_value = {
             "base_url": "http://base_url.com",
             "head_url": "http://head_url.com",
@@ -172,7 +172,7 @@ class TestGetFileContent(TestCase):
             "http://head_url_download.com",
         ]
         mock_get_single_content.side_effect = ["base content", "head content"]
-        result = await manager.get_file_content("valid-prid", "valid-filename")
+        result = await manager.get_file_diff("valid-prid", "valid-filename")
         mock_get_pr_links.assert_called_once_with("valid-prid", "valid-filename")
         assert mock_validate_pr_link.call_count == 2
         mock_validate_pr_link.assert_has_calls(
@@ -200,11 +200,11 @@ class TestGetFileContent(TestCase):
 
 class TestGetFileComments(TestCase):
     @patch(
-        "jupyterlab_pullrequests.managers.github.PullRequestsGithubManager.call_github",
+        "jupyterlab_pullrequests.managers.github.GitHubManager.call_github",
         new_callable=CoroutineMock,
     )
     async def test_call(self, mock_call_github):
-        manager = PullRequestsGithubManager()
+        manager = GitHubManager()
         mock_call_github.return_value = read_sample_response("github_comments_get.json")
         result = await manager.get_threads(
             "https://api.github.com/repos/octocat/repo/pulls/1", "test.ipynb"
@@ -227,11 +227,11 @@ class TestGetFileComments(TestCase):
 
 class TestPostFileComments(TestCase):
     @patch(
-        "jupyterlab_pullrequests.managers.github.PullRequestsGithubManager.call_github",
+        "jupyterlab_pullrequests.managers.github.GitHubManager.call_github",
         new_callable=CoroutineMock,
     )
     async def test_valid_reply(self, mock_call_github):
-        manager = PullRequestsGithubManager()
+        manager = GitHubManager()
         mock_call_github.return_value = read_sample_response(
             "github_comments_post.json"
         )
@@ -256,11 +256,11 @@ class TestPostFileComments(TestCase):
         assert result == expected_result
 
     @patch(
-        "jupyterlab_pullrequests.managers.github.PullRequestsGithubManager.call_github",
+        "jupyterlab_pullrequests.managers.github.GitHubManager.call_github",
         new_callable=CoroutineMock,
     )
     async def test_valid_new(self, mock_call_github):
-        manager = PullRequestsGithubManager()
+        manager = GitHubManager()
         mock_call_github.return_value = read_sample_response(
             "github_comments_post.json"
         )
@@ -300,7 +300,7 @@ class TestPostFileComments(TestCase):
 
 class TestPostFileNBDiff(TestCase):
     async def test_valid(self):
-        manager = PullRequestsGithubManager()
+        manager = GitHubManager()
         prev_content = json.dumps(read_sample_response("ipynb_base.json"))
         curr_content = json.dumps(read_sample_response("ipynb_remote.json"))
         result = await manager.get_file_nbdiff(prev_content, curr_content)
@@ -317,7 +317,7 @@ class TestPostFileNBDiff(TestCase):
 class TestCallGithub(TestCase):
     @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=CoroutineMock)
     async def test_bad_gitresponse(self, mock_fetch):
-        manager = PullRequestsGithubManager(access_token="valid")
+        manager = GitHubManager(access_token="valid")
         mock_fetch.side_effect = HTTPClientError(code=404)
         with pytest.raises(HTTPError) as e:
             await manager.call_github("invalid-link")
@@ -327,7 +327,7 @@ class TestCallGithub(TestCase):
     @patch("json.loads", Mock(side_effect=ValueError()))
     @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=CoroutineMock)
     async def test_bad_parse(self, mock_fetch):
-        manager = PullRequestsGithubManager(access_token="valid")
+        manager = GitHubManager(access_token="valid")
         with (pytest.raises(HTTPError)) as e:
             await manager.call_github("invalid-link")
         assert e.value.status_code == HTTPStatus.BAD_REQUEST
@@ -335,7 +335,7 @@ class TestCallGithub(TestCase):
 
     @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=CoroutineMock)
     async def test_bad_unknown(self, mock_fetch):
-        manager = PullRequestsGithubManager(access_token="valid")
+        manager = GitHubManager(access_token="valid")
         mock_fetch.side_effect = Exception()
         with (pytest.raises(HTTPError)) as e:
             await manager.call_github("invalid-link")
@@ -345,7 +345,7 @@ class TestCallGithub(TestCase):
     @patch("json.loads", Mock(return_value={"test1": "test2"}))
     @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=CoroutineMock)
     async def test_valid(self, mock_fetch):
-        manager = PullRequestsGithubManager(access_token="valid")
+        manager = GitHubManager(access_token="valid")
         result = await manager.call_github("valid-link")
         assert result["test1"] == "test2"
 

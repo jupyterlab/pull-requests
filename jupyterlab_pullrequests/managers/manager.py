@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 import json
 import http
-from typing import Dict, List, NoReturn, Optional
+from typing import Dict, List, NoReturn, Optional, Union
 
 import nbformat
 import tornado
@@ -32,62 +32,14 @@ class PullRequestsManager(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    async def list_prs(self, username: str, pr_filter: str) -> list:
-        """Returns the list of PRs for the given user.
+    async def get_file_diff(self, pr_id: str, filename: str) -> dict:
+        """Get the file diff for the pull request.
 
         Args:
-            username: User ID for the versioning service
-            pr_filter: Filter to add to the PRs requests
-        Returns:
-            The list of PRs
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    async def list_files(self, pr_id: str) -> list:
-        """Get the list of modified files for a PR.
-
-        Args:
-            pr_id: PR ID endpoint
-        Returns:
-            The list of modified files
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    async def get_file_content(self, pr_id: str, filename: str) -> str:
-        """Get the file content.
-
-        Args:
-            pr_id: PR ID endpoint
+            pr_id: pull request ID endpoint
             filename: The file name
         Returns:
-            The file content
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    async def get_threads(
-        self, pr_id: str, filename: Optional[str] = None
-    ) -> List[dict]:
-        """Get the discussions on a file or the pull request.
-
-        Args:
-            pr_id: PR ID endpoint
-            filename: The file name; None to get the discussion on the pull requests
-        Returns:
-            The discussions
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    async def post_file_comment(self, pr_id: str, filename: str, body: str) -> NoReturn:
-        """Create a new comment on a file.
-
-        Args:
-            pr_id: PR ID endpoint
-            filename: The file name
-            body: Comment body
+            The file diff description
         """
         raise NotImplementedError()
 
@@ -117,6 +69,54 @@ class PullRequestsManager(abc.ABC):
 
         return {"base": prev_nb, "diff": thediff}
 
+    @abc.abstractmethod
+    async def get_threads(
+        self, pr_id: str, filename: Optional[str] = None
+    ) -> List[dict]:
+        """Get the discussions on a file or the pull request.
+
+        Args:
+            pr_id: pull request ID endpoint
+            filename: The file name; None to get the discussion on the pull requests
+        Returns:
+            The discussions
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    async def list_files(self, pr_id: str) -> list:
+        """Get the list of modified files for a pull request.
+
+        Args:
+            pr_id: pull request ID endpoint
+        Returns:
+            The list of modified files
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    async def list_prs(self, username: str, pr_filter: str) -> list:
+        """Returns the list of pull requests for the given user.
+
+        Args:
+            username: User ID for the versioning service
+            pr_filter: Filter to add to the pull requests requests
+        Returns:
+            The list of pull requests
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    async def post_file_comment(self, pr_id: str, filename: str, body: str) -> NoReturn:
+        """Create a new comment on a file or a the pull request.
+
+        Args:
+            pr_id: pull request ID endpoint
+            filename: The file name; None to comment on the pull request
+            body: Comment body
+        """
+        raise NotImplementedError()
+
     async def _call_service(
         self,
         url: str,
@@ -125,7 +125,20 @@ class PullRequestsManager(abc.ABC):
         body=None,
         params: Optional[Dict[str, str]] = None,
         headers: Optional[Dict[str, str]] = None,
-    ):
+    ) -> Union[dict, str]:
+        """Call the third party service
+
+        Args:
+            url: Endpoint to request
+            load_json: Is the response of JSON type
+            method: HTTP method
+            body: Request body; None if no body
+            params: Query arguments as dictionary; None if no arguments
+            headers: Request headers as dictionary; None if no headers
+        Returns:
+            Dict: Create from JSON response body if load_json is True
+            str: Raw response body if load_json is False
+        """
         if not self._access_token:
             raise tornado.web.HTTPError(
                 status_code=http.HTTPStatus.BAD_REQUEST,
@@ -173,7 +186,11 @@ class PullRequestsManager(abc.ABC):
             get_logger().debug(
                 f"Failed to fetch {request.method} {request.url}", exc_info=e
             )
-            error_body = (e.response.body or b"{}").decode("utf-8") if e.response is not None else "{}"
+            error_body = (
+                (e.response.body or b"{}").decode("utf-8")
+                if e.response is not None
+                else "{}"
+            )
             get_logger().debug(error_body)
             if load_json:
                 message = json.loads(error_body).get("message", str(e))

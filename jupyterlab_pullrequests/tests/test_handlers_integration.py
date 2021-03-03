@@ -6,7 +6,7 @@ from tornado.testing import AsyncHTTPTestCase, ExpectLog
 import jupyterlab_pullrequests.handlers
 from jupyterlab_pullrequests.base import PRConfig
 from jupyterlab_pullrequests.handlers import setup_handlers
-from jupyterlab_pullrequests.managers.github import PullRequestsGithubManager
+from jupyterlab_pullrequests.managers.github import GitHubManager
 
 # don't authenticate for unit tests
 valid_prid = "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1"

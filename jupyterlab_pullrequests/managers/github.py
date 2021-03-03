@@ -9,7 +9,9 @@ from ..base import NewComment, CommentReply
 from .manager import PullRequestsManager
 
 
-class PullRequestsGithubManager(PullRequestsManager):
+class GitHubManager(PullRequestsManager):
+    """Pull request manager for GitHub."""
+
     def __init__(
         self, base_api_url: str = "https://api.github.com", access_token: str = ""
     ) -> NoReturn:
@@ -19,97 +21,28 @@ class PullRequestsGithubManager(PullRequestsManager):
             access_token: Versioning service access token
         """
         super().__init__(base_api_url=base_api_url, access_token=access_token)
-        self._pull_requests_cache = {}
-
-    async def _get_pull_requests(self, pr_id: str) -> dict:
-        pull_request = self._pull_requests_cache.get(pr_id)
-        if pull_request is None:
-            pull_request = await self._call_github(pr_id)
-            self._pull_requests_cache[pr_id] = pull_request
-        return pull_request
+        self._pull_requests_cache = {}  # Dict[str, Dict]
 
     async def get_current_user(self) -> Dict[str, str]:
+        """Get the current user information.
+
+        Returns:
+            JSON description of the user matching the access token
+        """
         git_url = url_path_join(self._base_api_url, "user")
         data = await self._call_github(git_url)
 
         return {"username": data["login"]}
 
-    def get_search_filter(self, username: str, pr_filter: str) -> str:
+    async def get_file_diff(self, pr_id: str, filename: str) -> Dict[str, str]:
+        """Get the file diff for the pull request.
 
-        if pr_filter == "created":
-            search_filter = "+author:"
-        elif pr_filter == "assigned":
-            search_filter = "+assignee:"
-
-        return search_filter + username
-
-    async def list_prs(self, username: str, pr_filter: str) -> List[Dict[str, str]]:
-
-        search_filter = self.get_search_filter(username, pr_filter)
-
-        # Use search API to find matching PRs and return
-        git_url = url_path_join(
-            self._base_api_url, "/search/issues?q=+state:open+type:pr" + search_filter
-        )
-
-        results = await self._call_github(git_url)
-
-        data = []
-        for result in results["items"]:
-            data.append(
-                {
-                    "id": result["pull_request"]["url"],
-                    "title": result["title"],
-                    "body": result["body"],
-                    "internalId": result["id"],
-                    "link": result["html_url"],
-                }
-            )
-
-        # Reset cache
-        self._pull_requests_cache = {}
-
-        return data
-
-    # -----------------------------------------------------------------------------
-    # /pullrequests/prs/files Handler
-    # -----------------------------------------------------------------------------
-
-    async def list_files(self, pr_id: str) -> List[Dict[str, str]]:
-
-        git_url = url_path_join(pr_id, "/files")
-        results = await self._call_github(git_url)
-
-        data = []
-        for result in results:
-            data.append(
-                {
-                    "name": result["filename"],
-                    "status": result["status"],
-                }
-            )
-
-        return data
-
-    # -----------------------------------------------------------------------------
-    # /pullrequests/files/content Handler
-    # -----------------------------------------------------------------------------
-    async def __get_content(self, url: str, filename: str, sha: str) -> str:
-        link = url_concat(
-            url_path_join(url, "contents", filename),
-            {"ref": sha},
-        )
-        try:
-            return await self._call_github(
-                link, media_type="application/vnd.github.v3.raw", load_json=False
-            )
-        except HTTPError as e:
-            if e.status_code == 404:
-                return ""
-            else:
-                raise e
-
-    async def get_file_content(self, pr_id: str, filename: str) -> Dict[str, str]:
+        Args:
+            pr_id: pull request ID endpoint
+            filename: The file name
+        Returns:
+            The file diff description
+        """
         pull_request = await self._get_pull_requests(pr_id)
 
         base_content = await self.__get_content(
@@ -132,30 +65,41 @@ class PullRequestsGithubManager(PullRequestsManager):
             },
         }
 
-    # -----------------------------------------------------------------------------
-    # /pullrequests/files/comments Handler
-    # -----------------------------------------------------------------------------
+    def get_search_filter(self, username: str, pr_filter: str) -> str:
+        """Get the query arguments for a given filter.
 
-    def response_to_comment(self, result: Dict[str, str]) -> Dict[str, str]:
-        data = {
-            "id": result["id"],
-            "text": result["body"],
-            "updatedAt": result["updated_at"],
-            "userName": result["user"]["login"],
-            "userPicture": result["user"]["avatar_url"],
-        }
-        return data
+        Args:
+            username: Current username
+            pr_filter: Generic pull request filter
+        Returns:
+            The query arguments for the service
+        """
+
+        if pr_filter == "created":
+            search_filter = "+author:"
+        elif pr_filter == "assigned":
+            search_filter = "+assignee:"
+
+        return search_filter + username
 
     async def get_threads(
         self, pr_id: str, filename: Optional[str] = None
     ) -> List[dict]:
+        """Get the discussions on a file or the pull request.
+
+        Args:
+            pr_id: pull request ID endpoint
+            filename: The file name; None to get the discussion on the pull requests
+        Returns:
+            The discussions
+        """
         git_url = url_path_join(pr_id, "/comments")
         if filename is None:
             results = await self._call_github(git_url.replace("pulls", "issues"))
             return [
                 {
                     "id": result["id"],
-                    "comments": [self.response_to_comment(result)],
+                    "comments": [GitHubManager._response_to_comment(result)],
                     "pullRequestId": pr_id,
                 }
                 for result in results
@@ -185,7 +129,7 @@ class PullRequestsGithubManager(PullRequestsManager):
             return [
                 {
                     "id": thread[-1]["id"],  # Set discussion id as the last comment id
-                    "comments": [self.response_to_comment(c) for c in thread],
+                    "comments": [GitHubManager._response_to_comment(c) for c in thread],
                     "filename": filename,
                     "line": thread[0]["line"],
                     "originalLine": thread[0]["original_line"]
@@ -196,9 +140,73 @@ class PullRequestsGithubManager(PullRequestsManager):
                 for thread in threads
             ]
 
+    async def list_files(self, pr_id: str) -> List[Dict[str, str]]:
+        """Get the list of modified files for a pull request.
+
+        Args:
+            pr_id: pull request ID endpoint
+        Returns:
+            The list of modified files
+        """
+        git_url = url_path_join(pr_id, "/files")
+        results = await self._call_github(git_url)
+
+        data = []
+        for result in results:
+            data.append(
+                {
+                    "name": result["filename"],
+                    "status": result["status"],
+                }
+            )
+
+        return data
+
+    async def list_prs(self, username: str, pr_filter: str) -> List[Dict[str, str]]:
+        """Returns the list of pull requests for the given user.
+
+        Args:
+            username: User ID for the versioning service
+            pr_filter: Filter to add to the pull requests requests
+        Returns:
+            The list of pull requests
+        """
+        search_filter = self.get_search_filter(username, pr_filter)
+
+        # Use search API to find matching pull requests and return
+        git_url = url_path_join(
+            self._base_api_url, "/search/issues?q=+state:open+type:pr" + search_filter
+        )
+
+        results = await self._call_github(git_url)
+
+        data = []
+        for result in results["items"]:
+            data.append(
+                {
+                    "id": result["pull_request"]["url"],
+                    "title": result["title"],
+                    "body": result["body"],
+                    "internalId": result["id"],
+                    "link": result["html_url"],
+                }
+            )
+
+        # Reset cache
+        self._pull_requests_cache = {}
+
+        return data
+
     async def post_file_comment(
         self, pr_id: str, filename: Optional[str], body: Union[CommentReply, NewComment]
     ):
+        """Create a new comment on a file or a the pull request.
+
+        Args:
+            pr_id: pull request ID endpoint
+            filename: The file name; None to comment on the pull request
+            body: Comment body
+        """
         if filename is None:
             pass  # FIXME
         else:
@@ -215,11 +223,7 @@ class PullRequestsGithubManager(PullRequestsManager):
 
             git_url = url_path_join(pr_id, "comments")
             response = await self._call_github(git_url, method="POST", body=body)
-            return self.response_to_comment(response)
-
-    # -----------------------------------------------------------------------------
-    # Handler utilities
-    # -----------------------------------------------------------------------------
+            return GitHubManager._response_to_comment(response)
 
     async def _call_github(
         self,
@@ -229,7 +233,20 @@ class PullRequestsGithubManager(PullRequestsManager):
         body=None,
         params: Optional[Dict[str, str]] = None,
         media_type: str = "application/vnd.github.v3+json",
-    ):
+    ) -> Union[dict, str]:
+        """Call GitHub
+
+        Args:
+            url: Endpoint to request
+            load_json: Is the response of JSON type
+            method: HTTP method
+            body: Request body; None if no body
+            params: Query arguments as dictionary; None if no arguments
+            media_type: Type of accepted content
+        Returns:
+            Dict: Create from JSON response body if load_json is True
+            str: Raw response body if load_json is False
+        """
         headers = {
             "Accept": media_type,
             "Authorization": f"token {self._access_token}",
@@ -243,3 +260,52 @@ class PullRequestsGithubManager(PullRequestsManager):
             params=params,
             headers=headers,
         )
+
+    async def _get_pull_requests(self, pr_id: str) -> dict:
+        """Get a single pull request information.
+
+        It uses the cached value if available.
+
+        Args:
+            pr_id: The API url of the pull request to request
+        Returns:
+            The JSON description of the pull request
+        """
+        pull_request = self._pull_requests_cache.get(pr_id)
+        if pull_request is None:
+            pull_request = await self._call_github(pr_id)
+            self._pull_requests_cache[pr_id] = pull_request
+        return pull_request
+
+    @staticmethod
+    def _response_to_comment(result: Dict[str, str]) -> Dict[str, str]:
+        """Format raw comment to generic data structure.
+
+        Args:
+            result: Raw comment object from GitLab
+        Returns:
+            Standardized comment object
+        """
+        data = {
+            "id": result["id"],
+            "text": result["body"],
+            "updatedAt": result["updated_at"],
+            "userName": result["user"]["login"],
+            "userPicture": result["user"]["avatar_url"],
+        }
+        return data
+
+    async def __get_content(self, url: str, filename: str, sha: str) -> str:
+        link = url_concat(
+            url_path_join(url, "contents", filename),
+            {"ref": sha},
+        )
+        try:
+            return await self._call_github(
+                link, media_type="application/vnd.github.v3.raw", load_json=False
+            )
+        except HTTPError as e:
+            if e.status_code == 404:
+                return ""
+            else:
+                raise e

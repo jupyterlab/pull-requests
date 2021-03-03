@@ -7,11 +7,25 @@ from traitlets.config import Configurable
 
 
 class CommentReply(NamedTuple):
+    """Comment reply
+    
+    Attributes:
+        text: Comment body
+        inReplyTo: ID of the comment of the discussion or the comment to which this one reply
+    """
     text: str
     inReplyTo: str
 
 
 class NewComment(NamedTuple):
+    """New comment
+    
+    Attributes:
+        text: Comment body
+        filename: Targeted filename; None if the comment is for the pull request
+        line: Commented line number (in the new version)
+        originalLine: Commented line number (in the original version)
+    """
     text: str
     filename: Optional[str]
     line: Optional[int]
