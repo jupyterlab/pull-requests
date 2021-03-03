@@ -134,7 +134,7 @@ function activate(
   restorer.add(prPanel, NAMESPACE);
 
   // Add the panel to the sidebar
-  shell.add(prPanel, 'right', { rank: 200 });
+  shell.add(prPanel, 'right', { rank: 1000 });
 }
 
 export default pullRequestPlugin;

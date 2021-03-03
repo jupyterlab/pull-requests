@@ -77,6 +77,7 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
       cellDiff.addWidget(new Widget({ node: commentButton }));
 
       const chunkWidget = new Panel();
+      chunkWidget.addClass('jp-PullRequestCellDiff');
       chunkWidget.addWidget(cellDiff);
 
       this._threads[currentPosition].threads.forEach((thread, _, array) => {

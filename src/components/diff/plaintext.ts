@@ -119,7 +119,8 @@ export class PlainTextDiff extends Widget {
         connect: 'align',
         collapseIdentical: true,
         readOnly: true,
-        revertButtons: false
+        revertButtons: false,
+        lineWrapping: true
       }
     ) as MergeView.MergeViewEditor;
 
