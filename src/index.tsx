@@ -1,15 +1,14 @@
-import React from 'react';
 import {
   ILayoutRestorer,
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
-import { ReactWidget, MainAreaWidget } from '@jupyterlab/apputils';
+import { MainAreaWidget } from '@jupyterlab/apputils';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { diffIcon } from '@jupyterlab/git/lib/style/icons';
 import { Widget } from '@lumino/widgets';
-import { PullRequestPanel } from './components/PullRequestPanel';
+import { PullRequestPanelWrapper } from './components/PullRequestPanel';
 import {
   CommandIDs,
   IFile,
@@ -49,8 +48,7 @@ function findWidget(
 function activate(
   app: JupyterFrontEnd,
   restorer: ILayoutRestorer,
-  renderMime: IRenderMimeRegistry,
-  settings: ISettingRegistry | null
+  renderMime: IRenderMimeRegistry
 ): void {
   const { commands, shell } = app;
 
@@ -122,9 +120,7 @@ function activate(
   });
 
   // Create the Pull Request widget sidebar
-  const prPanel = ReactWidget.create(
-    <PullRequestPanel commands={commands} docRegistry={app.docRegistry} />
-  );
+  const prPanel = new PullRequestPanelWrapper(commands, app.docRegistry);
 
   prPanel.id = 'pullRequests';
   prPanel.title.icon = pullRequestsIcon;

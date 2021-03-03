@@ -1,11 +1,54 @@
+import { ReactWidget } from '@jupyterlab/apputils';
 import { DocumentRegistry } from '@jupyterlab/docregistry';
 import { CommandRegistry } from '@lumino/commands';
+import { Message } from '@lumino/messaging';
 import React, { useEffect, useState } from 'react';
 import { BeatLoader } from 'react-spinners';
 import { IPullRequest, IPullRequestGroup } from '../tokens';
 import { requestAPI } from '../utils';
 import { PullRequestBrowser } from './browser/PullRequestBrowser';
 import { PullRequestToolbar } from './PullRequestToolbar';
+
+/**
+ * React wrapper to mount and unmount the React child component
+ * when the widget is shown/hidden.
+ *
+ * In this case this is particularly interesting to trigger the
+ * useEffect of the React widget to update the pull requests list
+ * each time the user come back to the panel.
+ */
+export class PullRequestPanelWrapper extends ReactWidget {
+  constructor(commands: CommandRegistry, docRegistry: DocumentRegistry) {
+    super();
+    this._commands = commands;
+    this._docRegistry = docRegistry;
+  }
+
+  onBeforeShow(msg: Message): void {
+    super.onBeforeShow(msg);
+    this.update();
+  }
+
+  onBeforeHide(msg: Message): void {
+    super.onBeforeHide(msg);
+    this.onBeforeDetach(msg);
+  }
+
+  render(): JSX.Element {
+    return (
+      this.isAttached &&
+      this.isVisible && (
+        <PullRequestPanel
+          commands={this._commands}
+          docRegistry={this._docRegistry}
+        />
+      )
+    );
+  }
+
+  private _commands: CommandRegistry;
+  private _docRegistry: DocumentRegistry;
+}
 
 export interface IPullRequestPanelProps {
   /**
@@ -53,7 +96,7 @@ async function fetchPullRequests(
   );
 }
 
-export function PullRequestPanel(props: IPullRequestPanelProps): JSX.Element {
+function PullRequestPanel(props: IPullRequestPanelProps): JSX.Element {
   const [pullRequests, setPullRequests] = useState<IPullRequestGroup[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const refreshPullRequests = (): void => {

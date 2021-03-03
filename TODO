@@ -3,7 +3,7 @@
 - [x] Fix using ref from commit sha rather than branch to ensure consistency when requesting file content and discussion
 - [x] Use Widget panel and handle life cycle for discussion
 - [x] Fix styling
-- [ ] Fix use effect on panel
+- [x] Fix use effect on panel
 - [ ] Fix notebooks
   - [ ] Hide unchanged cells (and the comments structure)
   - [x] Support added and removed notebooks (currently JSON error as content on one side is "")
