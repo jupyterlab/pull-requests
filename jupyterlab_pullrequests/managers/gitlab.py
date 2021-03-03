@@ -52,8 +52,8 @@ class PullRequestsGitLabManager(PullRequestsManager):
             # Compute the diff using Myers algorithm
             dmp = diff_match_patch.diff_match_patch()
             (text1, text2, linearray) = dmp.diff_linesToChars(
-                content["baseContent"],
-                content["headContent"],
+                content["base"]["content"],
+                content["head"]["content"],
             )
             diffs = dmp.diff_main(text1, text2, False)
             # Convert the diff back to original text.
