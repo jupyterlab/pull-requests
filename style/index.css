@@ -338,7 +338,7 @@ p.jp-PullRequestCommentItemContentTitle {
 }
 
 /* Notebook diff styles */
-.nbdime-Diff .jp-git-diff-banner {
+.nbdime-Widget .jp-git-diff-banner {
   width: calc(100% - 52px);
   margin: 0px 8px;
 }

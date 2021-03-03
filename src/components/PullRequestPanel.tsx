@@ -10,7 +10,7 @@ import { PullRequestBrowser } from './browser/PullRequestBrowser';
 import { PullRequestToolbar } from './PullRequestToolbar';
 
 /**
- * React wrapper to mount and unmount the React child component
+ * React wrapper to mount and umount the React child component
  * when the widget is shown/hidden.
  *
  * In this case this is particularly interesting to trigger the
@@ -50,21 +50,45 @@ export class PullRequestPanelWrapper extends ReactWidget {
   private _docRegistry: DocumentRegistry;
 }
 
+/**
+ * PullRequestPanel properties
+ */
 export interface IPullRequestPanelProps {
   /**
    * Jupyter Front End Commands Registry
    */
   commands: CommandRegistry;
+  /**
+   * Document registry
+   */
   docRegistry: DocumentRegistry;
 }
 
+/**
+ * Available pull request filter
+ */
 type Filter = 'created' | 'assigned';
 
+/**
+ * Pull request filter
+ */
 interface IFilter {
+  /**
+   * Filter name
+   */
   name: string;
+  /**
+   * Filter type
+   */
   filter: Filter;
 }
 
+/**
+ * Get a group of pull requests for each filters
+ *
+ * @param filters Filter types
+ * @returns The group of pull requests
+ */
 async function fetchPullRequests(
   filters: IFilter[]
 ): Promise<IPullRequestGroup[]> {
@@ -96,7 +120,12 @@ async function fetchPullRequests(
   );
 }
 
-function PullRequestPanel(props: IPullRequestPanelProps): JSX.Element {
+/**
+ * PullRequestPanel component
+ *
+ * @param props PullRequestPanel properties
+ */
+export function PullRequestPanel(props: IPullRequestPanelProps): JSX.Element {
   const [pullRequests, setPullRequests] = useState<IPullRequestGroup[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const refreshPullRequests = (): void => {

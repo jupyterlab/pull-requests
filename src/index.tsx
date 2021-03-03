@@ -28,6 +28,12 @@ const pullRequestPlugin: JupyterFrontEndPlugin<void> = {
   autoStart: true
 };
 
+/**
+ * Search for a widget in the shell main area
+ *
+ * @param shell JupyterLab shell
+ * @param id Widget id
+ */
 function findWidget(
   shell: JupyterFrontEnd.IShell,
   id: string
@@ -43,7 +49,6 @@ function findWidget(
   return mainAreaItem;
 }
 
-// Master extension activate
 function activate(
   app: JupyterFrontEnd,
   restorer: ILayoutRestorer,
@@ -118,7 +123,6 @@ function activate(
 
   // Create the Pull Request widget sidebar
   const prPanel = new PullRequestPanelWrapper(commands, app.docRegistry);
-
   prPanel.id = 'pullRequests';
   prPanel.title.icon = pullRequestsIcon;
   prPanel.title.caption = 'Pull Requests';

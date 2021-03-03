@@ -6,6 +6,9 @@ import { IComment, IPullRequest, IThread } from '../../tokens';
 import { generateNode, requestAPI } from '../../utils';
 import { CommentThread } from '../diff/CommentThread';
 
+/**
+ * PullRequestDescriptionTab properties
+ */
 export interface IPullRequestDescriptionTabProps {
   /**
    * Pull Request data
@@ -17,6 +20,9 @@ export interface IPullRequestDescriptionTabProps {
   renderMime: IRenderMimeRegistry;
 }
 
+/**
+ * PullRequestDescriptionTab component
+ */
 export class PullRequestDescriptionTab extends MainAreaWidget<Panel> {
   constructor(props: IPullRequestDescriptionTabProps) {
     const content = new Panel();
