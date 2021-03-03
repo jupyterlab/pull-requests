@@ -29,8 +29,9 @@ class PullRequestsAPIHandler(APIHandler):
     Base handler for PullRequest specific API handlers
     """
 
-    def initialize(self, manager: PullRequestsManager):
-        self._manager = manager
+    def initialize(self, manager: PullRequestsManager, logger: logging.Logger):
+        self._log = logger
+        self._manager = manager        
 
     def write_error(self, status_code, **kwargs):
         """
@@ -164,14 +165,14 @@ class PullRequestsFileNBDiffHandler(PullRequestsAPIHandler):
             prev_content = data["previousContent"]
             curr_content = data["currentContent"]
         except KeyError as e:
-            get_logger().error(f"Missing key in POST request.", exc_info=e)
+            self._log.error(f"Missing key in POST request.", exc_info=e)
             raise tornado.web.HTTPError(
                 status_code=HTTPStatus.BAD_REQUEST, reason=f"Missing POST key: {e}"
             )
         try:
             content = await self._manager.get_file_nbdiff(prev_content, curr_content)
         except Exception as e:
-            get_logger().error(f"Error computing notebook diff.", exc_info=e)
+            self._log.error(f"Error computing notebook diff.", exc_info=e)
             raise tornado.web.HTTPError(
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 reason=f"Error diffing content: {e}.",
@@ -188,14 +189,14 @@ def get_request_attr_value(handler, arg):
     try:
         param = handler.get_argument(arg)
         if not param:
-            get_logger().error(f"Invalid argument '{arg}', cannot be blank.")
+            self._log.error(f"Invalid argument '{arg}', cannot be blank.")
             raise tornado.web.HTTPError(
                 status_code=HTTPStatus.BAD_REQUEST,
                 reason=f"Invalid argument '{arg}', cannot be blank.",
             )
         return param
     except tornado.web.MissingArgumentError as e:
-        get_logger().error(f"Missing argument '{arg}'.", exc_info=e)
+        self._log.error(f"Missing argument '{arg}'.", exc_info=e)
         raise tornado.web.HTTPError(
             status_code=HTTPStatus.BAD_REQUEST, reason=f"Missing argument '{arg}'."
         ) from e
@@ -207,7 +208,7 @@ def get_body_value(handler):
             raise ValueError()
         return escape.json_decode(handler.request.body)
     except ValueError as e:
-        get_logger().error("Invalid body.", exc_info=e)
+        self._log.error("Invalid body.", exc_info=e)
         raise tornado.web.HTTPError(
             status_code=HTTPStatus.BAD_REQUEST, reason=f"Invalid POST body: {e}"
         ) from e
@@ -230,16 +231,18 @@ def setup_handlers(web_app: "NotebookWebApplication", config: PRConfig):
     host_pattern = ".*$"
     base_url = url_path_join(web_app.settings["base_url"], NAMESPACE)
 
+    logger = get_logger()
+
     manager_class = MANAGERS.get(config.platform)
     if manager_class is None:
-        get_logger().error(f"No manager defined for platform '{config.platform}'.")
+        logger.error(f"No manager defined for platform '{config.platform}'.")
         raise NotImplementedError()
     manager = manager_class(config.api_base_url, config.access_token)
 
     web_app.add_handlers(
         host_pattern,
         [
-            (url_path_join(base_url, pat), handler, {"manager": manager})
+            (url_path_join(base_url, pat), handler, {"logger": logger, "manager": manager})
             for pat, handler in default_handlers
         ],
     )

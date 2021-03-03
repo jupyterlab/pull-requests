@@ -315,7 +315,7 @@ class GitLabManager(PullRequestsManager):
         url: str,
         load_json: bool = True,
         method: str = "GET",
-        body=None,
+        body: Optional[dict] = None,
         params: Optional[Dict[str, str]] = None,
     ) -> Union[dict, str]:
         """Call GitLab
@@ -357,7 +357,7 @@ class GitLabManager(PullRequestsManager):
         try:
             import diff_match_patch
         except ImportError as e:
-            get_logger().error(
+            self.log.error(
                 "diff-match-patch package is needed by GitLab to post comments.",
                 exc_info=e,
             )

@@ -236,7 +236,7 @@ class GitHubManager(PullRequestsManager):
         url: str,
         load_json: bool = True,
         method: str = "GET",
-        body=None,
+        body: Optional[dict] = None,
         params: Optional[Dict[str, str]] = None,
         media_type: str = "application/vnd.github.v3+json",
     ) -> Union[dict, str]:
