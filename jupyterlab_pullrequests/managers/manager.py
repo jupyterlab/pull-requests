@@ -107,13 +107,15 @@ class PullRequestsManager(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    async def post_file_comment(self, pr_id: str, filename: str, body: str) -> NoReturn:
+    async def post_file_comment(self, pr_id: str, filename: str, body: str) -> Dict[str, str]:
         """Create a new comment on a file or a the pull request.
 
         Args:
             pr_id: pull request ID endpoint
             filename: The file name; None to comment on the pull request
             body: Comment body
+        Returns:
+            The created comment
         """
         raise NotImplementedError()
 

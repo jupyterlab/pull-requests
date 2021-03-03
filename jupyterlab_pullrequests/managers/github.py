@@ -199,21 +199,28 @@ class GitHubManager(PullRequestsManager):
 
     async def post_file_comment(
         self, pr_id: str, filename: Optional[str], body: Union[CommentReply, NewComment]
-    ):
+    ) -> Dict[str, str]:
         """Create a new comment on a file or a the pull request.
 
         Args:
             pr_id: pull request ID endpoint
             filename: The file name; None to comment on the pull request
             body: Comment body
+        Returns:
+            The created comment
         """
+        git_url = url_path_join(pr_id, "comments")
         if filename is None:
-            pass  # FIXME
+            data = {"body": body.text}
+            response = await self._call_github(
+                git_url.replace("pulls", "issues"), method="POST", body=data
+            )
+            return GitHubManager._response_to_comment(response)
         else:
             if isinstance(body, CommentReply):
-                body = {"body": body.text, "in_reply_to": body.inReplyTo}
+                data = {"body": body.text, "in_reply_to": body.inReplyTo}
             else:
-                body = {
+                data = {
                     "body": body.text,
                     "commit_id": await self._get_pull_requests(pr_id)["head"]["sha"],
                     "path": filename,
@@ -221,8 +228,7 @@ class GitHubManager(PullRequestsManager):
                     "side": "RIGHT" if body.line is not None else "LEFT",
                 }
 
-            git_url = url_path_join(pr_id, "comments")
-            response = await self._call_github(git_url, method="POST", body=body)
+            response = await self._call_github(git_url, method="POST", body=data)
             return GitHubManager._response_to_comment(response)
 
     async def _call_github(
