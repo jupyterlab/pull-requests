@@ -3,7 +3,6 @@ import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
-import { MainAreaWidget } from '@jupyterlab/apputils';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { diffIcon } from '@jupyterlab/git/lib/style/icons';
@@ -48,7 +47,8 @@ function findWidget(
 function activate(
   app: JupyterFrontEnd,
   restorer: ILayoutRestorer,
-  renderMime: IRenderMimeRegistry
+  renderMime: IRenderMimeRegistry,
+  settingsRegistry: ISettingRegistry | null
 ): void {
   const { commands, shell } = app;
 
@@ -66,11 +66,9 @@ function activate(
       let mainAreaItem = findWidget(shell, pullRequest.id);
 
       if (!mainAreaItem) {
-        mainAreaItem = new MainAreaWidget<PullRequestDescriptionTab>({
-          content: new PullRequestDescriptionTab({
-            pullRequest,
-            renderMime
-          })
+        mainAreaItem = new PullRequestDescriptionTab({
+          pullRequest,
+          renderMime
         });
         mainAreaItem.id = pullRequest.id;
         mainAreaItem.title.label = pullRequest.title;
@@ -101,12 +99,11 @@ function activate(
       let mainAreaItem = findWidget(shell, id);
 
       if (!mainAreaItem) {
-        mainAreaItem = new MainAreaWidget<FileDiffWidget>({
-          content: new FileDiffWidget({
-            filename: file.name,
-            pullRequestId: pullRequest.id,
-            renderMime
-          })
+        mainAreaItem = new FileDiffWidget({
+          filename: file.name,
+          pullRequestId: pullRequest.id,
+          renderMime,
+          settingsRegistry
         });
         mainAreaItem.id = id;
         mainAreaItem.title.label = file.name;

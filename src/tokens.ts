@@ -1,5 +1,6 @@
 import { DocumentRegistry } from '@jupyterlab/docregistry';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
 export const NAMESPACE = 'pullrequests';
 export const PLUGIN_ID = '@jupyterlab/pullrequests';
@@ -101,7 +102,7 @@ export interface INotebookMapping {
 }
 
 export interface IDiffOptions {
-  prId: string;
+  pullRequestId: string;
   filename: string;
   diff: IFileDiff;
   threads: IThread[];
@@ -110,6 +111,7 @@ export interface IDiffOptions {
    * A rendermime instance to use to render markdown/outputs.
    */
   renderMime: IRenderMimeRegistry;
+  settingsRegistry: ISettingRegistry | null;
 
   /**
    * Whether to hide unchanged code by default.

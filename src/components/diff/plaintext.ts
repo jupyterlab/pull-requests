@@ -176,7 +176,7 @@ export class PlainTextDiff extends Widget {
     if (!newThread) {
       const thread: IThread = {
         comments: new Array<IComment>(),
-        pullRequestId: this._props.prId,
+        pullRequestId: this._props.pullRequestId,
         filename: this._props.filename
       };
       thread[side] = lineNo + 1;

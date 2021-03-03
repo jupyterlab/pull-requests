@@ -74,7 +74,7 @@ export class NotebookDiff extends Panel {
     this.computeDiff(props.diff.base.content, props.diff.head.content)
       .then(data => {
         this.onData(
-          props.prId,
+          props.pullRequestId,
           props.filename,
           data,
           props.renderMime,
@@ -87,22 +87,22 @@ export class NotebookDiff extends Panel {
   }
 
   protected async computeDiff(
-    baseContent: string,
-    headContent: string
+    previousContent: string,
+    currentContent: string
   ): Promise<JSONObject> {
     const data = await requestAPI<JSONObject>(
       'pullrequests/files/nbdiff',
       'POST',
       {
-        previousContent: baseContent,
-        currentContent: headContent
+        previousContent,
+        currentContent
       }
     );
     data['baseMapping'] = Private.computeNotebookMapping(
-      baseContent || '{}'
+      previousContent || '{}'
     ) as any;
     data['headMapping'] = Private.computeNotebookMapping(
-      headContent || '{}'
+      currentContent || '{}'
     ) as any;
     return data;
   }

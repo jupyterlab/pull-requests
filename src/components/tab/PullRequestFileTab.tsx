@@ -1,8 +1,10 @@
-import { Spinner } from '@jupyterlab/apputils';
+import { MainAreaWidget } from '@jupyterlab/apputils';
 import { PathExt } from '@jupyterlab/coreutils';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
+import { PromiseDelegate } from '@lumino/coreutils';
 import { Panel } from '@lumino/widgets';
-import { IFileDiff, IThread } from '../../tokens';
+import { IDiffOptions, IFileDiff, IThread } from '../../tokens';
 import { requestAPI } from '../../utils';
 import { NotebookDiff } from '../diff/notebook';
 import { PlainTextDiff } from '../diff/plaintext';
@@ -11,26 +13,28 @@ export interface IFileDiffWidgetProps {
   filename: string;
   pullRequestId: string;
   renderMime: IRenderMimeRegistry;
+  settingsRegistry: ISettingRegistry | null;
 }
 
 // FIXME change for a factory?
-export class FileDiffWidget extends Panel {
+export class FileDiffWidget extends MainAreaWidget<Panel> {
   constructor(props: IFileDiffWidgetProps) {
-    super();
-    this.addClass('jp-PullRequestTab');
-    this._spinner = new Spinner();
-    this.addWidget(this._spinner);
+    const content = new Panel();
+    const isLoaded = new PromiseDelegate<void>();
+    super({
+      content,
+      reveal: isLoaded.promise
+    });
+    content.addClass('jp-PullRequestTab');
 
-    this.loadDiff(props.pullRequestId, props.filename)
-      .then(([content, threads]) => {
-        this._spinner.dispose();
-        this.showDiff(
-          props.pullRequestId,
-          props.filename,
-          content,
-          threads,
-          props.renderMime
-        );
+    FileDiffWidget.loadDiff(props.pullRequestId, props.filename)
+      .then(([diff, threads]) => {
+        isLoaded.resolve();
+        this.showDiff({
+          ...props,
+          diff,
+          threads
+        });
       })
       .catch(reason => {
         let msg = `Load File Error (${reason.message})`;
@@ -39,60 +43,37 @@ export class FileDiffWidget extends Panel {
         ) {
           msg = `Diff for ${props.filename} is not supported.`;
         }
-        this._spinner.dispose();
-        this.showError(msg);
+        isLoaded.reject(msg);
       });
   }
 
-  protected async loadDiff(
-    prId: string,
+  protected static async loadDiff(
+    pullRequestId: string,
     filename: string
   ): Promise<[IFileDiff, IThread[]]> {
     return Promise.all([
       requestAPI<IFileDiff>(
         `pullrequests/files/content?id=${encodeURIComponent(
-          prId
+          pullRequestId
         )}&filename=${encodeURIComponent(filename)}`,
         'GET'
       ),
       requestAPI<IThread[]>(
         `pullrequests/files/comments?id=${encodeURIComponent(
-          prId
+          pullRequestId
         )}&filename=${encodeURIComponent(filename)}`,
         'GET'
       )
     ]);
   }
 
-  protected showDiff(
-    prId: string,
-    filename: string,
-    content: IFileDiff,
-    threads: IThread[],
-    renderMime: IRenderMimeRegistry
-  ): void {
-    const fileExtension = PathExt.extname(filename).toLowerCase();
+  protected showDiff(diffProps: IDiffOptions): void {
+    const fileExtension = PathExt.extname(diffProps.filename).toLowerCase();
     if (fileExtension === '.ipynb') {
-      this.addWidget(
-        new NotebookDiff({
-          prId,
-          filename,
-          diff: content,
-          threads,
-          renderMime
-        })
-      );
+      this.content.addWidget(new NotebookDiff(diffProps));
     } else {
       try {
-        this.addWidget(
-          new PlainTextDiff({
-            prId,
-            filename,
-            diff: content,
-            threads,
-            renderMime
-          })
-        );
+        this.content.addWidget(new PlainTextDiff(diffProps));
       } catch (reason) {
         this.showError(reason.message || reason);
       }
@@ -107,6 +88,4 @@ export class FileDiffWidget extends Panel {
     }
     this.node.innerHTML = `<h2 class="jp-PullRequestTabError"><span style="color: 'var(--jp-ui-font-color1)';">Error Loading File:</span> ${message}</h2>`;
   }
-
-  private _spinner: Spinner;
 }

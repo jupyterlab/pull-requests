@@ -1,5 +1,7 @@
+import { MainAreaWidget } from '@jupyterlab/apputils';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { Panel, Widget } from '@lumino/widgets';
+import { PromiseDelegate } from '@lumino/coreutils';
 import { IComment, IPullRequest, IThread } from '../../tokens';
 import { generateNode, requestAPI } from '../../utils';
 import { CommentThread } from '../diff/CommentThread';
@@ -15,43 +17,52 @@ export interface IPullRequestDescriptionTabProps {
   renderMime: IRenderMimeRegistry;
 }
 
-export class PullRequestDescriptionTab extends Panel {
+export class PullRequestDescriptionTab extends MainAreaWidget<Panel> {
   constructor(props: IPullRequestDescriptionTabProps) {
-    super();
+    const content = new Panel();
+    const isLoaded = new PromiseDelegate<void>();
+    super({
+      content,
+      reveal: isLoaded.promise
+    });
     this.pullRequestId = props.pullRequest.id;
     this.renderMime = props.renderMime;
-    this.addClass('jp-PullRequestTab');
+    content.addClass('jp-PullRequestTab');
 
-    const header = PullRequestDescriptionTab.createHeader(
-      props.pullRequest.title,
-      props.pullRequest.link
-    );
-    this.addWidget(
-      new Widget({
-        node: header
-      })
+    this.content.addWidget(
+      PullRequestDescriptionTab.createHeader(
+        props.pullRequest.title,
+        props.pullRequest.link
+      )
     );
 
     const markdownRenderer = props.renderMime.createRenderer('text/markdown');
-    this.addWidget(markdownRenderer);
-    markdownRenderer
-      .renderModel({
+    this.content.addWidget(markdownRenderer);
+
+    Promise.all([
+      markdownRenderer.renderModel({
         data: {
           'text/markdown': props.pullRequest.body
         },
         trusted: false,
         metadata: {},
         setData: () => null
+      }),
+      this.loadComments(props.pullRequest.id, props.renderMime)
+    ])
+      .then(() => {
+        isLoaded.resolve();
       })
       .catch(reason => {
-        console.error('Failed to render pull request description.', reason);
+        isLoaded.reject(reason);
       });
-
-    this.loadComments(props.pullRequest.id, props.renderMime);
   }
 
-  protected loadComments(prId: string, renderMime: IRenderMimeRegistry): void {
-    requestAPI<IThread[]>(
+  protected async loadComments(
+    prId: string,
+    renderMime: IRenderMimeRegistry
+  ): Promise<void> {
+    return await requestAPI<IThread[]>(
       `pullrequests/files/comments?id=${encodeURIComponent(prId)}`,
       'GET'
     )
@@ -64,21 +75,23 @@ export class PullRequestDescriptionTab extends Panel {
             thread,
             handleRemove: (): void => null
           });
-          this.addWidget(widget);
+          this.content.addWidget(widget);
         });
 
-        this.addNewThreadButton();
+        this.content.addWidget(this.createNewThreadButton());
+
+        return Promise.resolve();
       })
       .catch(reason => {
-        console.error(reason);
-        this.addNewThreadButton();
+        this.content.addWidget(this.createNewThreadButton());
+        return Promise.reject(reason);
       });
   }
 
-  private static createHeader(title: string, link: string): HTMLElement {
-    const div = generateNode('div', { class: 'jp-PullRequestDescriptionTab' });
-    div.appendChild(generateNode('h1', {}, title));
-    div.appendChild(
+  private static createHeader(title: string, link: string): Widget {
+    const node = generateNode('div', { class: 'jp-PullRequestDescriptionTab' });
+    node.appendChild(generateNode('h1', {}, title));
+    node.appendChild(
       generateNode(
         'button',
         { class: 'jp-Button-flat jp-mod-styled jp-mod-accept' },
@@ -91,10 +104,12 @@ export class PullRequestDescriptionTab extends Panel {
       )
     );
 
-    return div;
+    return new Widget({
+      node
+    });
   }
 
-  private addNewThreadButton(): void {
+  private createNewThreadButton(): Widget {
     const node = generateNode('div', { class: 'jp-PullRequestThread' });
     node
       .appendChild(generateNode('div', { class: 'jp-PullRequestCommentItem' }))
@@ -132,13 +147,16 @@ export class PullRequestDescriptionTab extends Panel {
                   }
                 });
 
-                this.insertWidget(this.widgets.length - 1, widget);
+                this.content.insertWidget(
+                  this.content.widgets.length - 1,
+                  widget
+                );
               }
             }
           }
         )
       );
-    this.addWidget(new Widget({ node }));
+    return new Widget({ node });
   }
 
   protected pullRequestId: string;
