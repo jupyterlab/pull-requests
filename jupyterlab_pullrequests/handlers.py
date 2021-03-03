@@ -4,6 +4,7 @@ Module with all of the individual handlers, which return the results to the fron
 from __future__ import annotations
 
 import json
+import logging
 import traceback
 from http import HTTPStatus
 
@@ -30,7 +31,7 @@ class PullRequestsAPIHandler(APIHandler):
     """
 
     def initialize(self, manager: PullRequestsManager, logger: logging.Logger):
-        self._log = logger
+        self.__log = logger
         self._manager = manager        
 
     def write_error(self, status_code, **kwargs):
@@ -165,14 +166,14 @@ class PullRequestsFileNBDiffHandler(PullRequestsAPIHandler):
             prev_content = data["previousContent"]
             curr_content = data["currentContent"]
         except KeyError as e:
-            self._log.error(f"Missing key in POST request.", exc_info=e)
+            self.__log.error(f"Missing key in POST request.", exc_info=e)
             raise tornado.web.HTTPError(
                 status_code=HTTPStatus.BAD_REQUEST, reason=f"Missing POST key: {e}"
             )
         try:
             content = await self._manager.get_file_nbdiff(prev_content, curr_content)
         except Exception as e:
-            self._log.error(f"Error computing notebook diff.", exc_info=e)
+            self.__log.error(f"Error computing notebook diff.", exc_info=e)
             raise tornado.web.HTTPError(
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 reason=f"Error diffing content: {e}.",
@@ -189,14 +190,14 @@ def get_request_attr_value(handler, arg):
     try:
         param = handler.get_argument(arg)
         if not param:
-            self._log.error(f"Invalid argument '{arg}', cannot be blank.")
+            get_logger().error(f"Invalid argument '{arg}', cannot be blank.")
             raise tornado.web.HTTPError(
                 status_code=HTTPStatus.BAD_REQUEST,
                 reason=f"Invalid argument '{arg}', cannot be blank.",
             )
         return param
     except tornado.web.MissingArgumentError as e:
-        self._log.error(f"Missing argument '{arg}'.", exc_info=e)
+        get_logger().error(f"Missing argument '{arg}'.", exc_info=e)
         raise tornado.web.HTTPError(
             status_code=HTTPStatus.BAD_REQUEST, reason=f"Missing argument '{arg}'."
         ) from e
@@ -208,7 +209,7 @@ def get_body_value(handler):
             raise ValueError()
         return escape.json_decode(handler.request.body)
     except ValueError as e:
-        self._log.error("Invalid body.", exc_info=e)
+        get_logger().error("Invalid body.", exc_info=e)
         raise tornado.web.HTTPError(
             status_code=HTTPStatus.BAD_REQUEST, reason=f"Invalid POST body: {e}"
         ) from e
