@@ -151,24 +151,34 @@
   padding: 0px 10px;
 }
 
+.jp-PullRequestTab > .lm-Widget {
+  max-width: 930px;
+  height: 100%;
+  margin: auto;
+}
+
 .jp-PullRequestDescriptionTab {
+  overflow: auto;
+}
+
+.jp-PullRequestDescriptionHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.jp-PullRequestDescriptionTab * {
+.jp-PullRequestDescriptionHeader * {
   margin-top: 8px !important;
   margin-bottom: 8px !important;
 }
 
-.jp-PullRequestDescriptionTab h1 {
+.jp-PullRequestDescriptionHeader h1 {
   font-size: var(--jp-ui-font-size3);
   color: var(--jp-ui-font-color0);
   font-weight: 600;
 }
 
-.jp-PullRequestDescriptionTab h2 {
+.jp-PullRequestDescriptionHeader h2 {
   font-size: var(--jp-ui-font-size);
   color: var(--jp-ui-font-color2);
   font-weight: 400;
@@ -391,6 +401,10 @@ p.jp-PullRequestCommentItemContentTitle {
 }
 
 /* Plain text diff */
+.jp-git-PlainText-diff.jp-PullRequestTextDiff {
+  height: auto;
+}
+
 .CodeMirror-gutter.jp-PullRequestCommentDecoration,
 .CodeMirror-gutter-elt > .jp-PullRequestCommentDecoration {
   background: transparent;

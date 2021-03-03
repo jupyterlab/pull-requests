@@ -35,7 +35,10 @@ export class PullRequestDescriptionTab extends MainAreaWidget<Panel> {
     this.renderMime = props.renderMime;
     content.addClass('jp-PullRequestTab');
 
-    this.content.addWidget(
+    const container = new Panel();
+    container.addClass('jp-PullRequestDescriptionTab');
+
+    container.addWidget(
       PullRequestDescriptionTab.createHeader(
         props.pullRequest.title,
         props.pullRequest.link
@@ -43,7 +46,7 @@ export class PullRequestDescriptionTab extends MainAreaWidget<Panel> {
     );
 
     const markdownRenderer = props.renderMime.createRenderer('text/markdown');
-    this.content.addWidget(markdownRenderer);
+    container.addWidget(markdownRenderer);
 
     Promise.all([
       markdownRenderer.renderModel({
@@ -54,10 +57,11 @@ export class PullRequestDescriptionTab extends MainAreaWidget<Panel> {
         metadata: {},
         setData: () => null
       }),
-      this.loadComments(props.pullRequest.id, props.renderMime)
+      this.loadComments(container, props.pullRequest.id, props.renderMime)
     ])
       .then(() => {
         isLoaded.resolve();
+        this.content.addWidget(container);
       })
       .catch(reason => {
         isLoaded.reject(reason);
@@ -65,6 +69,7 @@ export class PullRequestDescriptionTab extends MainAreaWidget<Panel> {
   }
 
   protected async loadComments(
+    container: Panel,
     prId: string,
     renderMime: IRenderMimeRegistry
   ): Promise<void> {
@@ -81,21 +86,23 @@ export class PullRequestDescriptionTab extends MainAreaWidget<Panel> {
             thread,
             handleRemove: (): void => null
           });
-          this.content.addWidget(widget);
+          container.addWidget(widget);
         });
 
-        this.content.addWidget(this.createNewThreadButton());
+        container.addWidget(this.createNewThreadButton());
 
         return Promise.resolve();
       })
       .catch(reason => {
-        this.content.addWidget(this.createNewThreadButton());
+        container.addWidget(this.createNewThreadButton());
         return Promise.reject(reason);
       });
   }
 
   private static createHeader(title: string, link: string): Widget {
-    const node = generateNode('div', { class: 'jp-PullRequestDescriptionTab' });
+    const node = generateNode('div', {
+      class: 'jp-PullRequestDescriptionHeader'
+    });
     node.appendChild(generateNode('h1', {}, title));
     node.appendChild(
       generateNode(

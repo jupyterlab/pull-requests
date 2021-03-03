@@ -11,7 +11,7 @@
 - [x] Take advantage of builtin feature of MainAreaWidget (spinner)
 - [x] Add label - base / head in diff widgets
 - [x] Simplify number of div to include add button on notebook (and to fix hiding it when unchanged cells are collapsed)
-- [ ] Take into account review from Nick
+- [x] Take into account review from Nick
 - [x] Add support for comment at PR level for GitHub
 - [ ] Document the code
 - [ ] Tests
