@@ -9,7 +9,12 @@ import { CommentThread } from './CommentThread';
 
 export class PlainTextDiff extends Widget {
   constructor(props: IDiffOptions) {
-    super({ node: PlainTextDiff.createNode() });
+    super({
+      node: PlainTextDiff.createNode(
+        props.diff.base.label,
+        props.diff.head.label
+      )
+    });
     this._props = props;
   }
 
@@ -36,8 +41,16 @@ export class PlainTextDiff extends Widget {
   /**
    * Create wrapper node
    */
-  protected static createNode(): HTMLElement {
+  protected static createNode(
+    baseLabel: string,
+    remoteLabel: string
+  ): HTMLElement {
     const head = generateNode('div', { class: 'jp-git-diff-root' });
+    head.innerHTML = `
+    <div class=jp-git-diff-banner>
+      <span>${baseLabel}</span>
+      <span>${remoteLabel}</span>
+    </div>`;
     head.appendChild(
       generateNode('div', {
         class: 'jp-git-PlainText-diff jp-PullRequestTextDiff'
@@ -104,8 +117,8 @@ export class PlainTextDiff extends Widget {
         'jp-git-PlainText-diff'
       )[0] as HTMLElement,
       {
-        value: props.content.headContent,
-        orig: props.content.baseContent,
+        value: props.diff.head.content,
+        orig: props.diff.base.content,
         gutters: [
           'CodeMirror-linenumbers',
           // FIXME without this - the comment decoration does not show up

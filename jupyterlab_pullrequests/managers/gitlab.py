@@ -66,7 +66,7 @@ class PullRequestsGitLabManager(PullRequestsManager):
             a = 0
             b = 0
             for diff in diffs:
-                size = diff[1].count('\n')
+                size = diff[1].count("\n")
                 if diff[0] == 0:
                     file_diff.append(difflib.Match(a=a, b=b, size=size))
                     a += size
@@ -194,16 +194,24 @@ class PullRequestsGitLabManager(PullRequestsManager):
         self._file_diff_cache[(pr_id, filename)] = None
 
         return {
-            "baseContent": await self.__get_content(
-                merge_request["target_project_id"],
-                filename,
-                merge_request["diff_refs"]["base_sha"],
-            ),
-            "headContent": await self.__get_content(
-                merge_request["source_project_id"],
-                filename,
-                merge_request["diff_refs"]["head_sha"],
-            ),
+            "base": {
+                "label": merge_request["target_branch"],
+                "sha": merge_request["diff_refs"]["base_sha"],
+                "content": await self.__get_content(
+                    merge_request["target_project_id"],
+                    filename,
+                    merge_request["diff_refs"]["base_sha"],
+                ),
+            },
+            "head": {
+                "label": merge_request["source_branch"],
+                "sha": merge_request["diff_refs"]["head_sha"],
+                "content": await self.__get_content(
+                    merge_request["source_project_id"],
+                    filename,
+                    merge_request["diff_refs"]["head_sha"],
+                ),
+            },
         }
 
     # -----------------------------------------------------------------------------
@@ -289,9 +297,9 @@ class PullRequestsGitLabManager(PullRequestsManager):
                     (await self._get_merge_requests(pr_id))["diff_refs"].copy()
                 )
             else:
-                data["commit_id"] = (await self._get_merge_requests(pr_id))["diff_refs"][
-                    "head_sha"
-                ]
+                data["commit_id"] = (await self._get_merge_requests(pr_id))[
+                    "diff_refs"
+                ]["head_sha"]
 
             git_url = url_path_join(pr_id, "discussions")
 

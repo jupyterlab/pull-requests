@@ -9,7 +9,7 @@
   - [x] Support added and removed notebooks (currently JSON error as content on one side is "")
 - [x] Use codemirror as new comment editor
 - [ ] Take advantage of builtin feature of MainAreaWidget (spinner)
-- [ ] Add label - base / head in diff widgets
+- [x] Add label - base / head in diff widgets
 - [x] Simplify number of div to include add button on notebook (and to fix hiding it when unchanged cells are collapsed)
 - [ ] Take into account review from Nick
 - [ ] Add support for comment at PR level for GitHub

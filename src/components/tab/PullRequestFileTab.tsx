@@ -2,7 +2,7 @@ import { Spinner } from '@jupyterlab/apputils';
 import { PathExt } from '@jupyterlab/coreutils';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { Panel } from '@lumino/widgets';
-import { IFileContent, IThread } from '../../tokens';
+import { IFileDiff, IThread } from '../../tokens';
 import { requestAPI } from '../../utils';
 import { NotebookDiff } from '../diff/notebook';
 import { PlainTextDiff } from '../diff/plaintext';
@@ -47,9 +47,9 @@ export class FileDiffWidget extends Panel {
   protected async loadDiff(
     prId: string,
     filename: string
-  ): Promise<[IFileContent, IThread[]]> {
+  ): Promise<[IFileDiff, IThread[]]> {
     return Promise.all([
-      requestAPI<IFileContent>(
+      requestAPI<IFileDiff>(
         `pullrequests/files/content?id=${encodeURIComponent(
           prId
         )}&filename=${encodeURIComponent(filename)}`,
@@ -67,7 +67,7 @@ export class FileDiffWidget extends Panel {
   protected showDiff(
     prId: string,
     filename: string,
-    content: IFileContent,
+    content: IFileDiff,
     threads: IThread[],
     renderMime: IRenderMimeRegistry
   ): void {
@@ -77,7 +77,7 @@ export class FileDiffWidget extends Panel {
         new NotebookDiff({
           prId,
           filename,
-          content,
+          diff: content,
           threads,
           renderMime
         })
@@ -88,7 +88,7 @@ export class FileDiffWidget extends Panel {
           new PlainTextDiff({
             prId,
             filename,
-            content,
+            diff: content,
             threads,
             renderMime
           })

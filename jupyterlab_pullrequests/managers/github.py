@@ -94,21 +94,11 @@ class PullRequestsGithubManager(PullRequestsManager):
     # -----------------------------------------------------------------------------
     # /pullrequests/files/content Handler
     # -----------------------------------------------------------------------------
-
-    async def get_pr_links(self, pr_id: str, filename: str) -> Tuple[str, str]:
-
-        data = await self._get_pull_requests(pr_id)
-        base_url = url_concat(
-            url_path_join(data["base"]["repo"]["url"], "contents", filename),
-            {"ref": data["base"]["sha"]},
+    async def __get_content(self, url: str, filename: str, sha: str) -> str:
+        link = url_concat(
+            url_path_join(url, "contents", filename),
+            {"ref": sha},
         )
-        head_url = url_concat(
-            url_path_join(data["head"]["repo"]["url"], "contents", filename),
-            {"ref": data["head"]["sha"]},
-        )
-        return base_url, head_url
-
-    async def get_content(self, link: str):
         try:
             return await self._call_github(
                 link, media_type="application/vnd.github.v3.raw", load_json=False
@@ -120,15 +110,26 @@ class PullRequestsGithubManager(PullRequestsManager):
                 raise e
 
     async def get_file_content(self, pr_id: str, filename: str) -> Dict[str, str]:
+        pull_request = await self._get_pull_requests(pr_id)
 
-        base_url, head_url = await self.get_pr_links(pr_id, filename)
-
-        base_content = await self.get_content(base_url)
-        head_content = await self.get_content(head_url)
+        base_content = await self.__get_content(
+            pull_request["base"]["repo"]["url"], filename, pull_request["base"]["sha"]
+        )
+        head_content = await self.__get_content(
+            pull_request["head"]["repo"]["url"], filename, pull_request["head"]["sha"]
+        )
 
         return {
-            "baseContent": base_content,
-            "headContent": head_content,
+            "base": {
+                "label": pull_request["base"]["label"],
+                "sha": pull_request["base"]["sha"],
+                "content": base_content,
+            },
+            "head": {
+                "label": pull_request["head"]["label"],
+                "sha": pull_request["head"]["sha"],
+                "content": head_content,
+            },
         }
 
     # -----------------------------------------------------------------------------

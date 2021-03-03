@@ -338,6 +338,11 @@ p.jp-PullRequestCommentItemContentTitle {
 }
 
 /* Notebook diff styles */
+.nbdime-Diff .jp-git-diff-banner {
+  width: calc(100% - 52px);
+  margin: 0px 8px;
+}
+
 .jp-PullRequestCellDiff {
   overflow: visible;
   margin: 5px 0px;
@@ -415,4 +420,23 @@ p.jp-PullRequestCommentItemContentTitle {
 /* Notebook and Plain text diff common */
 .jp-PullRequestCommentDecoration:hover {
   transform: scale(1.2);
+}
+
+.jp-git-diff-banner {
+  display: flex;
+  margin-bottom: 5px;
+}
+
+.jp-git-diff-banner span {
+  margin: 0px 4px;
+  padding: 0px 4px;
+  width: 50%;font-weight: bold;
+}
+
+.jp-git-diff-banner span:first-of-type {
+  background-color: var(--jp-git-diff-deleted-color);
+}
+
+.jp-git-diff-banner span:last-of-type {
+  background-color: var(--jp-git-diff-added-color);
 }

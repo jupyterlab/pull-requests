@@ -24,9 +24,15 @@ export interface IFile {
   status: string;
 }
 
-export interface IFileContent {
-  baseContent: string;
-  headContent: string;
+export interface IDiffContent {
+  label: string;
+  sha: string;
+  content: string;
+}
+
+export interface IFileDiff {
+  base: IDiffContent;
+  head: IDiffContent;
 }
 
 export interface IComment {
@@ -97,7 +103,7 @@ export interface INotebookMapping {
 export interface IDiffOptions {
   prId: string;
   filename: string;
-  content: IFileContent;
+  diff: IFileDiff;
   threads: IThread[];
 
   /**

@@ -25,7 +25,7 @@ import {
   IThread,
   IThreadCell
 } from '../../tokens';
-import { requestAPI } from '../../utils';
+import { generateNode, requestAPI } from '../../utils';
 import { NotebookCommentDiffWidget } from './NotebookCommentDiffWidget';
 
 /**
@@ -48,7 +48,10 @@ export class NotebookDiff extends Panel {
     super();
     this.addClass(NBDIME_CLASS);
 
-    const header = Private.diffHeader(props);
+    const header = Private.diffHeader(
+      props.diff.base.label,
+      props.diff.head.label
+    );
     this.addWidget(header);
 
     this.scroller = new Panel();
@@ -68,7 +71,7 @@ export class NotebookDiff extends Panel {
       Private.toggleShowUnchanged(this.scroller, false);
     }
 
-    this.computeDiff(props.content.baseContent, props.content.headContent)
+    this.computeDiff(props.diff.base.content, props.diff.head.content)
       .then(data => {
         this.onData(
           props.prId,
@@ -314,21 +317,17 @@ namespace Private {
   /**
    * Create a header widget for the diff view.
    */
-  export function diffHeader(options: IDiffOptions): Widget {
-    // FIXME
-    const baseLabel = '';
-    const remoteLabel = '';
+  export function diffHeader(baseLabel: string, remoteLabel: string): Widget {
+    const node = generateNode('div', { class: 'nbdime-Diff jp-git-diff-root' });
 
-    const node = document.createElement('div');
-    node.className = 'nbdime-Diff';
     node.innerHTML = `
       <div class="nbdime-header-buttonrow">
         <label><input class="nbdime-hide-unchanged" type="checkbox">Hide unchanged cells</label>
         <button class="nbdime-export" style="display: none">Export diff</button>
       </div>
-      <div class=nbdime-header-banner>
-        <span class="nbdime-header-base">${baseLabel}</span>
-        <span class="nbdime-header-remote">${remoteLabel}</span>
+      <div class=jp-git-diff-banner>
+        <span>${baseLabel}</span>
+        <span>${remoteLabel}</span>
       </div>`;
 
     return new Widget({ node });
