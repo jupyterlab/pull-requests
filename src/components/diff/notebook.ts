@@ -170,9 +170,12 @@ export class NotebookDiff extends Panel {
         let currentThread = 0;
         if (cellDiff.source.base !== null) {
           lastBaseCell += 1;
+          threadsByChunk[chunkIndex].originalRange =
+            baseMapping.cells[lastBaseCell];
         }
         if (cellDiff.source.remote !== null) {
           lastHeadCell += 1;
+          threadsByChunk[chunkIndex].range = headMapping.cells[lastHeadCell];
         }
         while (
           (inThisBaseChunk || inThisHeadChunk) &&
@@ -180,8 +183,7 @@ export class NotebookDiff extends Panel {
         ) {
           const thread = sortedThreads[currentThread];
           if (cellDiff.source.base !== null) {
-            const baseRange = baseMapping.cells[lastBaseCell];
-            threadsByChunk[chunkIndex].originalRange = baseRange;
+            const baseRange = threadsByChunk[chunkIndex].originalRange;
             if (
               baseRange?.start <= thread.originalLine - 1 &&
               thread.originalLine - 1 <= baseRange?.end
@@ -195,8 +197,7 @@ export class NotebookDiff extends Panel {
             }
           }
           if (cellDiff.source.remote !== null) {
-            const headRange = headMapping.cells[lastHeadCell];
-            threadsByChunk[chunkIndex].range = headRange;
+            const headRange = threadsByChunk[chunkIndex].range;
             if (
               headRange?.start <= thread.line - 1 &&
               thread.line - 1 <= headRange?.end
