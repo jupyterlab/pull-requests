@@ -12,7 +12,10 @@
     "url": "https://github.com/jupyterlab/pull-requests/issues"
   },
   "license": "BSD-3-Clause",
-  "author": "Jupyter Development Team",
+  "author": {
+    "name": "Jupyter Development Team",
+    "email": ""
+  },
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
     "style/**/*.{css,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
@@ -57,36 +60,28 @@
     "@jupyterlab/settingregistry": "^2.0.0",
     "@jupyterlab/ui-components": "^2.0.0",
     "@lumino/commands": "^1.12.0",
+    "@lumino/coreutils": "^1.5.3",
     "@lumino/widgets": "^1.16.0",
-    "base64-js": "^1.3.0",
     "codemirror": "~5.53.2",
-    "json-source-map": "^0.4.0",
-    "lodash": "^4.17.11",
+    "json-source-map": "^0.6.1",
     "moment": "^2.24.0",
     "nbdime": "^6.0.0",
     "react": "~16.9.0",
     "react-dom": "~16.9.0",
-    "react-spinners": "0.5.12",
-    "react-window": "^1.8.5"
+    "react-spinners": "^0.5.12"
   },
   "devDependencies": {
     "@babel/core": "^7.5.0",
     "@babel/preset-env": "^7.5.0",
     "@jupyterlab/testutils": "^2.0.0",
-    "@microsoft/tsdoc": "^0.12.9",
-    "@types/base64-js": "^1.2.5",
     "@types/codemirror": "^0.0.76",
-    "@types/d3-color": "^1.2.2",
     "@types/enzyme": "^3.9.3",
     "@types/jest": "^25.0.0",
-    "@types/lodash": "^4.14.135",
     "@types/node": "^12.6.2",
     "@types/react": "~16.8.19",
     "@types/react-dom": "~16.0.5",
-    "@types/react-window": "^1.8.0",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
-    "d3-color": "^1.2.8",
     "enzyme": "^3.9.0",
     "enzyme-adapter-react-16": "^1.13.2",
     "eslint": "^6.8.0",
@@ -111,10 +106,11 @@
     "discovery": {
       "server": {
         "managers": [
+          "conda",
           "pip"
         ],
         "base": {
-          "name": "jupyterlab_pullrequests"
+          "name": "jupyterlab-pullrequests"
         }
       }
     },
