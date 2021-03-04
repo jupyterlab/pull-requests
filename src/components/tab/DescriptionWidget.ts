@@ -96,12 +96,12 @@ export class DescriptionWidget extends MainAreaWidget<Panel> {
           container.addWidget(widget);
         });
 
-        container.addWidget(this.createNewThreadButton());
+        container.addWidget(this.createNewThreadButton(container));
 
         return Promise.resolve();
       })
       .catch(reason => {
-        container.addWidget(this.createNewThreadButton());
+        container.addWidget(this.createNewThreadButton(container));
         return Promise.reject(reason);
       });
   }
@@ -129,7 +129,7 @@ export class DescriptionWidget extends MainAreaWidget<Panel> {
     });
   }
 
-  private createNewThreadButton(): Widget {
+  private createNewThreadButton(container: Panel): Widget {
     const node = generateNode('div', { class: 'jp-PullRequestThread' });
     node
       .appendChild(generateNode('div', { class: 'jp-PullRequestCommentItem' }))
@@ -167,10 +167,7 @@ export class DescriptionWidget extends MainAreaWidget<Panel> {
                   }
                 });
 
-                this.content.insertWidget(
-                  this.content.widgets.length - 1,
-                  widget
-                );
+                container.insertWidget(container.widgets.length - 1, widget);
               }
             }
           }
