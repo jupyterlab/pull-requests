@@ -360,6 +360,29 @@ p.jp-PullRequestCommentItemContentTitle {
   padding-right: 4px;
 }
 
+.jp-PullRequestCellDiff.jp-git-unchanged {
+  cursor: pointer;
+  color: var(--jp-ui-font-color1);
+  background: var(--jp-layout-color2);
+  border: 1px solid var(--jp-border-color1);
+  font-size: 90%;
+  width: calc(100% - 32px);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.jp-PullRequestCellDiff.jp-git-unchanged[data-pullrequest-hasthread]::before {
+  content: 'Hidden cell with ' attr(data-pullrequest-hasthread) ' discussions.';
+}
+
+.jp-PullRequestCellDiff.jp-git-unchanged::before {
+  content: '(...)';
+}
+
+.jp-PullRequestCellDiff.jp-git-unchanged > * {
+  display: none;
+}
+
 .jp-PullRequestCellDiffContent {
   display: flex;
   overflow: visible;
@@ -445,7 +468,8 @@ p.jp-PullRequestCommentItemContentTitle {
 .jp-git-diff-banner span {
   margin: 0px 4px;
   padding: 0px 4px;
-  width: 50%;font-weight: bold;
+  width: 50%;
+  font-weight: bold;
 }
 
 .jp-git-diff-banner span:first-of-type {

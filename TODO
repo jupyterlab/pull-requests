@@ -4,8 +4,8 @@
 - [x] Use Widget panel and handle life cycle for discussion
 - [x] Fix styling
 - [x] Fix use effect on panel
-- [ ] Fix notebooks
-  - [ ] Hide unchanged cells (and the comments structure)
+- [x] Fix notebooks
+  - [x] Hide unchanged cells (and the comments structure)
   - [x] Support added and removed notebooks (currently JSON error as content on one side is "")
 - [x] Use codemirror as new comment editor
 - [x] Take advantage of builtin feature of MainAreaWidget (spinner)

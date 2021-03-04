@@ -6,7 +6,10 @@ import {
   MetadataDiffWidget,
   NotebookDiffWidget
 } from 'nbdime/lib/diff/widget';
-import { CHUNK_PANEL_CLASS } from 'nbdime/lib/diff/widget/common';
+import {
+  CHUNK_PANEL_CLASS,
+  UNCHANGED_DIFF_CLASS
+} from 'nbdime/lib/diff/widget/common';
 import { IComment, IThread, IThreadCell } from '../../tokens';
 import { generateNode } from '../../utils';
 import { CommentThread } from './CommentThread';
@@ -78,11 +81,32 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
 
       const chunkWidget = new Panel();
       chunkWidget.addClass('jp-PullRequestCellDiff');
+
+      // Determine if the cell has changes
+      if (widget.node.classList.contains(`${UNCHANGED_DIFF_CLASS}`)) {
+        chunkWidget.addClass('jp-git-unchanged');
+        chunkWidget.node.addEventListener('click', (event: MouseEvent) => {
+          if (chunkWidget.hasClass('jp-git-unchanged')) {
+            chunkWidget.removeClass('jp-git-unchanged');
+            chunkWidget.node.title = '';
+          }
+        });
+        chunkWidget.node.title = 'Click to display unchanged cell.';
+      }
+
       chunkWidget.addWidget(cellDiff);
 
-      this._threads[currentPosition].threads.forEach((thread, _, array) => {
+      const currentThreads = this._threads[currentPosition].threads;
+      currentThreads.forEach((thread, _, array) => {
         chunkWidget.addWidget(this.makeThreadWidget(thread, array));
       });
+
+      if (currentThreads.length > 0) {
+        chunkWidget.node.setAttribute(
+          'data-pullrequest-hasthread',
+          currentThreads.length.toString()
+        );
+      }
 
       const line = this._threads[currentPosition].range?.end;
       const originalLine = this._threads[currentPosition].originalRange?.end;
