@@ -5,8 +5,11 @@ import { Widget } from '@lumino/widgets';
 import { MergeView } from 'codemirror';
 import { IComment, IDiffOptions, IThread } from '../../tokens';
 import { generateNode } from '../../utils';
-import { CommentThread } from './CommentThread';
+import { Discussion } from '../discussion/Discussion';
 
+/**
+ * Plain Text Diff widget
+ */
 export class PlainTextDiff extends Widget {
   constructor(props: IDiffOptions) {
     super({
@@ -18,6 +21,9 @@ export class PlainTextDiff extends Widget {
     this._props = props;
   }
 
+  /**
+   * Dispose the widget
+   */
   dispose(): void {
     if (this.isDisposed) {
       return;
@@ -64,20 +70,6 @@ export class PlainTextDiff extends Widget {
    */
   protected static makeCommentDecoration(): HTMLElement {
     return generateNode('div', { class: 'jp-PullRequestCommentDecoration' });
-  }
-
-  protected addThreadWidget(widget: Widget): void {
-    this._threadWidgets.push(widget);
-  }
-
-  protected removeThreadWidget(widget: Widget): void {
-    widget.node.remove();
-    this._threadWidgets
-      .splice(
-        this._threadWidgets.findIndex(widget_ => widget_ === widget),
-        1
-      )[0]
-      .dispose();
   }
 
   /**
@@ -165,6 +157,13 @@ export class PlainTextDiff extends Widget {
     }
   }
 
+  /**
+   * Start a new discussion
+   *
+   * @param editor CodeMirror editor
+   * @param lineNo Line at which to start a discussion
+   * @param side Diff side
+   */
   protected createThread(
     editor: CodeMirror.Editor,
     lineNo: number,
@@ -185,8 +184,13 @@ export class PlainTextDiff extends Widget {
     }
   }
 
+  /**
+   * Create the widget associated with a discussion
+   *
+   * @param thread Discussion
+   */
   protected makeThreadWidget(thread: IThread): HTMLElement {
-    const widget = new CommentThread({
+    const widget = new Discussion({
       renderMime: this._props.renderMime,
       thread,
       handleRemove: (): void => {
@@ -201,6 +205,14 @@ export class PlainTextDiff extends Widget {
     return widget.node;
   }
 
+  /**
+   * Update discussion displayed when editor view port changes
+   *
+   * @param editor CodeMirror editor
+   * @param from First line displayed
+   * @param to Last line displayed
+   * @param side Diff side
+   */
   protected updateView(
     editor: CodeMirror.Editor,
     from: number,
@@ -220,7 +232,22 @@ export class PlainTextDiff extends Widget {
       });
   }
 
+  private addThreadWidget(widget: Widget): void {
+    this._threadWidgets.push(widget);
+  }
+
+  private removeThreadWidget(widget: Widget): void {
+    widget.node.remove();
+    this._threadWidgets
+      .splice(
+        this._threadWidgets.findIndex(widget_ => widget_ === widget),
+        1
+      )[0]
+      .dispose();
+  }
+
   protected _mergeView: MergeView.MergeViewEditor;
   protected _props: IDiffOptions;
+  // Keep track of discussion widgets to dispose them with this widget
   private _threadWidgets: Widget[] = [];
 }

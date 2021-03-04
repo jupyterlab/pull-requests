@@ -15,8 +15,8 @@ import {
   NAMESPACE,
   PLUGIN_ID
 } from './tokens';
-import { PullRequestDescriptionTab } from './components/tab/PullRequestDescriptionTab';
-import { FileDiffWidget } from './components/tab/PullRequestFileTab';
+import { DescriptionWidget } from './components/tab/DescriptionWidget';
+import { FileDiffWidget } from './components/tab/FileDiffWidget';
 import { pullRequestsIcon } from './style/icons';
 
 // JupyterLab plugin props
@@ -71,7 +71,7 @@ function activate(
       let mainAreaItem = findWidget(shell, pullRequest.id);
 
       if (!mainAreaItem) {
-        mainAreaItem = new PullRequestDescriptionTab({
+        mainAreaItem = new DescriptionWidget({
           pullRequest,
           renderMime
         });

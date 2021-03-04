@@ -12,24 +12,52 @@ import {
 } from 'nbdime/lib/diff/widget/common';
 import { IComment, IThread, IThreadCell } from '../../tokens';
 import { generateNode } from '../../utils';
-import { CommentThread } from './CommentThread';
+import { Discussion } from '../discussion/Discussion';
 
-export class NotebookCommentDiffWidget extends NotebookDiffWidget {
-  constructor(
-    prId: string,
-    filename: string,
-    model: NotebookDiffModel,
-    comments: IThreadCell[],
-    rendermime: IRenderMimeRegistry
-  ) {
-    super(model, rendermime);
-    this._filename = filename;
-    this._prId = prId;
-    this.__renderMime = rendermime;
-    this._threads = comments;
+export interface INotebookCellsDiffProps {
+  /**
+   * Discussions grouped by cell
+   */
+  comments: IThreadCell[];
+  /**
+   * Notebook filename
+   */
+  filename: string;
+  /**
+   * Notebook diff model
+   */
+  model: NotebookDiffModel;
+  /**
+   * Rendermime registry
+   */
+  renderMime: IRenderMimeRegistry;
+  /**
+   * Pull request Id
+   */
+  pullRequestId: string;
+}
+
+/**
+ * NotebookCellDiff widget
+ */
+export class NotebookCellsDiff extends NotebookDiffWidget {
+  constructor(props: INotebookCellsDiffProps) {
+    super(props.model, props.renderMime);
+    this._filename = props.filename;
+    this._pullRequestId = props.pullRequestId;
+    this.__renderMime = props.renderMime;
+    this._threads = props.comments;
   }
 
-  addComment(
+  /**
+   * Add a new discussion
+   *
+   * @param chunkIndex Cell chunk index
+   * @param widget Panel containing the discussion
+   * @param lineNo Line of the cell chunk
+   * @param side Side of the line selected
+   */
+  addDiscussion(
     chunkIndex: number,
     widget: Panel,
     lineNo: number,
@@ -41,7 +69,7 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
     if (!hasNewThread) {
       const thread: IThread = {
         comments: new Array<IComment>(),
-        pullRequestId: this._prId,
+        pullRequestId: this._pullRequestId,
         filename: this._filename
       };
       thread[side] = lineNo + 1;
@@ -119,7 +147,7 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
             null,
             {
               click: () =>
-                this.addComment(
+                this.addDiscussion(
                   currentPosition,
                   chunkWidget,
                   line || originalLine || 0,
@@ -138,7 +166,7 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
   }
 
   private makeThreadWidget(thread: IThread, threads: IThread[]): Widget {
-    const widget = new CommentThread({
+    const widget = new Discussion({
       renderMime: this.__renderMime,
       thread,
       handleRemove: (): void => {
@@ -155,7 +183,7 @@ export class NotebookCommentDiffWidget extends NotebookDiffWidget {
   }
 
   protected _filename: string;
-  protected _prId: string;
+  protected _pullRequestId: string;
   protected __renderMime: IRenderMimeRegistry;
   protected _threads: IThreadCell[];
   // Current chunk position

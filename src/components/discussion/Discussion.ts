@@ -5,12 +5,12 @@ import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { caretDownIcon, caretUpIcon } from '@jupyterlab/ui-components';
 import { InputComment } from './InputComment';
 import { showErrorMessage } from '@jupyterlab/apputils';
-import { CommentWidget } from './CommentWidget';
+import { CommentWidget } from './Comment';
 
 /**
- * CommentThread widget properties
+ * Discussion widget properties
  */
-export interface ICommentThreadProps {
+export interface IDiscussionProps {
   /**
    * RenderMime registry
    */
@@ -26,10 +26,10 @@ export interface ICommentThreadProps {
 }
 
 /**
- * CommentThread widget
+ * Discussion widget
  */
-export class CommentThread extends Panel {
-  constructor(props: ICommentThreadProps) {
+export class Discussion extends Panel {
+  constructor(props: IDiscussionProps) {
     super();
     this.addClass('jp-PullRequestThread');
     this._handleRemove = props.handleRemove;
@@ -134,7 +134,9 @@ export class CommentThread extends Panel {
    */
   protected addThreadView(): void {
     this._thread.comments.forEach(comment => {
-      this.addWidget(new CommentWidget(comment, this._renderMime));
+      this.addWidget(
+        new CommentWidget({ comment, renderMime: this._renderMime })
+      );
     });
     if (this._inputShown) {
       this.addWidget(this.createCommentInput());
@@ -186,7 +188,9 @@ export class CommentThread extends Panel {
       latestWidget.parent = null;
       latestWidget.dispose();
 
-      this.addWidget(new CommentWidget(comment, this._renderMime));
+      this.addWidget(
+        new CommentWidget({ comment, renderMime: this._renderMime })
+      );
       this._inputShown = false;
       this.addWidget(this.createReplyButton());
     } catch (reason) {

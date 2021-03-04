@@ -10,26 +10,57 @@ import React, { useEffect, useState } from 'react';
 import { BeatLoader } from 'react-spinners';
 import { CommandIDs, IFile, IPullRequest } from '../../tokens';
 import { requestAPI } from '../../utils';
-import { PullRequestBrowserFileItem } from './PullRequestBrowserFileItem';
+import { FileItem } from './FileItem';
 
+/**
+ * PullRequestItem properties
+ */
 export interface IPullRequestItemProps {
   /**
    * Jupyter Front End Commands Registry
    */
   commands: CommandRegistry;
+  /**
+   * The document registry
+   */
   docRegistry: DocumentRegistry;
+  /**
+   * Pull request description
+   */
   pullRequest: IPullRequest;
 }
 
+/**
+ * Open an URL in a new window
+ *
+ * @param link URL to open
+ */
 function openLink(link: string): void {
   window.open(link, '_blank');
 }
 
+/**
+ * PullRequestItem component
+ *
+ * @param props Component properties
+ */
 export function PullRequestItem(props: IPullRequestItemProps): JSX.Element {
   const { commands, docRegistry, pullRequest } = props;
+  /**
+   * Pull request modified files
+   */
   const [files, setFiles] = useState<IFile[] | null>(null);
+  /**
+   * Is the file list expanded?
+   */
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  /**
+   * Is the file list being loaded?
+   */
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  /**
+   * Error message
+   */
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -120,7 +151,7 @@ export function PullRequestItem(props: IPullRequestItemProps): JSX.Element {
         isExpanded &&
         (error ? (
           <div>
-            <h2 className="jp-PullRequestBrowserItemError">
+            <h2 className="jp-PullRequestBrowserGroupError">
               Error Listing Pull Request Files:
             </h2>
             {error}
@@ -138,7 +169,7 @@ export function PullRequestItem(props: IPullRequestItemProps): JSX.Element {
                   } as any);
                 }}
               >
-                <PullRequestBrowserFileItem file={file} />
+                <FileItem file={file} />
               </li>
             ))}
           </ul>

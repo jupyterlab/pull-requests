@@ -4,8 +4,26 @@ import moment from 'moment';
 import { IComment } from '../../tokens';
 import { generateNode } from '../../utils';
 
+/**
+ * CommentWidget properties
+ */
+export interface ICommentWidgetProps {
+  /**
+   * Comment to be displayed
+   */
+  comment: IComment;
+  /**
+   * Rendermime registry
+   */
+  renderMime: IRenderMimeRegistry;
+}
+
+/**
+ * Comment widget
+ */
 export class CommentWidget extends Widget {
-  constructor(comment: IComment, renderMime: IRenderMimeRegistry) {
+  constructor(props: ICommentWidgetProps) {
+    const { comment, renderMime } = props;
     const markdownRenderer = renderMime.createRenderer('text/markdown');
     super({
       node: CommentWidget.createNode(comment, markdownRenderer)
@@ -21,6 +39,12 @@ export class CommentWidget extends Widget {
     });
   }
 
+  /**
+   * Create the HTML nodes
+   *
+   * @param comment Comment to be displayed
+   * @param markdownRenderer Markdown renderer
+   */
   protected static createNode(
     comment: IComment,
     markdownRenderer: IRenderMime.IRenderer
@@ -57,6 +81,9 @@ export class CommentWidget extends Widget {
     return head;
   }
 
+  /**
+   * Dispose the widget
+   */
   dispose(): void {
     if (this.isDisposed) {
       return;

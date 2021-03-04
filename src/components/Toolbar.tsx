@@ -3,9 +3,9 @@ import { refreshIcon } from '@jupyterlab/ui-components';
 import { ActionButton } from '@jupyterlab/git/lib/components/ActionButton';
 
 /**
- * PullRequestToolbar properties
+ * Toolbar properties
  */
-export interface IPullRequestToolbarProps {
+export interface IToolbarProps {
   /**
    * Refresh button callback
    */
@@ -13,13 +13,11 @@ export interface IPullRequestToolbarProps {
 }
 
 /**
- * PullRequestToolbar component
+ * Toolbar component
  *
  * @param props Component properties
  */
-export function PullRequestToolbar(
-  props: IPullRequestToolbarProps
-): JSX.Element {
+export function Toolbar(props: IToolbarProps): JSX.Element {
   return (
     <div className="lm-Widget jp-Toolbar jp-scrollbar-tiny jp-PullRequestToolbar">
       <div className="jp-PullRequestToolbarHeader">

@@ -6,17 +6,34 @@ import { PromiseDelegate } from '@lumino/coreutils';
 import { Panel } from '@lumino/widgets';
 import { IDiffOptions, IFileDiff, IThread } from '../../tokens';
 import { requestAPI } from '../../utils';
-import { NotebookDiff } from '../diff/notebook';
+import { NotebookDiff } from '../diff/NotebookDiff';
 import { PlainTextDiff } from '../diff/plaintext';
 
+/**
+ * FileDiffWidget properties
+ */
 export interface IFileDiffWidgetProps {
+  /**
+   * Filename
+   */
   filename: string;
+  /**
+   * Pull request ID
+   */
   pullRequestId: string;
+  /**
+   * Rendermime registry
+   */
   renderMime: IRenderMimeRegistry;
+  /**
+   * Settings registry
+   */
   settingsRegistry: ISettingRegistry | null;
 }
 
-// FIXME change for a factory?
+/**
+ * FileDiffWidget
+ */
 export class FileDiffWidget extends MainAreaWidget<Panel> {
   constructor(props: IFileDiffWidgetProps) {
     const content = new Panel();
@@ -47,6 +64,12 @@ export class FileDiffWidget extends MainAreaWidget<Panel> {
       });
   }
 
+  /**
+   * Load the file diff and the associated discussions
+   *
+   * @param pullRequestId Pull request Id
+   * @param filename Filename
+   */
   protected static async loadDiff(
     pullRequestId: string,
     filename: string
@@ -67,6 +90,11 @@ export class FileDiffWidget extends MainAreaWidget<Panel> {
     ]);
   }
 
+  /**
+   * Display the diff widget depending of the file type
+   *
+   * @param diffProps Diff properties
+   */
   protected showDiff(diffProps: IDiffOptions): void {
     const fileExtension = PathExt.extname(diffProps.filename).toLowerCase();
     if (fileExtension === '.ipynb') {
@@ -80,6 +108,11 @@ export class FileDiffWidget extends MainAreaWidget<Panel> {
     }
   }
 
+  /**
+   * Display an error message
+   *
+   * @param message Error message
+   */
   protected showError(message: string): void {
     while (this.children().next()) {
       this.children()

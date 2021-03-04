@@ -6,8 +6,8 @@ import React, { useEffect, useState } from 'react';
 import { BeatLoader } from 'react-spinners';
 import { IPullRequest, IPullRequestGroup } from '../tokens';
 import { requestAPI } from '../utils';
-import { PullRequestBrowser } from './browser/PullRequestBrowser';
-import { PullRequestToolbar } from './PullRequestToolbar';
+import { Browser } from './browser/Browser';
+import { Toolbar } from './Toolbar';
 
 /**
  * React wrapper to mount and umount the React child component
@@ -155,7 +155,7 @@ export function PullRequestPanel(props: IPullRequestPanelProps): JSX.Element {
 
   return (
     <div className="jp-PullRequestPanel">
-      <PullRequestToolbar onRefresh={refreshPullRequests} />
+      <Toolbar onRefresh={refreshPullRequests} />
       {isLoading ? (
         <BeatLoader
           sizeUnit={'px'}
@@ -164,7 +164,7 @@ export function PullRequestPanel(props: IPullRequestPanelProps): JSX.Element {
           loading={isLoading}
         />
       ) : (
-        <PullRequestBrowser
+        <Browser
           docRegistry={props.docRegistry}
           commands={props.commands}
           prGroups={pullRequests}

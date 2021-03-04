@@ -2,13 +2,19 @@ import { DocumentRegistry } from '@jupyterlab/docregistry';
 import { CommandRegistry } from '@lumino/commands';
 import * as React from 'react';
 import { IPullRequestGroup } from '../../tokens';
-import { PullRequestBrowserItem } from './PullRequestBrowserItem';
+import { BrowserGroup } from './BrowserGroup';
 
-export interface IPullRequestBrowserProps {
+/**
+ * PullRequestBrowser properties
+ */
+export interface IBrowserProps {
   /**
    * Jupyter Front End Commands Registry
    */
   commands: CommandRegistry;
+  /**
+   * The document registry
+   */
   docRegistry: DocumentRegistry;
   /**
    * Groups of Pull Request Lists
@@ -18,16 +24,15 @@ export interface IPullRequestBrowserProps {
 
 /**
  * Display the Pull Request Lists
+ *
  * @param props Component properties
  */
-export function PullRequestBrowser(
-  props: IPullRequestBrowserProps
-): JSX.Element {
+export function Browser(props: IBrowserProps): JSX.Element {
   return (
     <div className="jp-PullRequestBrowser">
       <ul>
         {props.prGroups.map(group => (
-          <PullRequestBrowserItem
+          <BrowserGroup
             key={group.name}
             commands={props.commands}
             docRegistry={props.docRegistry}

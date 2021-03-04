@@ -29,7 +29,7 @@ describe('PullRequestBrowserItem', () => {
         const component = shallow(<PullRequestBrowserItem {...props} />);
         it('should be a list', () => {
             expect(component.find('li')).toHaveLength(1);
-            expect(component.find('.jp-PullRequestBrowserItem')).toHaveLength(1);
+            expect(component.find('.jp-PullRequestBrowserGroup')).toHaveLength(1);
         });
         it('should have a header with text props.header', () => {
             expect(component.find('header h2')).toHaveLength(1);
@@ -64,18 +64,18 @@ describe('PullRequestBrowserItem', () => {
         it('should have a sublist if there is not an error', () => {
             component.setState({data: [], isLoading: false, error: null});
             expect(component.find('ul')).toHaveLength(1);
-            expect(component.find('.jp-PullRequestBrowserItemList')).toHaveLength(1);
+            expect(component.find('.jp-PullRequestBrowserGroupList')).toHaveLength(1);
         });
         it('should not have a sublist if there is an error', () => {
             component.setState({data: [], isLoading: false, error: "error"});
             expect(component.find('ul')).toHaveLength(0);
-            expect(component.find('.jp-PullRequestBrowserItemList')).toHaveLength(0);
+            expect(component.find('.jp-PullRequestBrowserGroupList')).toHaveLength(0);
         });
         it('should display error if one exists', () => {
             component.setState({data: [], isLoading: false, error: "error"});
-            expect(component.find('.jp-PullRequestBrowserItemError')).toHaveLength(1);
+            expect(component.find('.jp-PullRequestBrowserGroupError')).toHaveLength(1);
             expect(component.contains([
-                <h2 className="jp-PullRequestBrowserItemError">
+                <h2 className="jp-PullRequestBrowserGroupError">
                     <span style={{color: 'var(--jp-ui-font-color1)'}}>
                     Error Listing Pull Requests:
                     </span> error
@@ -84,9 +84,9 @@ describe('PullRequestBrowserItem', () => {
         });
         it('should not display error if one does not exist', () => {
             component.setState({data: [], isLoading: false, error: null});
-            expect(component.find('.jp-PullRequestBrowserItemError')).toHaveLength(0);
+            expect(component.find('.jp-PullRequestBrowserGroupError')).toHaveLength(0);
             expect(component.contains([
-                <h2 className="jp-PullRequestBrowserItemError">
+                <h2 className="jp-PullRequestBrowserGroupError">
                     <span style={{color: 'var(--jp-ui-font-color1)'}}>
                     Error Listing Pull Requests:
                     </span> error

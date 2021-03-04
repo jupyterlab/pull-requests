@@ -4,12 +4,12 @@ import { Panel, Widget } from '@lumino/widgets';
 import { PromiseDelegate } from '@lumino/coreutils';
 import { IComment, IPullRequest, IThread } from '../../tokens';
 import { generateNode, requestAPI } from '../../utils';
-import { CommentThread } from '../diff/CommentThread';
+import { Discussion } from '../discussion/Discussion';
 
 /**
- * PullRequestDescriptionTab properties
+ * DescriptionWidget properties
  */
-export interface IPullRequestDescriptionTabProps {
+export interface IDescriptionWidgetProps {
   /**
    * Pull Request data
    */
@@ -21,10 +21,10 @@ export interface IPullRequestDescriptionTabProps {
 }
 
 /**
- * PullRequestDescriptionTab component
+ * DescriptionWidget component
  */
-export class PullRequestDescriptionTab extends MainAreaWidget<Panel> {
-  constructor(props: IPullRequestDescriptionTabProps) {
+export class DescriptionWidget extends MainAreaWidget<Panel> {
+  constructor(props: IDescriptionWidgetProps) {
     const content = new Panel();
     const isLoaded = new PromiseDelegate<void>();
     super({
@@ -39,7 +39,7 @@ export class PullRequestDescriptionTab extends MainAreaWidget<Panel> {
     container.addClass('jp-PullRequestDescriptionTab');
 
     container.addWidget(
-      PullRequestDescriptionTab.createHeader(
+      DescriptionWidget.createHeader(
         props.pullRequest.title,
         props.pullRequest.link
       )
@@ -68,20 +68,27 @@ export class PullRequestDescriptionTab extends MainAreaWidget<Panel> {
       });
   }
 
+  /**
+   * Load the discussion of the pull request
+   *
+   * @param container Discussion widgets container
+   * @param pullRequestId Pull request id
+   * @param renderMime Rendermime registry
+   */
   protected async loadComments(
     container: Panel,
-    prId: string,
+    pullRequestId: string,
     renderMime: IRenderMimeRegistry
   ): Promise<void> {
     return await requestAPI<IThread[]>(
-      `pullrequests/files/comments?id=${encodeURIComponent(prId)}`,
+      `pullrequests/files/comments?id=${encodeURIComponent(pullRequestId)}`,
       'GET'
     )
       .then(threads => {
         this.threads = threads;
 
         threads.forEach(thread => {
-          const widget = new CommentThread({
+          const widget = new Discussion({
             renderMime,
             thread,
             handleRemove: (): void => null
@@ -147,7 +154,7 @@ export class PullRequestDescriptionTab extends MainAreaWidget<Panel> {
 
                 this.threads.push(thread);
 
-                const widget = new CommentThread({
+                const widget = new Discussion({
                   thread,
                   renderMime: this.renderMime,
                   handleRemove: (): void => {

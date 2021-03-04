@@ -21,7 +21,7 @@ import {
   IThreadCell
 } from '../../tokens';
 import { generateNode, requestAPI } from '../../utils';
-import { NotebookCommentDiffWidget } from './NotebookCommentDiffWidget';
+import { NotebookCellsDiff } from './NotebookCellsDiff';
 
 /**
  * Class of the outermost widget, the draggable tab
@@ -215,8 +215,17 @@ export class NotebookDiff extends Panel {
     this.scroller.node.focus();
   }
 
+  /**
+   * Callback on diff and discussions requests
+   *
+   * @param pullRequestId Pull request ID
+   * @param filename Notebook filename
+   * @param data Notebook diff raw data
+   * @param renderMime Rendermime registry
+   * @param threads List of discussion on the file
+   */
   protected onData(
-    prId: string,
+    pullRequestId: string,
     filename: string,
     data: JSONObject,
     renderMime: IRenderMimeRegistry,
@@ -227,20 +236,20 @@ export class NotebookDiff extends Panel {
     }
     const base = data['base'] as INotebookContent;
     const diff = (data['diff'] as any) as IDiffEntry[];
-    const nbdModel = new NotebookDiffModel(base, diff);
-    const groupedComments = NotebookDiff.mapThreadsOnChunks(
+    const model = new NotebookDiffModel(base, diff);
+    const comments = NotebookDiff.mapThreadsOnChunks(
       data.baseMapping as any,
       data.headMapping as any,
-      nbdModel.chunkedCells,
+      model.chunkedCells,
       threads
     );
-    const nbdWidget = new NotebookCommentDiffWidget(
-      prId,
+    const nbdWidget = new NotebookCellsDiff({
+      pullRequestId,
       filename,
-      nbdModel,
-      groupedComments,
+      model,
+      comments,
       renderMime
-    );
+    });
 
     this.scroller.addWidget(nbdWidget);
     const work = nbdWidget.init();
@@ -253,6 +262,11 @@ export class NotebookDiff extends Panel {
       });
   }
 
+  /**
+   * Callback on error when requesting the diff or the discussions
+   *
+   * @param error Error
+   */
   protected onError(
     error: ServerConnection.NetworkError | ServerConnection.ResponseError
   ): void {
@@ -272,6 +286,11 @@ export class NotebookDiff extends Panel {
 }
 
 namespace Private {
+  /**
+   * Map cell index with their position in the JSON file
+   *
+   * @param content Notebook file content
+   */
   export function computeNotebookMapping(content: string): INotebookMapping {
     const parsedContent = jsonMap.parse(content) as {
       data: any;
