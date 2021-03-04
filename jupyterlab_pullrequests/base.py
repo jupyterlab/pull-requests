@@ -50,14 +50,14 @@ class PRConfig(Configurable):
 
     @default('api_base_url')
     def set_default_api_base_url(self):
-        if self.platform == "gitlab":
+        if self.provider == "gitlab":
             return "https://gitlab.com/api/v4/"
         else:
             return "https://api.github.com"
 
-    platform = Enum(
+    provider = Enum(
         ["github", "gitlab"],
         default_value="github",
         config=True,
-        help="The source control platform.",
+        help="The source control provider.",
     )

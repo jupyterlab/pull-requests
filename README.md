@@ -1,21 +1,25 @@
 # jupyterlab-pullrequests
 
-[![Stability Experimental](https://img.shields.io/badge/stability-experimental-red.svg)](https://img.shields.io/badge/stability-experimental-red.svg)
-[![Build Status](https://travis-ci.org/jupyterlab/pull-requests.svg?branch=master)](https://travis-ci.org/jupyterlab/pull-requests)
+[![Build Status](https://github.com/jupyterlab/pull-requests/actions/workflows/build.yml/badge.svg)](https://github.com/jupyterlab/pull-requests/actions/workflows/build.yml)
 [![Version](https://img.shields.io/npm/v/@jupyterlab/pullrequests.svg)](https://www.npmjs.com/package/@jupyterlab/pullrequests)
 [![Version](https://img.shields.io/pypi/v/jupyterlab-pullrequests.svg)](https://pypi.org/project/jupyterlab-pullrequests/)
 
-A JupyterLab extension for reviewing pull requests
+A JupyterLab extension for reviewing pull requests.
 
 ![](gifs/demo.gif)
 
+For now, it supports GitHub and GitLab providers.
+
 ## Prerequisites
 
-- JupyterLab 2.0+
+-   JupyterLab 2.x
+-   nbdime 2.x
+
+> For GitLab, you will need also `diff-match-patch`
 
 ## Usage
 
-- Open the pull request extension from the tab on the left panel
+-   Open the pull request extension from the tab on the left panel
 
 ## Installation
 
@@ -26,26 +30,26 @@ pip install --upgrade jupyterlab-pullrequests
 jupyter lab build
 ```
 
-### 2. Getting your access token from GitHub
+For GitLab, in addition, you will need to
 
-You can get an access token by following these steps:
+```bash
+pip install diff-match-patch
+```
 
-1.  [Verify](https://help.github.com/articles/verifying-your-email-address) your email address with GitHub.
-1.  Go to your account settings on GitHub and select "Developer Settings" from the left panel.
-1.  On the left, select "Personal access tokens"
-1.  Click the "Generate new token" button, and enter your password.
-1.  Give the token a description, and check the "**repo**" scope box.
-1.  Click "Generate token"
-1.  You should be given a string which will be your access token.
+### 2. Getting your access token
 
-Remember that this token is effectively a password for your GitHub account.
+For GitHub, the documentation is [there](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token). The token scope must be **repo**.
+
+For GitLab, the documentation is [there](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#creating-a-personal-access-token). The token scope must be **api**.
+
+Remember that this token is effectively a password for your account.
 _Do not_ share it online or check the token into version control,
-as people can use it to access all of your data on GitHub.
+as people can use it to access all of your data.
 
 ### 3. Setting your access token in JupyterLab Pull Requests
 
-You now need to add the credentials you got from GitHub
-to your notebook configuration file. Instructions for generating a configuration
+You now need to add the credentials you got from the provider
+to your server configuration file. Instructions for generating a configuration
 file can be found [here](http://jupyter-notebook.readthedocs.io/en/stable/config_overview.html#configure-nbserver).
 Once you have identified this file, add the following lines to it:
 
@@ -55,8 +59,25 @@ c.PRConfig.access_token = '<YOUR_ACCESS_TOKEN>'
 
 where "`<YOUR_ACCESS_TOKEN>`" is the string value you obtained above.
 
+If you are using GitLab instead of GitHub, you also need to set the
+provider:
+
+```python
+c.PRConfig.provider = 'gitlab'
+```
+
 Congrats, you did it! Launch JupyterLab and look for the Pull Request tab on the left! 🎉
 
+> If you are not using GitHub.com or GitLab.com, you can set the API base URL of your provider
+> with the configurable parameter `PRConfig.api_base_url`.
+
+## Settings
+
+This extension as [server settings](http://jupyter-notebook.readthedocs.io/en/stable/config_overview.html).
+
+-   **PRConfig.access_token**: Access token to be authenticated by the provider
+-   **PRConfig.provider**: `github` (default) or `gitlab`
+-   **PRConfig.api_base_url**: Provider API base url (default to `https://api.github.com` except if provider is _gitlab_ then it defaults to `https://gitlab.com/api/v4/`)
 
 ## Development
 
