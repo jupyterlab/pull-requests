@@ -125,7 +125,8 @@ export class InputComment extends Widget {
     ) as HTMLTextAreaElement;
     const cm = CodeMirror.fromTextArea(editor, {
       mode: 'markdown',
-      theme: 'jupyter'
+      theme: 'jupyter',
+      lineWrapping: true
     });
     cm.on('change', this.handleInputChange.bind(this));
 

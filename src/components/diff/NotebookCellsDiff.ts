@@ -7,7 +7,9 @@ import {
   NotebookDiffWidget
 } from 'nbdime/lib/diff/widget';
 import {
+  ADDED_CHUNK_PANEL_CLASS,
   CHUNK_PANEL_CLASS,
+  REMOVED_CHUNK_PANEL_CLASS,
   UNCHANGED_DIFF_CLASS
 } from 'nbdime/lib/diff/widget/common';
 import { IComment, IThread, IThreadCell } from '../../tokens';
@@ -86,6 +88,51 @@ export class NotebookCellsDiff extends NotebookDiffWidget {
    * @param widget Widget
    */
   addWidget(widget: Widget): void {
+    if (widget.hasClass(CHUNK_PANEL_CLASS)) {
+      const panel = widget as Panel;
+      if (
+        (panel.widgets[0] as Panel).widgets.length === 0 &&
+        (panel.widgets[1] as Panel).widgets.length > 1
+      ) {
+        [...(panel.widgets[1] as Panel).widgets].forEach(widget_ => {
+          const chunkPanel = new Panel();
+          chunkPanel.addClass(CHUNK_PANEL_CLASS);
+          const addedPanel = new Panel();
+          addedPanel.addClass(ADDED_CHUNK_PANEL_CLASS);
+          const removedPanel = new Panel();
+          removedPanel.addClass(REMOVED_CHUNK_PANEL_CLASS);
+          removedPanel.addWidget(widget_);
+          chunkPanel.addWidget(addedPanel);
+          chunkPanel.addWidget(removedPanel);
+          this.addWidget(chunkPanel);
+
+          (panel.widgets[1] as Panel).layout.removeWidget(widget_);
+        });
+        panel.dispose();
+        return;
+      } else if (
+        (panel.widgets[1] as Panel).widgets.length === 0 &&
+        (panel.widgets[0] as Panel).widgets.length > 1
+      ) {
+        [...(panel.widgets[0] as Panel).widgets].forEach(widget_ => {
+          const chunkPanel = new Panel();
+          chunkPanel.addClass(CHUNK_PANEL_CLASS);
+          const addedPanel = new Panel();
+          addedPanel.addClass(ADDED_CHUNK_PANEL_CLASS);
+          const removedPanel = new Panel();
+          removedPanel.addClass(REMOVED_CHUNK_PANEL_CLASS);
+          addedPanel.addWidget(widget_);
+          chunkPanel.addWidget(addedPanel);
+          chunkPanel.addWidget(removedPanel);
+          this.addWidget(chunkPanel);
+
+          (panel.widgets[0] as Panel).layout.removeWidget(widget_);
+        });
+        panel.dispose();
+        return;
+      }
+    }
+
     if (
       widget instanceof CellDiffWidget ||
       widget.hasClass(CHUNK_PANEL_CLASS) ||

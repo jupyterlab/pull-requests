@@ -240,7 +240,7 @@ export class NotebookDiff extends Panel {
     const comments = NotebookDiff.mapThreadsOnChunks(
       data.baseMapping as any,
       data.headMapping as any,
-      model.chunkedCells,
+      NotebookDiff.reChunkCells(model.chunkedCells),
       threads
     );
     const nbdWidget = new NotebookCellsDiff({
@@ -252,14 +252,9 @@ export class NotebookDiff extends Panel {
     });
 
     this.scroller.addWidget(nbdWidget);
-    const work = nbdWidget.init();
-    work
-      .then(() => {
-        // Private.markUnchangedRanges(this.scroller.node);
-      })
-      .catch(error => {
-        console.error('Failed to mark unchanged ranges', error);
-      });
+    nbdWidget.init().catch(error => {
+      console.error('Failed to mark unchanged ranges', error);
+    });
   }
 
   /**
@@ -280,6 +275,52 @@ export class NotebookDiff extends Panel {
       Error Loading File:
     </span> ${error.message}</h2>`;
     this.scroller.addWidget(widget);
+  }
+
+  /**
+   * Change cell grouping to allow commenting on each cell
+   *
+   * @param chunks Cell chunks from nbdime
+   * @returns New chunks
+   */
+  protected static reChunkCells(chunks: CellDiffModel[][]): CellDiffModel[][] {
+    const newChunks: CellDiffModel[][] = [];
+    for (const chunk of chunks) {
+      // If chunk is unmodified, push it to stack
+      if (chunk.length === 1 && !(chunk[0].added || chunk[0].deleted)) {
+        newChunks.push([chunk[0]]);
+      } else {
+        let modifiedPair: Array<CellDiffModel | null> = [null, null];
+        for (const cell of chunk) {
+          if (cell.deleted) {
+            // if 'removed' not in chunk, add to chunk
+            if (modifiedPair[0] === null) {
+              modifiedPair[0] = cell;
+            }
+            // if 'removed' already in chunk, push chunk to chunks and start new chunk
+            else {
+              newChunks.push(modifiedPair.filter(item => item !== null));
+              modifiedPair = [cell, null];
+            }
+          } else {
+            // if 'added' not in chunk, add to chunk
+            if (modifiedPair[1] === null) {
+              modifiedPair[1] = cell;
+            }
+            // if 'added' already in chunk, push chunk to chunks and start new chunk
+            else {
+              newChunks.push(modifiedPair.filter(item => item !== null));
+              modifiedPair = [null, cell];
+            }
+          }
+        }
+        // if nonempty at end, push the remaining pair
+        if (modifiedPair[0] !== null || modifiedPair[1] !== null) {
+          newChunks.push(modifiedPair.filter(item => item !== null));
+        }
+      }
+    }
+    return newChunks;
   }
 
   protected scroller: Panel;
