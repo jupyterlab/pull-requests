@@ -24,7 +24,7 @@ lab_path = os.path.join(HERE, name, "labextension")
 
 # Representative files that should exist after a successful build
 jstargets = [
-    os.path.join(HERE, "lib", "models.js"),
+    os.path.join(HERE, "lib", "index.js"),
 ]
 
 package_data_spec = {name: ["*"]}
