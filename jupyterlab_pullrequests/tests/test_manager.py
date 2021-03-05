@@ -1,7 +1,7 @@
 import json
 import pathlib
 from http import HTTPStatus
-from unittest.mock import AsyncMock, MagicMock, patch
+from mock import AsyncMock, MagicMock, patch
 
 import pytest
 from tornado.httpclient import HTTPClientError

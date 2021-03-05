@@ -2,7 +2,7 @@ import difflib
 import json
 import pathlib
 from http import HTTPStatus
-from unittest.mock import AsyncMock, MagicMock, patch
+from mock import AsyncMock, MagicMock, patch
 
 import pytest
 from notebook.utils import url_path_join

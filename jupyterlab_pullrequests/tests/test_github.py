@@ -1,7 +1,7 @@
 import json
 import pathlib
 from http import HTTPStatus
-from unittest.mock import AsyncMock, MagicMock, call, patch
+from mock import AsyncMock, MagicMock, call, patch
 
 import pytest
 from tornado.web import HTTPError
