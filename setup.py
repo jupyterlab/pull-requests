@@ -50,7 +50,7 @@ cmdclass["jsdeps"] = combine_commands(
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-tests_require = ["pytest", "asynctest"]
+tests_require = ["mock>=4.0.0", "pytest", "pytest-asyncio"]
 
 setup_args = dict(
     name=name,

@@ -31,7 +31,7 @@ class PullRequestsAPIHandler(APIHandler):
     """
 
     def initialize(self, manager: PullRequestsManager, logger: logging.Logger):
-        self.__log = logger
+        self._jp_log = logger
         self._manager = manager        
 
     def write_error(self, status_code, **kwargs):
@@ -139,7 +139,7 @@ class PullRequestsFileCommentsHandler(PullRequestsAPIHandler):
         data = get_body_value(self)
         try:
             if "discussionId" in data:
-                body = CommentReply(data["text"], data["discussionId"])
+                body = CommentReply(data["text"], filename, data["discussionId"])
             else:
                 body = NewComment(
                     data["text"], filename, data.get("line"), data.get("originalLine")
@@ -148,7 +148,7 @@ class PullRequestsFileCommentsHandler(PullRequestsAPIHandler):
             raise tornado.web.HTTPError(
                 status_code=HTTPStatus.BAD_REQUEST, reason=f"Missing POST key: {e}"
             )
-        result = await self._manager.post_file_comment(pr_id, filename, body)
+        result = await self._manager.post_comment(pr_id, body)
 
         self.set_status(201)
         self.finish(json.dumps(result))
@@ -166,14 +166,14 @@ class PullRequestsFileNBDiffHandler(PullRequestsAPIHandler):
             prev_content = data["previousContent"]
             curr_content = data["currentContent"]
         except KeyError as e:
-            self.__log.error(f"Missing key in POST request.", exc_info=e)
+            self._jp_log.error(f"Missing key in POST request.", exc_info=e)
             raise tornado.web.HTTPError(
                 status_code=HTTPStatus.BAD_REQUEST, reason=f"Missing POST key: {e}"
             )
         try:
             content = await self._manager.get_file_nbdiff(prev_content, curr_content)
         except Exception as e:
-            self.__log.error(f"Error computing notebook diff.", exc_info=e)
+            self._jp_log.error(f"Error computing notebook diff.", exc_info=e)
             raise tornado.web.HTTPError(
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 reason=f"Error diffing content: {e}.",

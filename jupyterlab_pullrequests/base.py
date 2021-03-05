@@ -11,9 +11,11 @@ class CommentReply(NamedTuple):
     
     Attributes:
         text: Comment body
+        filename: Targeted filename; None if the comment is for the pull request
         inReplyTo: ID of the comment of the discussion or the comment to which this one reply
     """
     text: str
+    filename: Optional[str]
     inReplyTo: str
 
 

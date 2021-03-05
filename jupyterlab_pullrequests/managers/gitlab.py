@@ -220,18 +220,19 @@ class GitLabManager(PullRequestsManager):
 
         return data
 
-    async def post_file_comment(
-        self, pr_id: str, filename: str, body: Union[CommentReply, NewComment]
+    async def post_comment(
+        self, pr_id: str, body: Union[CommentReply, NewComment]
     ) -> Dict[str, str]:
         """Create a new comment on a file or a the pull request.
 
         Args:
             pr_id: pull request ID endpoint
-            filename: The file name; None to comment on the pull request
             body: Comment body
         Returns:
             The created comment
         """
+        filename = body.filename
+
         if isinstance(body, CommentReply):
             data = {"body": body.text}
             git_url = url_path_join(pr_id, "discussions", body.inReplyTo, "notes")
@@ -258,9 +259,7 @@ class GitLabManager(PullRequestsManager):
                     (await self._get_merge_requests(pr_id))["diff_refs"].copy()
                 )
             else:
-                data["commit_id"] = (await self._get_merge_requests(pr_id))[
-                    "diff_refs"
-                ]["head_sha"]
+                data["commit_id"] = (await self._get_merge_requests(pr_id))["sha"]
 
             git_url = url_path_join(pr_id, "discussions")
 
@@ -335,7 +334,7 @@ class GitLabManager(PullRequestsManager):
             "Authorization": f"Bearer {self._access_token}",
             "Accept": "application/json",
         }
-        return await super()._call_service(
+        return await super()._call_provider(
             url,
             load_json=load_json,
             method=method,

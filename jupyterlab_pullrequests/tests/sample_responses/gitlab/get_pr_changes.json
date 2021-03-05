@@ -1,0 +1,142 @@
+{
+  "id": 6841,
+  "iid": 3,
+  "project_id": 1518,
+  "title": "Various changes",
+  "description": "This is a **Markdown** description of:\n\n- a list\n- an extension\n- a `banana`\n- a [link](https://github.com)",
+  "state": "opened",
+  "created_at": "2021-03-02T08:26:06.268Z",
+  "updated_at": "2021-03-04T08:45:12.765Z",
+  "merged_by": null,
+  "merged_at": null,
+  "closed_by": null,
+  "closed_at": null,
+  "target_branch": "master",
+  "source_branch": "mr",
+  "user_notes_count": 8,
+  "upvotes": 0,
+  "downvotes": 0,
+  "author": {
+    "id": 149,
+    "name": "John Smith",
+    "username": "jsmith",
+    "state": "active",
+    "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/149/avatar.png",
+    "web_url": "https://gitlab.example.com/jsmith"
+  },
+  "assignees": [],
+  "assignee": null,
+  "reviewers": [],
+  "source_project_id": 1518,
+  "target_project_id": 1518,
+  "labels": [],
+  "work_in_progress": false,
+  "milestone": null,
+  "merge_when_pipeline_succeeds": false,
+  "merge_status": "can_be_merged",
+  "sha": "5cbd51cf3b89aaa1a2444cd4d4ce68fae299f592",
+  "merge_commit_sha": null,
+  "squash_commit_sha": null,
+  "discussion_locked": null,
+  "should_remove_source_branch": null,
+  "force_remove_source_branch": true,
+  "reference": "!3",
+  "references": {
+    "short": "!3",
+    "relative": "!3",
+    "full": "jsmith/dummmy-test!3"
+  },
+  "web_url": "https://gitlab.example.com/jsmith/dummmy-test/-/merge_requests/3",
+  "time_stats": {
+    "time_estimate": 0,
+    "total_time_spent": 0,
+    "human_time_estimate": null,
+    "human_total_time_spent": null
+  },
+  "squash": false,
+  "task_completion_status": {
+    "count": 0,
+    "completed_count": 0
+  },
+  "has_conflicts": false,
+  "blocking_discussions_resolved": true,
+  "subscribed": true,
+  "changes_count": "6",
+  "latest_build_started_at": null,
+  "latest_build_finished_at": null,
+  "first_deployed_to_production_at": null,
+  "pipeline": null,
+  "head_pipeline": null,
+  "diff_refs": {
+    "base_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+    "head_sha": "5cbd51cf3b89aaa1a2444cd4d4ce68fae299f592",
+    "start_sha": "e616d1a1a2a95416178b1494fa08a69694132c96"
+  },
+  "merge_error": null,
+  "user": {
+    "can_merge": true
+  },
+  "changes": [
+    {
+      "old_path": "README.md",
+      "new_path": "README.md",
+      "a_mode": "100644",
+      "b_mode": "100644",
+      "new_file": false,
+      "renamed_file": false,
+      "deleted_file": false,
+      "diff": "@@ -9,10 +9,12 @@ Section 1.10.32 of \"de Finibus Bonorum et Malorum\", written by Cicero in 45 BC\n \"Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?\"\n 1914 translation by H. Rackham\n \n+Mauris a quam sit amet tellus molestie mollis vel ut velit. Donec et dapibus erat. Nulla nec bibendum lacus. Morbi ac nunc vitae justo rutrum facilisis eget porttitor ante. Sed pretium elit vel erat convallis efficitur. Praesent vestibulum dictum diam, et sodales nisl ultricies id. Duis est mi, maximus a metus a, accumsan auctor odio. Sed sit amet dignissim nunc. Etiam venenatis viverra purus ac hendrerit. Maecenas placerat sagittis sollicitudin.\n+\n \"But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example, which of us ever undertakes laborious physical exercise, except to obtain some advantage from it? But who has any right to find fault with a man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure?\"\n Section 1.10.33 of \"de Finibus Bonorum et Malorum\", written by Cicero in 45 BC\n \n-\"At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.\"\n+\"At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.\"\n 1914 translation by H. Rackham\n \n \"On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases are perfectly simple and easy to distinguish. In a free hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best, every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted. The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures, or else he endures pains to avoid worse pains.\"\n"
+    },
+    {
+      "old_path": "dummy/papermill_test.ipynb",
+      "new_path": "dummy/papermill_test.ipynb",
+      "a_mode": "0",
+      "b_mode": "100644",
+      "new_file": true,
+      "renamed_file": false,
+      "deleted_file": false,
+      "diff": "@@ -0,0 +1,165 @@\n+{\n+ \"cells\": [\n+  {\n+   \"cell_type\": \"code\",\n+   \"execution_count\": 1,\n+   \"metadata\": {\n+    \"tags\": [\n+     \"parameters\"\n+    ]\n+   },\n+   \"outputs\": [],\n+   \"source\": [\n+    \"omega: float = 20 # Signal frequency\\n\",\n+    \"end = 100 # type:int End time\"\n+   ]\n+  },\n+  {\n+   \"cell_type\": \"code\",\n+   \"execution_count\": 2,\n+   \"metadata\": {},\n+   \"outputs\": [\n+    {\n+     \"name\": \"stdout\",\n+     \"output_type\": \"stream\",\n+     \"text\": [\n+      \"0 0.0\\n\",\n+      \"1 0.04997916927067833\\n\",\n+      \"2 0.09983341664682815\\n\",\n+      \"3 0.14943813247359922\\n\",\n+      \"4 0.19866933079506122\\n\",\n+      \"5 0.24740395925452294\\n\",\n+      \"6 0.29552020666133955\\n\",\n+      \"7 0.34289780745545134\\n\",\n+      \"8 0.3894183423086505\\n\",\n+      \"9 0.43496553411123023\\n\",\n+      \"10 0.479425538604203\\n\",\n+      \"11 0.5226872289306592\\n\",\n+      \"12 0.5646424733950354\\n\",\n+      \"13 0.6051864057360395\\n\",\n+      \"14 0.644217687237691\\n\",\n+      \"15 0.6816387600233341\\n\",\n+      \"16 0.7173560908995228\\n\",\n+      \"17 0.7512804051402927\\n\",\n+      \"18 0.7833269096274834\\n\",\n+      \"19 0.8134155047893737\\n\",\n+      \"20 0.8414709848078965\\n\",\n+      \"21 0.867423225594017\\n\",\n+      \"22 0.8912073600614354\\n\",\n+      \"23 0.912763940260521\\n\",\n+      \"24 0.9320390859672263\\n\",\n+      \"25 0.9489846193555862\\n\",\n+      \"26 0.963558185417193\\n\",\n+      \"27 0.9757233578266591\\n\",\n+      \"28 0.9854497299884601\\n\",\n+      \"29 0.9927129910375885\\n\",\n+      \"30 0.9974949866040544\\n\",\n+      \"31 0.999783764189357\\n\",\n+      \"32 0.9995736030415051\\n\",\n+      \"33 0.9968650284539189\\n\",\n+      \"34 0.9916648104524686\\n\",\n+      \"35 0.9839859468739369\\n\",\n+      \"36 0.9738476308781951\\n\",\n+      \"37 0.9612752029752999\\n\",\n+      \"38 0.9463000876874145\\n\",\n+      \"39 0.9289597150038693\\n\",\n+      \"40 0.9092974268256817\\n\",\n+      \"41 0.8873623686333755\\n\",\n+      \"42 0.8632093666488737\\n\",\n+      \"43 0.8368987907984977\\n\",\n+      \"44 0.8084964038195901\\n\",\n+      \"45 0.7780731968879212\\n\",\n+      \"46 0.7457052121767203\\n\",\n+      \"47 0.7114733527908443\\n\",\n+      \"48 0.675463180551151\\n\",\n+      \"49 0.6377647021345036\\n\",\n+      \"50 0.5984721441039565\\n\",\n+      \"51 0.557683717391417\\n\",\n+      \"52 0.5155013718214642\\n\",\n+      \"53 0.47203054128988264\\n\",\n+      \"54 0.4273798802338298\\n\",\n+      \"55 0.38166099205233167\\n\",\n+      \"56 0.3349881501559051\\n\",\n+      \"57 0.2874780123425444\\n\",\n+      \"58 0.23924932921398243\\n\",\n+      \"59 0.19042264736102704\\n\",\n+      \"60 0.1411200080598672\\n\",\n+      \"61 0.0914646422324372\\n\",\n+      \"62 0.04158066243329049\\n\",\n+      \"63 -0.008407247367148618\\n\",\n+      \"64 -0.058374143427580086\\n\",\n+      \"65 -0.10819513453010837\\n\",\n+      \"66 -0.1577456941432482\\n\",\n+      \"67 -0.20690197167339977\\n\",\n+      \"68 -0.2555411020268312\\n\",\n+      \"69 -0.30354151270842933\\n\",\n+      \"70 -0.35078322768961984\\n\",\n+      \"71 -0.3971481672859598\\n\",\n+      \"72 -0.44252044329485246\\n\",\n+      \"73 -0.48678664865569937\\n\",\n+      \"74 -0.5298361409084934\\n\",\n+      \"75 -0.5715613187423437\\n\",\n+      \"76 -0.6118578909427189\\n\",\n+      \"77 -0.6506251370651673\\n\",\n+      \"78 -0.6877661591839738\\n\",\n+      \"79 -0.7231881240865121\\n\",\n+      \"80 -0.7568024953079282\\n\",\n+      \"81 -0.788525254426195\\n\",\n+      \"82 -0.8182771110644103\\n\",\n+      \"83 -0.8459837010754465\\n\",\n+      \"84 -0.8715757724135882\\n\",\n+      \"85 -0.8949893582285835\\n\",\n+      \"86 -0.9161659367494549\\n\",\n+      \"87 -0.9350525775584491\\n\",\n+      \"88 -0.951602073889516\\n\",\n+      \"89 -0.9657730606206388\\n\",\n+      \"90 -0.977530117665097\\n\",\n+      \"91 -0.9868438585032365\\n\",\n+      \"92 -0.9936910036334644\\n\",\n+      \"93 -0.9980544387588794\\n\",\n+      \"94 -0.9999232575641008\\n\",\n+      \"95 -0.999292788975378\\n\",\n+      \"96 -0.9961646088358407\\n\",\n+      \"97 -0.9905465359667133\\n\",\n+      \"98 -0.9824526126243325\\n\",\n+      \"99 -0.9719030694018208\\n\"\n+     ]\n+    }\n+   ],\n+   \"source\": [\n+    \"import math\\n\",\n+    \"\\n\",\n+    \"for i in range(end):\\n\",\n+    \"    print(i, math.sin(i / 20))\"\n+   ]\n+  },\n+  {\n+   \"cell_type\": \"code\",\n+   \"execution_count\": null,\n+   \"metadata\": {},\n+   \"outputs\": [],\n+   \"source\": []\n+  }\n+ ],\n+ \"metadata\": {\n+  \"kernelspec\": {\n+   \"display_name\": \"Python 3\",\n+   \"language\": \"python\",\n+   \"name\": \"python3\"\n+  },\n+  \"language_info\": {\n+   \"codemirror_mode\": {\n+    \"name\": \"ipython\",\n+    \"version\": 3\n+   },\n+   \"file_extension\": \".py\",\n+   \"mimetype\": \"text/x-python\",\n+   \"name\": \"python\",\n+   \"nbconvert_exporter\": \"python\",\n+   \"pygments_lexer\": \"ipython3\",\n+   \"version\": \"3.7.6\"\n+  }\n+ },\n+ \"nbformat\": 4,\n+ \"nbformat_minor\": 4\n+}\n"
+    },
+    {
+      "old_path": "dummy/to_be_deleted.ipynb",
+      "new_path": "dummy/to_be_deleted.ipynb",
+      "a_mode": "100644",
+      "b_mode": "0",
+      "new_file": false,
+      "renamed_file": false,
+      "deleted_file": true,
+      "diff": "@@ -1,33 +0,0 @@\n-{\n- \"cells\": [\n-  {\n-   \"cell_type\": \"code\",\n-   \"execution_count\": null,\n-   \"id\": \"august-trace\",\n-   \"metadata\": {},\n-   \"outputs\": [],\n-   \"source\": []\n-  }\n- ],\n- \"metadata\": {\n-  \"kernelspec\": {\n-   \"display_name\": \"Python 3\",\n-   \"language\": \"python\",\n-   \"name\": \"python3\"\n-  },\n-  \"language_info\": {\n-   \"codemirror_mode\": {\n-    \"name\": \"ipython\",\n-    \"version\": 3\n-   },\n-   \"file_extension\": \".py\",\n-   \"mimetype\": \"text/x-python\",\n-   \"name\": \"python\",\n-   \"nbconvert_exporter\": \"python\",\n-   \"pygments_lexer\": \"ipython3\",\n-   \"version\": \"3.9.1\"\n-  }\n- },\n- \"nbformat\": 4,\n- \"nbformat_minor\": 5\n-}\n\\ No newline at end of file\n"
+    },
+    {
+      "old_path": "new_file.py",
+      "new_path": "new_file.py",
+      "a_mode": "0",
+      "b_mode": "100644",
+      "new_file": true,
+      "renamed_file": false,
+      "deleted_file": false,
+      "diff": "@@ -0,0 +1 @@\n+\"\"\"Is this a new file\"\"\"\n"
+    },
+    {
+      "old_path": "test.ipynb",
+      "new_path": "test.ipynb",
+      "a_mode": "100644",
+      "b_mode": "100644",
+      "new_file": false,
+      "renamed_file": false,
+      "deleted_file": false,
+      "diff": "@@ -3,21 +3,22 @@\n   {\n    \"cell_type\": \"code\",\n    \"execution_count\": null,\n-   \"id\": \"august-trace\",\n+   \"id\": \"conscious-extreme\",\n    \"metadata\": {},\n    \"outputs\": [],\n    \"source\": [\n-    \"print(\\\"hello\\\")\"\n+    \"def foo(a, b):\\n\",\n+    \"    return a + b\"\n    ]\n   },\n   {\n    \"cell_type\": \"code\",\n    \"execution_count\": null,\n-   \"id\": \"conscious-extreme\",\n+   \"id\": \"august-trace\",\n    \"metadata\": {},\n    \"outputs\": [],\n    \"source\": [\n-    \"a = 1\"\n+    \"print(\\\"hello\\\")\"\n    ]\n   },\n   {\n@@ -27,7 +28,7 @@\n    \"metadata\": {},\n    \"outputs\": [],\n    \"source\": [\n-    \"print(\\\"hello\\\")\"\n+    \"print(\\\"hello the world\\\")\"\n    ]\n   },\n   {\n@@ -77,7 +78,7 @@\n    \"name\": \"python\",\n    \"nbconvert_exporter\": \"python\",\n    \"pygments_lexer\": \"ipython3\",\n-   \"version\": \"3.9.1\"\n+   \"version\": \"3.8.1\"\n   }\n  },\n  \"nbformat\": 4,\n"
+    },
+    {
+      "old_path": "to_rename.py",
+      "new_path": "renamed.py",
+      "a_mode": "100644",
+      "b_mode": "100644",
+      "new_file": false,
+      "renamed_file": true,
+      "deleted_file": false,
+      "diff": "@@ -1 +0,0 @@\n-\"\"\"This is a dummy module\"\"\"\n"
+    }
+  ],
+  "overflow": false
+}

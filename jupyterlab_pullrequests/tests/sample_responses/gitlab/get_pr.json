@@ -1,0 +1,80 @@
+{
+  "id": 6841,
+  "iid": 3,
+  "project_id": 1518,
+  "title": "Various changes",
+  "description": "This is a **Markdown** description of:\n\n- a list\n- an extension\n- a `banana`\n- a [link](https://github.com)",
+  "state": "opened",
+  "created_at": "2021-03-02T08:26:06.268Z",
+  "updated_at": "2021-03-04T08:45:12.765Z",
+  "merged_by": null,
+  "merged_at": null,
+  "closed_by": null,
+  "closed_at": null,
+  "target_branch": "master",
+  "source_branch": "mr",
+  "user_notes_count": 8,
+  "upvotes": 0,
+  "downvotes": 0,
+  "author": {
+    "id": 149,
+    "name": "John Smith",
+    "username": "jsmith",
+    "state": "active",
+    "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/149/avatar.png",
+    "web_url": "https://gitlab.example.com/jsmith"
+  },
+  "assignees": [],
+  "assignee": null,
+  "reviewers": [],
+  "source_project_id": 1518,
+  "target_project_id": 1518,
+  "labels": [],
+  "work_in_progress": false,
+  "milestone": null,
+  "merge_when_pipeline_succeeds": false,
+  "merge_status": "can_be_merged",
+  "sha": "5cbd51cf3b89aaa1a2444cd4d4ce68fae299f592",
+  "merge_commit_sha": null,
+  "squash_commit_sha": null,
+  "discussion_locked": null,
+  "should_remove_source_branch": null,
+  "force_remove_source_branch": true,
+  "reference": "!3",
+  "references": {
+    "short": "!3",
+    "relative": "!3",
+    "full": "jsmith/dummmy-test!3"
+  },
+  "web_url": "https://gitlab.example.com/jsmith/dummmy-test/-/merge_requests/3",
+  "time_stats": {
+    "time_estimate": 0,
+    "total_time_spent": 0,
+    "human_time_estimate": null,
+    "human_total_time_spent": null
+  },
+  "squash": false,
+  "task_completion_status": {
+    "count": 0,
+    "completed_count": 0
+  },
+  "has_conflicts": false,
+  "blocking_discussions_resolved": true,
+  "subscribed": true,
+  "changes_count": "6",
+  "latest_build_started_at": null,
+  "latest_build_finished_at": null,
+  "first_deployed_to_production_at": null,
+  "pipeline": null,
+  "head_pipeline": null,
+  "diff_refs": {
+    "base_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+    "head_sha": "5cbd51cf3b89aaa1a2444cd4d4ce68fae299f592",
+    "start_sha": "e616d1a1a2a95416178b1494fa08a69694132c96"
+  },
+  "merge_error": null,
+  "first_contribution": false,
+  "user": {
+    "can_merge": true
+  }
+}

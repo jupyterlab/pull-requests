@@ -1,0 +1,44 @@
+{
+  "id": "7cd51262f86ad99f85f5a2ad30f76aeb39de7696",
+  "individual_note": false,
+  "notes": [
+    {
+      "id": 49157,
+      "type": "DiffNote",
+      "body": "New discussion on plain text",
+      "attachment": null,
+      "author": {
+        "id": 149,
+        "name": "John SMITH",
+        "username": "jsmith",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/149/avatar.png",
+        "web_url": "https://gitlab.example.com/jsmith"
+      },
+      "created_at": "2021-03-04T14:02:21.258Z",
+      "updated_at": "2021-03-04T14:02:21.258Z",
+      "system": false,
+      "noteable_id": 6841,
+      "noteable_type": "MergeRequest",
+      "commit_id": null,
+      "position": {
+        "base_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+        "start_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+        "head_sha": "5cbd51cf3b89aaa1a2444cd4d4ce68fae299f592",
+        "old_path": null,
+        "new_path": "README.md",
+        "position_type": "text",
+        "old_line": null,
+        "new_line": 17,
+        "line_range": null
+      },
+      "resolvable": true,
+      "resolved": false,
+      "resolved_by": null,
+      "resolved_at": null,
+      "confidential": false,
+      "noteable_iid": 3,
+      "commands_changes": {}
+    }
+  ]
+}

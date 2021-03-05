@@ -29,6 +29,11 @@ class PullRequestsManager(abc.ABC):
         self._access_token = access_token
 
     @property
+    def base_api_url(self) -> str:
+        """The provider base REST API URL"""
+        return self._base_api_url
+
+    @property
     def log(self) -> logging.Logger:
         return get_logger()
 
@@ -113,7 +118,7 @@ class PullRequestsManager(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    async def post_file_comment(
+    async def post_comment(
         self, pr_id: str, filename: str, body: str
     ) -> Dict[str, str]:
         """Create a new comment on a file or a the pull request.
@@ -127,7 +132,7 @@ class PullRequestsManager(abc.ABC):
         """
         raise NotImplementedError()
 
-    async def _call_service(
+    async def _call_provider(
         self,
         url: str,
         load_json: bool = True,
@@ -194,14 +199,14 @@ class PullRequestsManager(abc.ABC):
                 else "{}"
             )
             self.log.debug(error_body)
-            if load_json:
+            try:    
                 message = json.loads(error_body).get("message", str(e))
-            else:
+            except json.JSONDecodeError:
                 message = str(e)
             raise tornado.web.HTTPError(
                 status_code=e.code, reason=f"Invalid response in '{url}': {message}"
             ) from e
-        except json.JSONDecodeError as e:
+        except (json.JSONDecodeError, UnicodeDecodeError) as e:
             self.log.error("Failed to decode the response", exc_info=e)
             raise tornado.web.HTTPError(
                 status_code=http.HTTPStatus.BAD_REQUEST,

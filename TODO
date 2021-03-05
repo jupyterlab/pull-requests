@@ -14,7 +14,8 @@
 - [x] Take into account review from Nick
 - [x] Add support for comment at PR level for GitHub
 - [x] Document the code
-- [ ] Tests
+- [ ] Add OpenAPI description of the extension
+- [ ] Tests JS
 - [x] Update README
 - [ ] Publish beta
 - [ ] Use model to support diff view - this will allow refresh
@@ -23,3 +24,4 @@
 - [ ] TBC Switch to current folder remote
 - [ ] Use jlab codeeditor settings for merge view codemirror
 - [ ] Add Myers algorithm to nbdime
+- [ ] Support pagination

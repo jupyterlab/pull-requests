@@ -27,7 +27,7 @@ jobs:
       run: |
         jlpm
         jlpm run eslint:check
-        jlpm run test
+        # jlpm run test
 
         pip install .[test]
         python -m pytest

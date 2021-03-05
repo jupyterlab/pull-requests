@@ -131,9 +131,9 @@ class GitHubManager(PullRequestsManager):
                     "id": thread[-1]["id"],  # Set discussion id as the last comment id
                     "comments": [GitHubManager._response_to_comment(c) for c in thread],
                     "filename": filename,
-                    "line": thread[0]["line"],
-                    "originalLine": thread[0]["original_line"]
-                    if thread[0]["line"] is None
+                    "line": thread[0]["position"],
+                    "originalLine": thread[0]["original_position"]
+                    if thread[0]["position"] is None
                     else None,
                     "pullRequestId": pr_id,
                 }
@@ -197,39 +197,39 @@ class GitHubManager(PullRequestsManager):
 
         return data
 
-    async def post_file_comment(
-        self, pr_id: str, filename: Optional[str], body: Union[CommentReply, NewComment]
+    async def post_comment(
+        self, pr_id: str, body: Union[CommentReply, NewComment]
     ) -> Dict[str, str]:
         """Create a new comment on a file or a the pull request.
 
         Args:
             pr_id: pull request ID endpoint
-            filename: The file name; None to comment on the pull request
             body: Comment body
         Returns:
             The created comment
         """
         git_url = url_path_join(pr_id, "comments")
+        filename = body.filename
         if filename is None:
-            data = {"body": body.text}
-            response = await self._call_github(
-                git_url.replace("pulls", "issues"), method="POST", body=data
-            )
-            return GitHubManager._response_to_comment(response)
+            # Concept of reply does not exist at pull request level in GitHub
+            data = {"body": body.text}            
+            git_url = git_url.replace("pulls", "issues")
+        
         else:
             if isinstance(body, CommentReply):
                 data = {"body": body.text, "in_reply_to": body.inReplyTo}
             else:
                 data = {
                     "body": body.text,
-                    "commit_id": await self._get_pull_requests(pr_id)["head"]["sha"],
+                    "commit_id": (await self._get_pull_requests(pr_id))["head"]["sha"],
                     "path": filename,
                     "line": body.line or body.originalLine,
                     "side": "RIGHT" if body.line is not None else "LEFT",
                 }
 
-            response = await self._call_github(git_url, method="POST", body=data)
-            return GitHubManager._response_to_comment(response)
+        response = await self._call_github(git_url, method="POST", body=data)
+            
+        return GitHubManager._response_to_comment(response)
 
     async def _call_github(
         self,
@@ -258,7 +258,7 @@ class GitHubManager(PullRequestsManager):
             "Authorization": f"token {self._access_token}",
         }
 
-        return await super()._call_service(
+        return await super()._call_provider(
             url,
             load_json=load_json,
             method=method,
@@ -298,6 +298,7 @@ class GitHubManager(PullRequestsManager):
             "updatedAt": result["updated_at"],
             "userName": result["user"]["login"],
             "userPicture": result["user"]["avatar_url"],
+            "inReplyToId": result.get("in_reply_to_id"),
         }
         return data
 
