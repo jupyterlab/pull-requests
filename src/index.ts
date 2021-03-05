@@ -112,6 +112,7 @@ function activate(
         });
         mainAreaItem.id = id;
         mainAreaItem.title.label = file.name;
+        mainAreaItem.title.caption = file.name;
         mainAreaItem.title.icon = diffIcon;
         mainAreaItem.title.closable = true;
         shell.add(mainAreaItem, 'main');
