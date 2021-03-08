@@ -1,0 +1,380 @@
+[
+  {
+    "id": "98651e2c3a05155bde849c86389b9926c100ac90",
+    "individual_note": false,
+    "notes": [
+      {
+        "id": 48704,
+        "type": "DiscussionNote",
+        "body": "Let's start a MR discussion",
+        "attachment": null,
+        "author": {
+          "id": 149,
+          "name": "John Smith",
+          "username": "jsmith",
+          "state": "active",
+          "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/149/avatar.png",
+          "web_url": "https://gitlab.example.com/jsmith"
+        },
+        "created_at": "2021-03-02T08:26:19.643Z",
+        "updated_at": "2021-03-02T08:26:31.647Z",
+        "system": false,
+        "noteable_id": 6841,
+        "noteable_type": "MergeRequest",
+        "resolvable": true,
+        "resolved": false,
+        "resolved_by": null,
+        "resolved_at": null,
+        "confidential": false,
+        "noteable_iid": 3,
+        "commands_changes": {}
+      },
+      {
+        "id": 48705,
+        "type": "DiscussionNote",
+        "body": "I want to reply to myself",
+        "attachment": null,
+        "author": {
+          "id": 149,
+          "name": "John Smith",
+          "username": "jsmith",
+          "state": "active",
+          "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/149/avatar.png",
+          "web_url": "https://gitlab.example.com/jsmith"
+        },
+        "created_at": "2021-03-02T08:26:31.583Z",
+        "updated_at": "2021-03-02T08:26:31.583Z",
+        "system": false,
+        "noteable_id": 6841,
+        "noteable_type": "MergeRequest",
+        "resolvable": true,
+        "resolved": false,
+        "resolved_by": null,
+        "resolved_at": null,
+        "confidential": false,
+        "noteable_iid": 3,
+        "commands_changes": {}
+      }
+    ]
+  },
+  {
+    "id": "dd2fd2605c0a0351c10c04fe181af6c795e1290b",
+    "individual_note": false,
+    "notes": [
+      {
+        "id": 48706,
+        "type": "DiffNote",
+        "body": "Why did you remove it?",
+        "attachment": null,
+        "author": {
+          "id": 149,
+          "name": "John Smith",
+          "username": "jsmith",
+          "state": "active",
+          "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/149/avatar.png",
+          "web_url": "https://gitlab.example.com/jsmith"
+        },
+        "created_at": "2021-03-02T08:26:52.239Z",
+        "updated_at": "2021-03-02T08:26:52.239Z",
+        "system": false,
+        "noteable_id": 6841,
+        "noteable_type": "MergeRequest",
+        "commit_id": null,
+        "position": {
+          "base_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+          "start_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+          "head_sha": "5cbd51cf3b89aaa1a2444cd4d4ce68fae299f592",
+          "old_path": "README.md",
+          "new_path": "README.md",
+          "position_type": "text",
+          "old_line": 15,
+          "new_line": null,
+          "line_range": {
+            "start": {
+              "line_code": "8ec9a00bfd09b3190ac6b22251dbb1aa95a0579d_15_17",
+              "type": "old",
+              "old_line": 15,
+              "new_line": null
+            },
+            "end": {
+              "line_code": "8ec9a00bfd09b3190ac6b22251dbb1aa95a0579d_15_17",
+              "type": "old",
+              "old_line": 15,
+              "new_line": null
+            }
+          }
+        },
+        "resolvable": true,
+        "resolved": false,
+        "resolved_by": null,
+        "resolved_at": null,
+        "confidential": false,
+        "noteable_iid": 3,
+        "commands_changes": {}
+      },
+      {
+        "id": 48707,
+        "type": "DiffNote",
+        "body": "I don't know",
+        "attachment": null,
+        "author": {
+          "id": 149,
+          "name": "John Smith",
+          "username": "jsmith",
+          "state": "active",
+          "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/149/avatar.png",
+          "web_url": "https://gitlab.example.com/jsmith"
+        },
+        "created_at": "2021-03-02T08:26:59.315Z",
+        "updated_at": "2021-03-02T08:26:59.315Z",
+        "system": false,
+        "noteable_id": 6841,
+        "noteable_type": "MergeRequest",
+        "commit_id": null,
+        "position": {
+          "base_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+          "start_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+          "head_sha": "5cbd51cf3b89aaa1a2444cd4d4ce68fae299f592",
+          "old_path": "README.md",
+          "new_path": "README.md",
+          "position_type": "text",
+          "old_line": 15,
+          "new_line": null,
+          "line_range": {
+            "start": {
+              "line_code": "8ec9a00bfd09b3190ac6b22251dbb1aa95a0579d_15_17",
+              "type": "old",
+              "old_line": 15,
+              "new_line": null
+            },
+            "end": {
+              "line_code": "8ec9a00bfd09b3190ac6b22251dbb1aa95a0579d_15_17",
+              "type": "old",
+              "old_line": 15,
+              "new_line": null
+            }
+          }
+        },
+        "resolvable": true,
+        "resolved": false,
+        "resolved_by": null,
+        "resolved_at": null,
+        "confidential": false,
+        "noteable_iid": 3,
+        "commands_changes": {}
+      }
+    ]
+  },
+  {
+    "id": "6b616eb765bbfe67b87564bd17aa4c4a79f51878",
+    "individual_note": false,
+    "notes": [
+      {
+        "id": 48708,
+        "type": "DiffNote",
+        "body": "This was unexpected",
+        "attachment": null,
+        "author": {
+          "id": 149,
+          "name": "John Smith",
+          "username": "jsmith",
+          "state": "active",
+          "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/149/avatar.png",
+          "web_url": "https://gitlab.example.com/jsmith"
+        },
+        "created_at": "2021-03-02T08:27:25.748Z",
+        "updated_at": "2021-03-02T08:27:25.748Z",
+        "system": false,
+        "noteable_id": 6841,
+        "noteable_type": "MergeRequest",
+        "commit_id": null,
+        "position": {
+          "base_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+          "start_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+          "head_sha": "5cbd51cf3b89aaa1a2444cd4d4ce68fae299f592",
+          "old_path": "test.ipynb",
+          "new_path": "test.ipynb",
+          "position_type": "text",
+          "old_line": null,
+          "new_line": 17,
+          "line_range": {
+            "start": {
+              "line_code": "90479d8bc9f8dfa7116261e4ed6ed71a98437648_17_17",
+              "type": "new",
+              "old_line": null,
+              "new_line": 17
+            },
+            "end": {
+              "line_code": "90479d8bc9f8dfa7116261e4ed6ed71a98437648_17_17",
+              "type": "new",
+              "old_line": null,
+              "new_line": 17
+            }
+          }
+        },
+        "resolvable": true,
+        "resolved": false,
+        "resolved_by": null,
+        "resolved_at": null,
+        "confidential": false,
+        "noteable_iid": 3,
+        "commands_changes": {}
+      }
+    ]
+  },
+  {
+    "id": "207a944b264f4d644b98447e11e975c5b5ea6635",
+    "individual_note": true,
+    "notes": [
+      {
+        "id": 49010,
+        "type": null,
+        "body": "changed the description",
+        "attachment": null,
+        "author": {
+          "id": 149,
+          "name": "John Smith",
+          "username": "jsmith",
+          "state": "active",
+          "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/149/avatar.png",
+          "web_url": "https://gitlab.example.com/jsmith"
+        },
+        "created_at": "2021-03-03T09:27:38.284Z",
+        "updated_at": "2021-03-03T09:27:38.287Z",
+        "system": true,
+        "noteable_id": 6841,
+        "noteable_type": "MergeRequest",
+        "resolvable": false,
+        "confidential": false,
+        "noteable_iid": 3,
+        "commands_changes": {}
+      }
+    ]
+  },
+  {
+    "id": "b0f15a4a98a11130c404041de3000b3f8ff1f97f",
+    "individual_note": false,
+    "notes": [
+      {
+        "id": 49058,
+        "type": "DiffNote",
+        "body": "New discussion on deleted cell",
+        "attachment": null,
+        "author": {
+          "id": 149,
+          "name": "John Smith",
+          "username": "jsmith",
+          "state": "active",
+          "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/149/avatar.png",
+          "web_url": "https://gitlab.example.com/jsmith"
+        },
+        "created_at": "2021-03-03T14:47:29.806Z",
+        "updated_at": "2021-03-03T14:47:29.806Z",
+        "system": false,
+        "noteable_id": 6841,
+        "noteable_type": "MergeRequest",
+        "commit_id": null,
+        "position": {
+          "base_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+          "start_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+          "head_sha": "5cbd51cf3b89aaa1a2444cd4d4ce68fae299f592",
+          "old_path": null,
+          "new_path": "test.ipynb",
+          "position_type": "text",
+          "old_line": 22,
+          "new_line": 23,
+          "line_range": null
+        },
+        "resolvable": true,
+        "resolved": false,
+        "resolved_by": null,
+        "resolved_at": null,
+        "confidential": false,
+        "noteable_iid": 3,
+        "commands_changes": {}
+      },
+      {
+        "id": 49086,
+        "type": "DiffNote",
+        "body": "A reply",
+        "attachment": null,
+        "author": {
+          "id": 149,
+          "name": "John Smith",
+          "username": "jsmith",
+          "state": "active",
+          "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/149/avatar.png",
+          "web_url": "https://gitlab.example.com/jsmith"
+        },
+        "created_at": "2021-03-04T08:43:17.084Z",
+        "updated_at": "2021-03-04T08:43:17.084Z",
+        "system": false,
+        "noteable_id": 6841,
+        "noteable_type": "MergeRequest",
+        "commit_id": null,
+        "position": {
+          "base_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+          "start_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+          "head_sha": "5cbd51cf3b89aaa1a2444cd4d4ce68fae299f592",
+          "old_path": null,
+          "new_path": "test.ipynb",
+          "position_type": "text",
+          "old_line": 22,
+          "new_line": 23,
+          "line_range": null
+        },
+        "resolvable": true,
+        "resolved": false,
+        "resolved_by": null,
+        "resolved_at": null,
+        "confidential": false,
+        "noteable_iid": 3,
+        "commands_changes": {}
+      }
+    ]
+  },
+  {
+    "id": "cd3e157168d6e604478bf4e3cb7e553e8479e81c",
+    "individual_note": false,
+    "notes": [
+      {
+        "id": 49087,
+        "type": "DiffNote",
+        "body": "Comment on `a = 1`",
+        "attachment": null,
+        "author": {
+          "id": 149,
+          "name": "John Smith",
+          "username": "jsmith",
+          "state": "active",
+          "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/149/avatar.png",
+          "web_url": "https://gitlab.example.com/jsmith"
+        },
+        "created_at": "2021-03-04T08:45:12.711Z",
+        "updated_at": "2021-03-04T08:45:12.711Z",
+        "system": false,
+        "noteable_id": 6841,
+        "noteable_type": "MergeRequest",
+        "commit_id": null,
+        "position": {
+          "base_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+          "start_sha": "e616d1a1a2a95416178b1494fa08a69694132c96",
+          "head_sha": "5cbd51cf3b89aaa1a2444cd4d4ce68fae299f592",
+          "old_path": null,
+          "new_path": "test.ipynb",
+          "position_type": "text",
+          "old_line": 22,
+          "new_line": 23,
+          "line_range": null
+        },
+        "resolvable": true,
+        "resolved": false,
+        "resolved_by": null,
+        "resolved_at": null,
+        "confidential": false,
+        "noteable_iid": 3,
+        "commands_changes": {}
+      }
+    ]
+  }
+]

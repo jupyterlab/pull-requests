@@ -1,6 +1,6 @@
 # Contributing
 
-You can contribute in many ways to move this project forwrad.
+You can contribute in many ways to move this project forward.
 
 While anyone can contribute, only [Team Members](https://github.com/jupyterlab/pull-requests#team) can merge in pull requests
 or add labels to issues.
@@ -12,7 +12,7 @@ If you have suggestions on how these processes can be improved, please suggest t
 
 ## Bug Report
 
-If you are using this software and encounter some behavior that is unexpected, then you may have come accross a bug!
+If you are using this software and encounter some behavior that is unexpected, then you may have come across a bug!
 To get this fixed, first creation an issue that should have, ideally:
 
 * The behavior you expected

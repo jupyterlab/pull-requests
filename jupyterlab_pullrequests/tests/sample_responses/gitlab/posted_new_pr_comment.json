@@ -1,0 +1,32 @@
+{
+  "id": "eca92cf74cfb9f4ad369cdadaa7209131bc1c648",
+  "individual_note": false,
+  "notes": [
+    {
+      "id": 49294,
+      "type": "DiscussionNote",
+      "body": "New discussion at merge request level",
+      "attachment": null,
+      "author": {
+        "id": 149,
+        "name": "John SMITH",
+        "username": "jsmith",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/149/avatar.png",
+        "web_url": "https://gitlab.example.com/jsmith"
+      },
+      "created_at": "2021-03-05T09:37:26.241Z",
+      "updated_at": "2021-03-05T09:37:26.241Z",
+      "system": false,
+      "noteable_id": 6841,
+      "noteable_type": "MergeRequest",
+      "resolvable": true,
+      "resolved": false,
+      "resolved_by": null,
+      "resolved_at": null,
+      "confidential": false,
+      "noteable_iid": 3,
+      "commands_changes": {}
+    }
+  ]
+}

@@ -2,173 +2,17 @@
 | JupyterLab Pull Requests Style
 |----------------------------------------------------------------------------*/
 
-[data-jp-theme-light='true'] .jp-PullRequest-icon {
-  background-image: url(pullrequest-light.svg);
-}
+@import url('~@jupyterlab/git/style/index.css');
 
-[data-jp-theme-light='false'] .jp-PullRequest-icon {
-  background-image: url(pullrequest-dark.svg);
-}
-
-.jp-Refresh-icon {
-  background-image: var(--jp-icon-refresh);
-}
-
-.jp-CaretUp-icon {
-  background-image: var(--jp-icon-caretup);
-}
-
-.jp-CaretDown-icon {
-  background-image: var(--jp-icon-caretdown);
-}
-
-.jp-PullRequestBrowser {
-  background-color: var(--jp-layout-color1);
-  margin: 0;
-  height: 100vh;
-  font-size: var(--jp-ui-font-size1);
-}
-
-.jp-PullRequestBrowser ul {
-  margin: 0;
-  padding: 0;
-  list-style-type: none;
-}
-
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem header {
-  flex: 0 0 auto;
-  align-items: center;
-  height: 28px;
+.jp-PullRequestPanel {
+  height: 100%;
   display: flex;
-  border-bottom: var(--jp-border-width) solid var(--jp-border-color2);
-  padding-top: 8px;
-}
-
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem header h2 {
-  font-size: var(--jp-ui-font-size0);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--jp-ui-font-color1);
-  padding: 8px 8px 8px 12px;
-  margin: 0;
-}
-
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserItemListItem {
-  display: flex;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin: auto;
-}
-
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserItemListItem:hover {
-  background-color: var(--jp-layout-color2);
-}
-
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserItemListItem h2 {
-  font-size: var(--jp-ui-font-size1);
-  color: var(--jp-ui-font-color1);
-  font-weight: 400;
-  padding: 4px 4px 4px 12px;
-  margin: 0;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserItemListItem .jp-PullRequestBrowserItemListItemIconWrapper {
-  display: flex;
-  flex: 1;
-  justify-content: flex-end;
-  padding: 4px 12px 4px 4px;
-}
-
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserItemListItem span {
-  margin: 0;
-}
-
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserFileItem {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  padding: 4px 12px 4px 12px;
-}
-
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemList .jp-PullRequestBrowserFileItem:hover {
-  background-color: var(--jp-layout-color2);
-}
-
-.jp-PullRequestBrowserFileItem .jp-PullRequestBrowserFileItemIcon {
-  background-repeat: no-repeat;
-  margin-right: 4px;
-}
-
-.jp-PullRequestBrowserFileItem .jp-PullRequestBrowserFileItemName {
-  color: var(--jp-ui-font-color1);
-}
-
-.jp-PullRequestBrowserFileItem .jp-PullRequestBrowserFileItemChanged {
-  color: var(--jp-ui-font-color2);
-  font-size: 10px;
-  height: 10px;
-  margin-left: 5px;
-}
-
-.jp-PullRequestBrowserFileItem .jp-PullRequestBrowserFileItemDiff {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  margin-left: 4px;
-}
-
-.jp-Icon-13 {
-  margin: 0;
-  min-width: 13px;
-  min-height: 13px;
-  background-size: 13px;
-}
-
-.jp-PullRequestBrowserFileItem .jp-PullRequestBrowserFileItemDiffText {
-  color: var(--jp-ui-font-color2);
-  font-size: 11px;
-}
-
-[data-jp-theme-light='true'] .jp-PullRequestBrowserFileItemDiffInserted {
-  background-image: url(pullrequest-insertion-light.svg);
-}
-
-[data-jp-theme-light='true'] .jp-PullRequestBrowserFileItemDiffDeleted {
-  background-image: url(pullrequest-deletion-light.svg);
-}
-
-[data-jp-theme-light='false'] .jp-PullRequestBrowserFileItemDiffInserted {
-  background-image: url(pullrequest-insertion-dark.svg);
-}
-
-[data-jp-theme-light='false'] .jp-PullRequestBrowserFileItemDiffDeleted {
-  background-image: url(pullrequest-deletion-dark.svg);
-}
-
-.jp-PullRequestBrowser .jp-PullRequestBrowserItem .jp-PullRequestBrowserItemError {
-  font-size: var(--jp-ui-font-size0);
-  font-weight: 400;
-  letter-spacing: 1px;
-  padding: 4px 12px 4px 12px;
-  margin: 0;
-  line-height: normal;
-  background: var(--jp-rendermime-error-background);
-  color: #e75c58;
+  flex-direction: column;
+  background-color: var(--jp-layout-color0);
 }
 
 .jp-PullRequestToolbar {
-  /* border-bottom: var(--jp-border-width) solid var(--jp-border-color2); */
+  flex: 0 0 auto;
   border-bottom: none;
   box-shadow: none;
   padding: 0;
@@ -191,8 +35,113 @@
 
 .jp-PullRequestToolbar .jp-PullRequestToolbarItem {
   flex: 1;
+  display: flex;
   justify-content: flex-end;
   padding: 2px 5px;
+}
+
+.jp-PullRequestBrowser {
+  flex: 1 1 auto;
+  background-color: var(--jp-layout-color1);
+  margin: 0;
+  font-size: var(--jp-ui-font-size1);
+  overflow-y: auto;
+}
+
+.jp-PullRequestBrowser ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.jp-PullRequestBrowserGroup header {
+  flex: 0 0 auto;
+  align-items: center;
+  height: 28px;
+  display: flex;
+  border-bottom: var(--jp-border-width) solid var(--jp-border-color2);
+  padding-top: 8px;
+}
+
+.jp-PullRequestBrowserGroup header h2 {
+  font-size: var(--jp-ui-font-size0);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--jp-ui-font-color1);
+  padding: 8px 8px 8px 12px;
+  margin: 0;
+}
+
+.jp-PullRequestBrowserItemListItem {
+  display: flex;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: auto;
+}
+
+.jp-PullRequestBrowserItemListItem:hover {
+  background-color: var(--jp-layout-color2);
+}
+
+.jp-PullRequestBrowserItemListItem h2 {
+  font-size: var(--jp-ui-font-size1);
+  color: var(--jp-ui-font-color1);
+  font-weight: 400;
+  padding: 4px 4px 4px 12px;
+  margin: 0;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jp-PullRequestBrowserItemListItemIconWrapper {
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+  padding: 4px 12px 4px 4px;
+}
+
+.jp-PullRequestBrowserItemListItemIconWrapper button:hover svg .jp-icon3[fill] {
+  fill: var(--jp-inverse-layout-color2);
+}
+
+.jp-PullRequestBrowserItemListItem span {
+  margin: 0;
+}
+
+.jp-PullRequestBrowserFileItem {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  padding: 4px 12px 4px 12px;
+  color: var(--jp-ui-font-color1);
+}
+
+.jp-PullRequestBrowserFileItem:hover {
+  background-color: var(--jp-layout-color2);
+}
+
+.jp-PullRequestBrowserFileItemChanged {
+  color: var(--jp-ui-font-color2);
+  font-size: 10px;
+  height: 10px;
+  margin-left: 5px;
+}
+
+.jp-PullRequestBrowserGroupError {
+  font-size: var(--jp-ui-font-size0);
+  font-weight: 400;
+  letter-spacing: 1px;
+  padding: 4px 12px 4px 12px;
+  margin: 0;
+  line-height: normal;
+  background: var(--jp-rendermime-error-background);
+  color: #e75c58;
 }
 
 .jp-PullRequestTab {
@@ -201,36 +150,42 @@
   overflow: auto;
 }
 
-.jp-PullRequestTab .jp-PullRequestDescriptionTab {
-  margin: 16px;
+.jp-PullRequestTab > .lm-Widget {
+  height: 100%;
+  margin: auto;
 }
 
-.jp-PullRequestTab .jp-PullRequestDescriptionTab * {
+.jp-PullRequestDescriptionTab {
+  /* Cancel default hidden on widget */
+  overflow: unset;
+  max-width: 930px;
+  padding: 0px 10px;
+}
+
+.jp-PullRequestDescriptionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.jp-PullRequestDescriptionHeader * {
   margin-top: 8px !important;
   margin-bottom: 8px !important;
 }
 
-.jp-PullRequestTab .jp-PullRequestDescriptionTab h1 {
+.jp-PullRequestDescriptionHeader h1 {
   font-size: var(--jp-ui-font-size3);
   color: var(--jp-ui-font-color0);
   font-weight: 600;
 }
 
-.jp-PullRequestTab .jp-PullRequestDescriptionTab h2 {
+.jp-PullRequestDescriptionHeader h2 {
   font-size: var(--jp-ui-font-size);
   color: var(--jp-ui-font-color2);
   font-weight: 400;
 }
 
-.jp-PullRequestTab .jp-PullRequestTabLoadingContainer {
-  height: 100%;
-  display: flex;
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-}
-
-.jp-PullRequestTab .jp-PullRequestTabError {
+.jp-PullRequestTabError {
   font-size: var(--jp-ui-font-size1);
   font-weight: 400;
   letter-spacing: 1px;
@@ -242,134 +197,249 @@
   color: #e75c58;
 }
 
-.jp-PullRequestTab .jp-PullRequestComment {
+.jp-PullRequestComment {
   background-color: var(--jp-layout-color1);
   padding: 4px;
   border-top: var(--jp-border-width) solid var(--jp-border-color0);
   box-shadow: 0 var(--jp-border-width) 0 var(--jp-border-color0); /* prevents double border */
 }
 
-.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestCommentHeader {
-  display: flex;
-  flex: 1;
-}
-
-.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestCommentHeader p {
-  font-size: var(--jp-ui-font-size1);
-  color: var(--jp-ui-font-color1);
-  font-weight: 400;
-  margin: 0;
-  padding-left: 4px;
-  line-height: 20px;
-}
-
-.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestCommentHeader span {
-  margin-left: auto !important;
-  margin-right: 0 !important;
-}
-
-.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestInputContainer {
+.jp-PullRequestComment .jp-PullRequestInputContainer {
   padding: 8px 16px;
   font-size: var(--jp-ui-font-size1);
   font-weight: 400;
 }
 
-.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestInputContainer .jp-PullRequestInputButtonContainer {
+.jp-PullRequestInputButtonContainer {
   display: flex;
   flex: 1;
   justify-content: flex-end;
 }
 
-.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestInputContainer .jp-PullRequestInputButtonContainer button {
+.jp-PullRequestInputButtonContainer button {
   margin-top: 4px;
   margin-left: 4px;
 }
 
-.jp-PullRequestInputContainer button.jp-Button-flat.jp-mod-styled.jp-mod-accept:disabled {
+.jp-PullRequestInputContainer
+  button.jp-Button-flat.jp-mod-styled.jp-mod-accept:disabled {
   opacity: 0.4;
 }
 
-.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestInputForm {
-  color: var(--jp-ui-font-color0);
+.jp-PullRequestGrayedText {
+  color: var(--jp-ui-font-color2);
+}
+
+.jp-PullRequestThread {
+  display: flex;
+  margin: 10px 0px;
+  flex-direction: column;
+  border: var(--jp-border-width) solid var(--jp-border-color0);
+  border-radius: 5px;
+  box-shadow: var(--jp-elevation-z2);
+
+  background-color: var(--jp-layout-color0);
+  font-family: var(--jp-ui-font-family);
+  font-size: var(--jp-ui-font-size1);
+  color: var(--jp-ui-font-color1);
+}
+
+.jp-PullRequestExpandButton {
+  position: absolute;
+  left: 2px;
+  top: 6px;
+  width: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  line-height: 0px;
+  outline: none;
+  padding: 0px;
+  z-index: 1;
+}
+
+.jp-PullRequestExpandButton svg {
+  width: 20px;
+}
+
+.jp-PullRequestExpandButton:hover .jp-icon3[fill] {
+  fill: var(--jp-inverse-layout-color2);
+}
+
+.jp-PullRequestCommentItem {
+  padding: 8px;
+  padding-left: 22px;
+  border-bottom: 1px solid var(--jp-border-color2);
+}
+
+.jp-PullRequestCommentItem:last-of-type {
+  background-color: var(--jp-layout-color2);
+  border-bottom: none;
+}
+
+.jp-PullRequestCommentItemContent {
+  margin-left: 33px;
+  display: block;
+}
+
+.jp-PullRequestReplyButton {
   font-size: var(--jp-ui-font-size1);
   background-color: var(--jp-layout-color1);
   border: var(--jp-border-width) solid var(--jp-border-color0);
   background-position: right 8px center;
   background-repeat: no-repeat;
   border-radius: 3px;
-  box-shadow: inset 0 1px 2px var(--jp-layout-inverse-color1);
   line-height: 20px;
-  min-height: 34px;
   outline: none;
   padding: 6px 8px;
-  vertical-align: middle;
   width: 100%;
-}
-
-.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestInputFormButton {
-  cursor: text;
-  display: inline-block;
-  min-height: 28px;
-  padding: 3px 8px;
-  width: 100% !important;
+  box-sizing: border-box;
   text-align: left;
-  color: var(--jp-inverse-layout-color3);
+  cursor: text;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-.jp-PullRequestTab .jp-PullRequestComment .jp-PullRequestInputFormTextArea {
-  display: block;
-  max-height: 500px;
-  min-height: 100px;
-  padding: 8px;
-  width: 100%;
-  resize: none;
-  box-sizing:border-box;
-}
-
-.jp-PullRequestCommentItem {
-  display: flex;
-  margin: 0;
-  padding: 8px 16px;
-}
-
-.jp-PullRequestCommentItem .jp-PullRequestCommentItemContent {
-  display: block;
-  padding-left: 16px;
-}
-
-.jp-PullRequestCommentItem .jp-PullRequestCommentItemContent h2 {
-  font-size: var(--jp-ui-font-size1);
-  color: var(--jp-ui-font-color0);
-  font-weight: 600;
-  margin: 0;
-}
-
-.jp-PullRequestCommentItem .jp-PullRequestCommentItemContent p {
-  font-size: var(--jp-ui-font-size1);
+/* Thread title */
+p.jp-PullRequestCommentItemContentTitle {
   color: var(--jp-ui-font-color1);
-  font-weight: 400;
-  padding-top: 4px;
-  margin: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-.jp-PullRequestCommentItem .jp-PullRequestCommentItemContent .jp-PullRequestCommentItemContentTitle {
-  display: flex;
+.jp-PullRequestCommentItemContentTitle strong {
+  font-weight: 600;
+  margin-right: 8px;
 }
 
-.jp-PullRequestCommentItem .jp-PullRequestCommentItemContent .jp-PullRequestCommentItemContentTitle p {
-  color: var(--jp-ui-font-color2);
-  margin-left: 4px;
-  padding: 0;
+/* Thread Avatar */
+.jp-PullRequestCommentItemImg {
+  position: absolute;
 }
 
-.jp-PullRequestCommentItem .jp-PullRequestCommentItemImg img {
+.jp-PullRequestCommentItemImg img {
   height: 28px;
   width: 28px;
-  border-radius: 3px;
+  border-radius: 14px;
 }
 
-.jp-PullRequestCommentDecoration {
-  background-image: url(pullrequest-plus.svg), linear-gradient(var(--jp-brand-color1), var(--jp-brand-color1));
+/* Comment editor */
+.jp-PullRequestCommentItemContent > .CodeMirror,
+.CodeMirror-merge .jp-PullRequestCommentItemContent > .CodeMirror,
+.nbdime-root .jp-PullRequestCommentItemContent > .CodeMirror.cm-s-jupyter {
+  height: 140px;
+  border: var(--jp-border-width) solid var(--jp-cell-editor-border-color);
+  border-radius: 0px;
+  background-color: var(--jp-layout-color0);
+}
+
+.jp-PullRequestCommentItemContent > .CodeMirror-focused,
+.CodeMirror-merge .jp-PullRequestCommentItemContent > .CodeMirror-focused,
+.nbdime-root
+  .jp-PullRequestCommentItemContent
+  > .CodeMirror-focused.cm-s-jupyter {
+  border: var(--jp-border-width) solid var(--jp-cell-editor-active-border-color);
+  box-shadow: var(--jp-input-box-shadow);
+}
+
+.jp-PullRequestCommentItemContent > .CodeMirror-empty {
+  color: var(--jp-ui-font-color2);
+}
+
+/* Notebook diff styles */
+.nbdime-Widget .jp-git-diff-banner {
+  width: calc(100% - 52px);
+  margin: 0px 8px;
+}
+
+.jp-PullRequestCellDiff {
+  overflow: visible;
+  margin: 5px 0px;
+  padding-right: 4px;
+}
+
+.jp-PullRequestCellDiff.jp-git-unchanged {
+  cursor: pointer;
+  color: var(--jp-ui-font-color1);
+  background: var(--jp-layout-color2);
+  border: 1px solid var(--jp-border-color1);
+  font-size: 90%;
+  width: calc(100% - 32px);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.jp-PullRequestCellDiff.jp-git-unchanged[data-pullrequest-hasthread]::before {
+  content: 'Hidden cell with ' attr(data-pullrequest-hasthread) ' discussions.';
+}
+
+.jp-PullRequestCellDiff.jp-git-unchanged::before {
+  content: '(...)';
+}
+
+.jp-PullRequestCellDiff.jp-git-unchanged > * {
+  display: none;
+}
+
+.jp-PullRequestCellDiffContent {
+  display: flex;
+  overflow: visible;
+}
+
+.jp-PullRequestCellDiffContent > .lm-Widget:first-child {
+  flex: 1 1 auto;
+}
+
+.jp-PullRequestCellDiffCommentContainer {
+  width: 16px;
+  margin-right: 8px;
+  margin-left: 8px;
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
+.jp-PullRequestCellDiffComment {
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--jp-brand-color1);
+  border-radius: var(--jp-border-radius);
+  border-left: 0;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+}
+
+.jp-PullRequestCellDiffComment:hover {
+  border-width: 3px;
+}
+
+.jp-PullRequestCellDiffComment:hover .jp-PullRequestCommentDecoration {
+  transform: scale(1.1);
+}
+
+.jp-PullRequestCellDiffComment .jp-PullRequestCommentDecoration {
+  flex: 0 0 auto;
+  margin-left: 8px;
+}
+
+/* Plain text diff */
+.jp-git-PlainText-diff.jp-PullRequestTextDiff {
+  height: auto;
+}
+
+.CodeMirror-gutter.jp-PullRequestCommentDecoration,
+.CodeMirror-gutter-elt > .jp-PullRequestCommentDecoration {
+  background: transparent;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.jp-PullRequestCommentDecoration,
+.CodeMirror-gutter-elt > .jp-PullRequestCommentDecoration:hover {
+  background-image: url(icons/pullrequest-plus.svg),
+    linear-gradient(var(--jp-brand-color1), var(--jp-brand-color1));
   border-radius: var(--jp-border-radius);
   background-size: contain;
   background-repeat: no-repeat;
@@ -378,84 +448,34 @@
   height: 18px !important;
   margin-left: 2px;
   z-index: 1;
-  transition: all .2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
+.jp-PullRequestTextDiff .cm-s-jupyter .CodeMirror-gutters {
+  background-color: var(--jp-layout-color2);
+}
+
+/* Notebook and Plain text diff common */
 .jp-PullRequestCommentDecoration:hover {
   transform: scale(1.2);
 }
 
-.jp-PullRequestTab .monaco-editor .margin-view-overlays .line-numbers {
-  text-align: right !important;
-}
-
-[data-jp-theme-light='true'] .jp-PullRequestTab .monaco-editor .current-line ~ .line-numbers {
-  color: var(--jp-ui-font-color0);
-}
-
-[data-jp-theme-light='false'] .jp-PullRequestTab .monaco-editor .current-line ~ .line-numbers {
-  color: var(--jp-ui-font-color2);
-}
-
-.jp-PullRequestTab .monaco-diff-editor .editor.modified .margin {
-  z-index: 1;
-}
-
-.jp-PullRequestTab .monaco-diff-editor .editor.modified .overlayWidgets {
-  z-index: 2;
-}
-
-.jp-Notebook-diff .CodeMirror-gutter.CodeMirror-linenumbers[style] {
-  width: 29px !important;
-}
-
-.jp-Notebook-diff .CodeMirror-sizer[style] {
-  margin-left: 47px !important;
-}
-
-.parent-diff-widget {
-  overflow: auto;
-}
-
-.jp-PullRequestCellDiff {
+.jp-git-diff-banner {
   display: flex;
-  padding-bottom: 10px;
+  margin-bottom: 5px;
 }
 
-.jp-PullRequestCellDiffCommentContainer {
-  position: relative;
-  width: 16px;
-  margin-right: 8px;
-  margin-left: 8px;
+.jp-git-diff-banner span {
+  margin: 0px 4px;
+  padding: 0px 4px;
+  width: 50%;
+  font-weight: bold;
 }
 
-.jp-PullRequestCellDiff .jp-PullRequestCellDiffCommentContainer .jp-PullRequestCellDiffComment {
-  width: 100%;
-  height: 100%;
-  border: 2px solid var(--jp-brand-color1);
-  border-radius: var(--jp-border-radius);
-  border-left: 0;
-  transition: all .2s ease-in-out;
+.jp-git-diff-banner span:first-of-type {
+  background-color: var(--jp-git-diff-deleted-color);
 }
 
-.jp-PullRequestCellDiff .jp-PullRequestCellDiffCommentContainer .jp-PullRequestCellDiffComment:hover {
-  transform: scale(1.1);
-}
-
-.jp-PullRequestCellDiff .jp-PullRequestCellDiffCommentContainer .jp-PullRequestCellDiffComment .jp-PullRequestCommentDecoration {
-  position: absolute;
-  margin-left: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.jp-PullRequestCellDiff .jp-PullRequestCellDiffContent {
-  flex: 1;
-}
-
-@media (min-width: 1000px) {
-  .jp-PullRequestTab .jp-PullRequestNBDiff .jp-PullRequestComment {
-    width: 49%;
-    margin-left: 50%;
-  }
+.jp-git-diff-banner span:last-of-type {
+  background-color: var(--jp-git-diff-added-color);
 }

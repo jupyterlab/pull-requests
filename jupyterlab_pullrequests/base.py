@@ -1,61 +1,65 @@
-import json
-import traceback
+from __future__ import annotations
 
-import tornado.gen as gen
-from jupyterlab_pullrequests.github_manager import PullRequestsGithubManager
-from notebook.base.handlers import APIHandler
-from tornado import web
-from tornado.httpclient import AsyncHTTPClient
-from traitlets import Bool, Unicode
+from typing import List, NamedTuple, Optional
+
+from traitlets import Enum, Unicode, default
 from traitlets.config import Configurable
 
 
-class GitHubConfig(Configurable):
+class CommentReply(NamedTuple):
+    """Comment reply
+    
+    Attributes:
+        text: Comment body
+        filename: Targeted filename; None if the comment is for the pull request
+        inReplyTo: ID of the comment of the discussion or the comment to which this one reply
+    """
+    text: str
+    filename: Optional[str]
+    inReplyTo: str
+
+
+class NewComment(NamedTuple):
+    """New comment
+    
+    Attributes:
+        text: Comment body
+        filename: Targeted filename; None if the comment is for the pull request
+        line: Commented line number (in the new version)
+        originalLine: Commented line number (in the original version)
+    """
+    text: str
+    filename: Optional[str]
+    line: Optional[int]
+    originalLine: Optional[int]
+
+
+class PRConfig(Configurable):
     """
     Allows configuration of Github Personal Access Tokens via jupyter_notebook_config.py
     """
 
-    github_access_token = Unicode(
-        "", config=True, help=("A personal access token for GitHub.")
+    access_token = Unicode(
+        "",
+        config=True,
+        help="A personal access token to authenticated on the versioning service.",
     )
 
-    platform = Unicode(
-        "github", config=True, help=("The source control platform. options=[github, codecommit]")
+    api_base_url = Unicode(
+        config=True,
+        help="Base URL of the versioning service REST API.",
     )
 
-class PullRequestsAPIHandler(APIHandler):
-    """
-    Base handler for PullRequest specific API handlers
-    """
-
-    def initialize(self):
-        self.manager = self.get_manager()
-
-    # Defaults to github
-    def get_manager(self):
-        c = GitHubConfig(config=self.config)
-        p = c.platform
-        if p.lower() == "github":
-            return PullRequestsGithubManager(c.github_access_token)
-        elif p.lower() == "codecommit":
-            raise NotImplementedError()
+    @default('api_base_url')
+    def set_default_api_base_url(self):
+        if self.provider == "gitlab":
+            return "https://gitlab.com/api/v4/"
         else:
-            return PullRequestsGithubManager(c.github_access_token)
+            return "https://api.github.com"
 
-    def write_error(self, status_code, **kwargs):
-        """
-        Override Tornado's RequestHandler.write_error for customized error handlings
-        This method will be called when an exception is raised from a handler
-        """
-        self.set_header("Content-Type", "application/json")
-        reply = {"error": "Unhandled error"}
-        exc_info = kwargs.get("exc_info")
-        if exc_info:
-            e = exc_info[1]
-            if isinstance(e, web.HTTPError):
-                reply["error"] = e.reason
-                if hasattr(e, "error_code"):
-                    reply["error_code"] = e.error_code
-            else:
-                reply["error"] = "".join(traceback.format_exception(*exc_info))
-        self.finish(json.dumps(reply))
+    provider = Enum(
+        ["github", "gitlab"],
+        default_value="github",
+        config=True,
+        help="The source control provider.",
+    )
