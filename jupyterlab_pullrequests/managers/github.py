@@ -131,9 +131,9 @@ class GitHubManager(PullRequestsManager):
                     "id": thread[-1]["id"],  # Set discussion id as the last comment id
                     "comments": [GitHubManager._response_to_comment(c) for c in thread],
                     "filename": filename,
-                    "line": thread[0]["position"],
-                    "originalLine": thread[0]["original_position"]
-                    if thread[0]["position"] is None
+                    "line": thread[0]["line"],
+                    "originalLine": thread[0]["original_line"]
+                    if thread[0]["line"] is None
                     else None,
                     "pullRequestId": pr_id,
                 }
@@ -212,9 +212,9 @@ class GitHubManager(PullRequestsManager):
         filename = body.filename
         if filename is None:
             # Concept of reply does not exist at pull request level in GitHub
-            data = {"body": body.text}            
+            data = {"body": body.text}
             git_url = git_url.replace("pulls", "issues")
-        
+
         else:
             if isinstance(body, CommentReply):
                 data = {"body": body.text, "in_reply_to": body.inReplyTo}
@@ -228,7 +228,7 @@ class GitHubManager(PullRequestsManager):
                 }
 
         response = await self._call_github(git_url, method="POST", body=data)
-            
+
         return GitHubManager._response_to_comment(response)
 
     async def _call_github(

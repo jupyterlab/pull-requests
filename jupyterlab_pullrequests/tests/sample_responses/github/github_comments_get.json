@@ -46,7 +46,9 @@
       "pull_request": {
         "href": "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1"
       }
-    }
+    },
+    "line": 4,
+    "original_line": 4
   },
   {
     "url": "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/comments/296364299",
@@ -95,7 +97,9 @@
       "pull_request": {
         "href": "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1"
       }
-    }
+    },
+    "line": 9,
+    "original_line": 9
   },
   {
     "url": "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/comments/296364357",
@@ -144,7 +148,9 @@
       "pull_request": {
         "href": "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1"
       }
-    }
+    },
+    "line": 2,
+    "original_line": 2
   },
   {
     "url": "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/comments/296375528",
@@ -194,6 +200,8 @@
         "href": "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1"
       }
     },
+    "line": 2,
+    "original_line": 2,
     "in_reply_to_id": 296364357
   },
   {
@@ -244,6 +252,8 @@
         "href": "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1"
       }
     },
+    "line": 4,
+    "original_line": 4,
     "in_reply_to_id": 296362189
   },
   {
@@ -294,6 +304,8 @@
         "href": "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1"
       }
     },
+    "line": 2,
+    "original_line": 2,
     "in_reply_to_id": 296364357
   },
   {
@@ -344,6 +356,8 @@
         "href": "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1"
       }
     },
+    "line": 4,
+    "original_line": 4,
     "in_reply_to_id": 296362189
   },
   {
@@ -394,6 +408,8 @@
         "href": "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1"
       }
     },
+    "line": 4,
+    "original_line": 4,
     "in_reply_to_id": 296362189
   },
   {
@@ -444,6 +460,8 @@
         "href": "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1"
       }
     },
+    "line": 2,
+    "original_line": 2,
     "in_reply_to_id": 296364357
   }
 ]
