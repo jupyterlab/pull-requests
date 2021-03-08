@@ -1,40 +1,48 @@
 """
-Setup Module to setup Python Handlers for the jupyterlab_pullrequests extension.
+jupyterlab_pullrequests setup
 """
-import os
+import json
+from pathlib import Path
 
-import setuptools
 from jupyter_packaging import (
-    combine_commands,
     create_cmdclass,
-    ensure_targets,
-    get_version,
     install_npm,
+    ensure_targets,
+    combine_commands,
+    skip_if_exists,
 )
+import setuptools
 
-HERE = os.path.abspath(os.path.dirname(__file__))
+HERE = Path(__file__).parent.resolve()
 
 # The name of the project
 name = "jupyterlab_pullrequests"
 
-# Get our version
-version = get_version(os.path.join(name, "_version.py"))
-
-lab_path = os.path.join(HERE, name, "labextension")
+lab_path = HERE / name / "labextension"
 
 # Representative files that should exist after a successful build
 jstargets = [
-    os.path.join(HERE, "lib", "index.js"),
+    str(lab_path / "package.json"),
 ]
 
-package_data_spec = {name: ["*"]}
+package_data_spec = {
+    name: ["*"],
+}
+
+labext_name = "@jupyterlab/pullrequests"
 
 data_files_spec = [
-    ("share/jupyter/lab/extensions", lab_path, "*.tgz"),
+    ("share/jupyter/labextensions/%s" % labext_name, str(lab_path), "**"),
+    ("share/jupyter/labextensions/%s" % labext_name, str(HERE), "install.json"),
     (
         "etc/jupyter/jupyter_notebook_config.d",
         "jupyter-config",
-        "jupyterlab_pullrequests.json",
+        "jupyterlab_pullrequests_nb.json",
+    ),
+    (
+        "etc/jupyter/jupyter_server_config.d",
+        "jupyter-config",
+        "jupyterlab_pullrequests_server.json",
     ),
 ]
 
@@ -42,35 +50,46 @@ cmdclass = create_cmdclass(
     "jsdeps", package_data_spec=package_data_spec, data_files_spec=data_files_spec
 )
 
-cmdclass["jsdeps"] = combine_commands(
-    install_npm(HERE, build_cmd="build:all", npm=["jlpm"]),
+js_command = combine_commands(
+    install_npm(HERE, build_cmd="build:prod", npm=["jlpm"]),
     ensure_targets(jstargets),
 )
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+is_repo = (HERE / ".git").exists()
+if is_repo:
+    cmdclass["jsdeps"] = js_command
+else:
+    cmdclass["jsdeps"] = skip_if_exists(jstargets, js_command)
+
+long_description = (HERE / "README.md").read_text()
+
+# Get the package info from package.json
+pkg_json = json.loads((HERE / "package.json").read_bytes())
 
 tests_require = ["mock>=4.0.0", "pytest", "pytest-asyncio"]
 
 setup_args = dict(
     name=name,
-    version=version,
-    url="https://github.com/jupyterlab/pull-requests",
-    author="Jupyter Development Team",
-    description="Pull Requests for JupyterLab",
+    version=pkg_json["version"],
+    url=pkg_json["homepage"],
+    author=pkg_json["author"]["name"],
+    description=pkg_json["description"],
+    license=pkg_json["license"],
     long_description=long_description,
     long_description_content_type="text/markdown",
     cmdclass=cmdclass,
     packages=setuptools.find_packages(),
-    install_requires=["jupyterlab~=2.0", "nbdime"],
-    python_requires=">=3.6",
+    install_requires=[
+        "jupyterlab~=3.0",
+        "nbdime",
+    ],
     tests_require=tests_require,
     extras_require={"test": tests_require, "gitlab": ["diff-match-patch"]},
     zip_safe=False,
     include_package_data=True,
-    license="BSD-3-Clause",
+    python_requires=">=3.6",
     platforms="Linux, Mac OS X, Windows",
-    keywords=["Jupyter", "JupyterLab"],
+    keywords=["Jupyter", "JupyterLab", "JupyterLab3"],
     classifiers=[
         "License :: OSI Approved :: BSD License",
         "Programming Language :: Python",

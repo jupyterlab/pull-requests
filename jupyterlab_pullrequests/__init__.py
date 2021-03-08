@@ -1,20 +1,32 @@
+import json
+from pathlib import Path
+
 from ._version import __version__
 from .base import PRConfig
 from .handlers import setup_handlers
 
+HERE = Path(__file__).parent.resolve()
 
-def _jupyter_server_extension_paths():
+with (HERE / "labextension" / "package.json").open() as fid:
+    data = json.load(fid)
+
+
+def _jupyter_labextension_paths():
+    return [{"src": "labextension", "dest": data["name"]}]
+
+
+def _jupyter_server_extension_points():
     return [{"module": "jupyterlab_pullrequests"}]
 
 
-def load_jupyter_server_extension(lab_app):
+def _load_jupyter_server_extension(server_app):
     """Registers the API handler to receive HTTP requests from the frontend extension.
 
     Parameters
     ----------
-    lab_app: jupyterlab.labapp.LabApp
+    server_app: jupyterlab.labapp.LabApp
         JupyterLab application instance
     """
-    config = PRConfig(config=lab_app.config)
-    setup_handlers(lab_app.web_app, config)
-    lab_app.log.info("Registered jupyterlab_pullrequests extension")
+    config = PRConfig(config=server_app.config)
+    setup_handlers(server_app.web_app, config)
+    server_app.log.info("Registered jupyterlab_pullrequests extension")

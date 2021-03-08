@@ -30,14 +30,12 @@ With pip:
 
 ```bash
 pip install jupyterlab-pullrequests
-jupyter lab build
 ```
 
 Or with conda:
 
 ```bash
 conda install -c conda-forge jupyterlab-pullrequests
-jupyter lab build
 ```
 
 
@@ -108,13 +106,11 @@ JupyterLab follows the official [Jupyter Code of Conduct](https://github.com/jup
 For a development install, do the following in the repository directory:
 
 ```bash
-# Install dependencies
+# Install package in development mode
 pip install -e .
-# Activate the server extension
-jupyter serverextension enable --sys-prefix jupyterlab_pullrequests
 # Link your development version of the extension with JupyterLab
-jupyter labextension install .
-# Rebuild Typescript source after making changes
+jupyter labextension develop . --overwrite
+# Rebuild extension Typescript source after making changes
 jlpm run build
 ```
 
@@ -122,5 +118,4 @@ To rebuild the package and the JupyterLab app:
 
 ```bash
 jlpm run build
-jupyter lab build
 ```

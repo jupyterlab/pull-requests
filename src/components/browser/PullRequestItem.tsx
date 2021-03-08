@@ -85,7 +85,7 @@ export function PullRequestItem(props: IPullRequestItemProps): JSX.Element {
               ...rawFile,
               fileType:
                 docRegistry.getFileTypesForPath(path)[0] ||
-                DocumentRegistry.defaultTextFileType
+                DocumentRegistry.getDefaultTextFileType()
             };
           }
         )
