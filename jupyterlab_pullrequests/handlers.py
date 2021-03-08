@@ -32,7 +32,7 @@ class PullRequestsAPIHandler(APIHandler):
 
     def initialize(self, manager: PullRequestsManager, logger: logging.Logger):
         self._jp_log = logger
-        self._manager = manager        
+        self._manager = manager
 
     def write_error(self, status_code, **kwargs):
         """
@@ -243,7 +243,11 @@ def setup_handlers(web_app: "NotebookWebApplication", config: PRConfig):
     web_app.add_handlers(
         host_pattern,
         [
-            (url_path_join(base_url, pat), handler, {"logger": logger, "manager": manager})
+            (
+                url_path_join(base_url, pat),
+                handler,
+                {"logger": logger, "manager": manager},
+            )
             for pat, handler in default_handlers
         ],
     )

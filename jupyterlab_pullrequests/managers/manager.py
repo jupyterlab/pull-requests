@@ -199,7 +199,7 @@ class PullRequestsManager(abc.ABC):
                 else "{}"
             )
             self.log.debug(error_body)
-            try:    
+            try:
                 message = json.loads(error_body).get("message", str(e))
             except json.JSONDecodeError:
                 message = str(e)
