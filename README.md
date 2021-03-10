@@ -1,8 +1,9 @@
 # jupyterlab-pullrequests
 
 [![Build Status](https://github.com/jupyterlab/pull-requests/actions/workflows/build.yml/badge.svg)](https://github.com/jupyterlab/pull-requests/actions/workflows/build.yml)
-[![Version](https://img.shields.io/npm/v/@jupyterlab/pullrequests.svg)](https://www.npmjs.com/package/@jupyterlab/pullrequests)
-[![Version](https://img.shields.io/pypi/v/jupyterlab-pullrequests.svg)](https://pypi.org/project/jupyterlab-pullrequests/)
+[![NPM Version](https://img.shields.io/npm/v/@jupyterlab/pullrequests.svg)](https://www.npmjs.com/package/@jupyterlab/pullrequests)
+[![Pypi Version](https://img.shields.io/pypi/v/jupyterlab-pullrequests.svg)](https://pypi.org/project/jupyterlab-pullrequests/)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/jupyterlab-pullrequests.svg)](https://anaconda.org/conda-forge/jupyterlab-pullrequests)
 
 A JupyterLab extension for reviewing pull requests.
 
@@ -25,15 +26,30 @@ For now, it supports GitHub and GitLab providers.
 
 ### 1. Install the extension with the following steps
 
+With pip:
+
 ```bash
-pip install --upgrade jupyterlab-pullrequests
+pip install jupyterlab-pullrequests
 jupyter lab build
 ```
+
+Or with conda:
+
+```bash
+conda install -c conda-forge jupyterlab-pullrequests
+jupyter lab build
+```
+
 
 For GitLab, in addition, you will need to
 
 ```bash
 pip install diff-match-patch
+```
+Or with conda:
+
+```bash
+conda install -c conda-forge diff-match-patch
 ```
 
 ### 2. Getting your access token
