@@ -122,7 +122,27 @@
       }
     },
     "extension": true,
-    "outputDir": "jupyterlab_pullrequests/labextension"
+    "outputDir": "jupyterlab_pullrequests/labextension",
+    "sharedPackages": {
+      "@jupyterlab/git": {
+        "singleton": true
+      },
+      "codemirror": {
+        "bundled": false,
+        "singleton": true
+      },
+      "nbdime": {
+        "singleton": true
+      },
+      "react": {
+        "bundled": false,
+        "singleton": true
+      },
+      "react-dom": {
+        "bundled": false,
+        "singleton": true
+      }
+    }
   },
   "styleModule": "style/index.js",
   "resolutions": {
