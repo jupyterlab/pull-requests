@@ -149,6 +149,10 @@ jobs:
     - name: Install Setup Dependencies
       run: python -m pip install 'jupyterlab==${{ matrix.lab-version }}.*'
 
+    - name: Install JS Dependencies
+      if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+      run: jlpm --prefer-offline --frozen-lockfile
+
     - name: Build JS
       run: jlpm build
 
@@ -306,4 +310,5 @@ jobs:
         cat labextensions.txt | grep -v "jupyterlab/pullrequests needs to be included in build"
 
     - name: Run JupyterLab Browser Check
+      if: ${{ matrix.os != 'windows' && matrix.python-version != '3.6' }}
       run: ${{ matrix.py-cmd }} -m jupyterlab.browser_check
