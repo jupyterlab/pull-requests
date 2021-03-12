@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import List, NamedTuple, Optional
 
 from traitlets import Enum, Unicode, default
