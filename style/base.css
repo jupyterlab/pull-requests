@@ -2,6 +2,10 @@
 | JupyterLab Pull Requests Style
 |----------------------------------------------------------------------------*/
 @import url('~@jupyterlab/git/style/index.css');
+@import url('~nbdime/lib/styles/common.css');
+@import url('~nbdime/lib/styles/diff.css');
+@import url('~nbdime/lib/styles/variables.css');
+@import url('~nbdime-jupyterlab/style/index.css');
 
 .jp-PullRequestPanel {
   height: 100%;
