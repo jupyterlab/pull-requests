@@ -129,6 +129,10 @@ export interface IThread {
    * Pull request unique identifier
    */
   pullRequestId: string;
+  /**
+   * Whether the comment accept reply or not
+   */
+  singleton?: boolean;
 }
 
 /**

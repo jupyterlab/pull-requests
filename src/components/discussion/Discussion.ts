@@ -63,7 +63,7 @@ export class Discussion extends Panel {
           : 'Leave a comment';
 
         const node = generateNode('div', {
-          class: 'jp-PullRequestCommentItem'
+          class: 'jp-PullRequestCommentItem',
         });
         const p = node
           .appendChild(
@@ -71,7 +71,7 @@ export class Discussion extends Panel {
           )
           .appendChild(
             generateNode('p', {
-              class: 'jp-PullRequestCommentItemContentTitle'
+              class: 'jp-PullRequestCommentItemContentTitle',
             })
           );
         p.innerHTML = msg;
@@ -94,9 +94,11 @@ export class Discussion extends Panel {
       latestWidget.parent = null;
       latestWidget.dispose();
 
-      this.addWidget(
-        this._inputShown ? this.createCommentInput() : this.createReplyButton()
-      );
+      if (this._inputShown) {
+        this.addWidget(this.createCommentInput());
+      } else if (this._thread.singleton !== true) {
+        this.addWidget(this.createReplyButton());
+      }
     }
   }
 
@@ -105,7 +107,7 @@ export class Discussion extends Panel {
    */
   protected initNode(): void {
     const expandButton = generateNode('button', {
-      class: 'jp-PullRequestExpandButton'
+      class: 'jp-PullRequestExpandButton',
     }) as HTMLButtonElement;
     expandButton.appendChild(
       caretUpIcon.element({ tag: 'span', title: 'Collapse Discussion' })
@@ -133,7 +135,7 @@ export class Discussion extends Panel {
    * Add the thread view in the widget
    */
   protected addThreadView(): void {
-    this._thread.comments.forEach(comment => {
+    this._thread.comments.forEach((comment) => {
       this.addWidget(
         new CommentWidget({ comment, renderMime: this._renderMime })
       );
@@ -141,7 +143,9 @@ export class Discussion extends Panel {
     if (this._inputShown) {
       this.addWidget(this.createCommentInput());
     } else {
-      this.addWidget(this.createReplyButton());
+      if (this._thread.singleton !== true) {
+        this.addWidget(this.createReplyButton());
+      }
     }
   }
 
@@ -156,7 +160,7 @@ export class Discussion extends Panel {
       body = {
         ...body,
         line: this._thread.line,
-        originalLine: this._thread.originalLine
+        originalLine: this._thread.originalLine,
       };
     } else {
       body = { ...body, discussionId: this._thread.id };
@@ -176,7 +180,7 @@ export class Discussion extends Panel {
         text: response.text,
         updatedAt: response.updateAt,
         userName: response.userName,
-        userPicture: response.userPicture
+        userPicture: response.userPicture,
       };
       // Update discussion reference
       if (response.inReplyTo) {
@@ -215,7 +219,7 @@ export class Discussion extends Panel {
   private createCommentInput(): InputComment {
     const widget = new InputComment({
       handleSubmit: this.handleAddComment.bind(this),
-      handleCancel: this.handleCancelComment.bind(this)
+      handleCancel: this.handleCancelComment.bind(this),
     });
     widget.addClass('jp-PullRequestCommentItem');
     return widget;
@@ -235,12 +239,12 @@ export class Discussion extends Panel {
           {
             click: () => {
               this.inputShown = true;
-            }
+            },
           }
         )
       );
     return new Widget({
-      node
+      node,
     });
   }
 

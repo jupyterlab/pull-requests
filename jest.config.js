@@ -16,7 +16,7 @@ const {
 module.exports = {
   coverageDirectory,
   moduleFileExtensions,
-  moduleNameMapper: {...moduleNameMapper, "monaco-editor": "<rootDir>/node_modules/react-monaco-editor"},
+  moduleNameMapper,
   preset,
   setupFilesAfterEnv,
   setupFiles,
@@ -24,7 +24,7 @@ module.exports = {
   transform,
   automock: false,
   testRegex: 'src/tests/.*.spec.ts[x]?$',
-  transformIgnorePatterns: ['/node_modules/(?!(@?jupyterlab.*)/)'],
+  transformIgnorePatterns: ['/node_modules/(?!(@?jupyterlab.*|react-spinners)/)'],
   setupFiles: ['<rootDir>/setupJest.js'],
   globals: {
     'ts-jest': {
