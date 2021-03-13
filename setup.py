@@ -3,7 +3,9 @@ jupyterlab_pullrequests setup
 
 See ``setup.cfg`` and ``package.json`` for the rest of the packaging metadata
 """
+import sys
 import json
+import pprint
 from pathlib import Path
 
 HERE = Path(__file__).parent.resolve()
@@ -43,6 +45,31 @@ DATA_FILES += [
     for p in LAB_PATH.rglob("*")
     if not p.is_dir()
 ]
+
+REMOTES = [
+    p[1][0] for p in DATA_FILES if "remoteEntry" in p[1][0] and p[1][0].endswith(".js")
+]
+REMOTE_MAP = [
+    p[1][0] for p in DATA_FILES if "remoteEntry" in p[1][0] and p[1][0].endswith(".map")
+]
+
+if len(REMOTES) > 1 or len(REMOTE_MAP) > 1:
+    print(
+        f"""
+    Expected exacly 1 remoteEntry*.js, found {len(REMOTES)}:
+
+    {pprint.pformat(REMOTES)}
+
+    Expected at most one remoteEntry*.js.map, found {len(REMOTE_MAP)}:
+
+    {pprint.pformat(REMOTE_MAP)}
+
+    Please run:
+
+        jlpm clean
+        jlpm build:prod"""
+    )
+    sys.exit(1)
 
 SETUP_ARGS = dict(
     name=NAME,
