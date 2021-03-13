@@ -1,8 +1,6 @@
 """
 Module with all of the individual handlers, which return the results to the frontend.
 """
-from __future__ import annotations
-
 import json
 import logging
 import traceback

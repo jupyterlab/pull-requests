@@ -102,25 +102,3 @@ This extension as [server settings](http://jupyter-notebook.readthedocs.io/en/st
 If you would like to contribute to the project, please read our [contributor documentation](https://github.com/jupyterlab/pull-requests/blob/master/CONTRIBUTING.md).
 
 JupyterLab follows the official [Jupyter Code of Conduct](https://github.com/jupyter/governance/blob/master/conduct/code_of_conduct.md).
-
-### Install
-
-For a development install, do the following in the repository directory:
-
-```bash
-# Install dependencies
-pip install -e .
-# Activate the server extension
-jupyter serverextension enable --sys-prefix jupyterlab_pullrequests
-# Link your development version of the extension with JupyterLab
-jupyter labextension install .
-# Rebuild Typescript source after making changes
-jlpm run build
-```
-
-To rebuild the package and the JupyterLab app:
-
-```bash
-jlpm run build
-jupyter lab build
-```
