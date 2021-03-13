@@ -2,7 +2,7 @@ import { CommentWidget } from '../components/discussion/Comment';
 import { InputComment } from '../components/discussion/InputComment';
 import {
   Discussion,
-  IDiscussionProps,
+  IDiscussionProps
 } from '../components/discussion/Discussion';
 import { IComment, IThread } from '../tokens';
 import * as sampleComment from './sample-responses/samplecomment.json';
@@ -19,13 +19,13 @@ describe('Discussion', () => {
     id: 22,
     line: 4,
     originalLine: 2,
-    pullRequestId: 'pullrequest-id',
+    pullRequestId: 'pullrequest-id'
   };
 
   const DEFAULT_PROPS: IDiscussionProps = {
     renderMime: {} as any,
     thread: DEFAULT_THREAD,
-    handleRemove: () => {},
+    handleRemove: () => void 0
   };
 
   beforeEach(() => {
@@ -65,7 +65,7 @@ describe('Discussion', () => {
     it('should construct a new discussion', () => {
       const discussion = new Discussion({
         ...DEFAULT_PROPS,
-        thread: { ...DEFAULT_THREAD, comments: [] },
+        thread: { ...DEFAULT_THREAD, comments: [] }
       });
       expect(discussion).toBeInstanceOf(Discussion);
 
@@ -87,7 +87,7 @@ describe('Discussion', () => {
     it('should construct a single comment', () => {
       const discussion = new Discussion({
         ...DEFAULT_PROPS,
-        thread: { ...DEFAULT_THREAD, singleton: true },
+        thread: { ...DEFAULT_THREAD, singleton: true }
       });
       expect(discussion).toBeInstanceOf(Discussion);
 
@@ -109,7 +109,7 @@ describe('Discussion', () => {
     it('should construct a new single comment', () => {
       const discussion = new Discussion({
         ...DEFAULT_PROPS,
-        thread: { ...DEFAULT_THREAD, comments: [], singleton: true },
+        thread: { ...DEFAULT_THREAD, comments: [], singleton: true }
       });
       expect(discussion).toBeInstanceOf(Discussion);
 
@@ -134,14 +134,14 @@ describe('Discussion', () => {
       [[(sampleComment as any).default], false],
       [[], false],
       [[(sampleComment as any).default], true],
-      [[], true],
+      [[], true]
     ] as Array<[Array<IComment>, boolean]>).forEach(([comments, singleton]) => {
       it(`should hide comments widget if not expanded with ${
         comments.length
       } comments and ${singleton ? '' : 'not '}singleton`, () => {
         const discussion = new Discussion({
           ...DEFAULT_PROPS,
-          thread: { ...DEFAULT_THREAD, comments, singleton },
+          thread: { ...DEFAULT_THREAD, comments, singleton }
         });
         jest.clearAllMocks();
         discussion.isExpanded = false;
@@ -163,13 +163,13 @@ describe('Discussion', () => {
   });
 
   describe('#inputShown', () => {
-    ([false, true] as Array<boolean>).forEach((singleton) => {
+    ([false, true] as Array<boolean>).forEach(singleton => {
       it(`should show input comment widget with ${
         singleton ? '' : 'not '
       }singleton`, () => {
         const discussion = new Discussion({
           ...DEFAULT_PROPS,
-          thread: { ...DEFAULT_THREAD, singleton },
+          thread: { ...DEFAULT_THREAD, singleton }
         });
         jest.clearAllMocks();
         discussion.inputShown = true;

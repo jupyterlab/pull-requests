@@ -4,7 +4,7 @@ import React from 'react';
 import { BeatLoader } from 'react-spinners';
 import {
   IPullRequestItemProps,
-  PullRequestItem,
+  PullRequestItem
 } from '../components/browser/PullRequestItem';
 import * as samplePRs from './sample-responses/samplepr.json';
 import * as sampleFiles from './sample-responses/samplefile.json';
@@ -14,7 +14,7 @@ describe('PullRequestItem', () => {
   const DEFAULT_PROPS: IPullRequestItemProps = {
     commands: {} as any,
     docRegistry: {} as any,
-    pullRequest: (samplePRs as any).default[0],
+    pullRequest: (samplePRs as any).default[0]
   };
 
   // Cache original functionality

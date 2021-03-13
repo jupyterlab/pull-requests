@@ -3,7 +3,7 @@ import 'jest';
 import * as React from 'react';
 import {
   BrowserGroup,
-  IBrowserGroupProps,
+  IBrowserGroupProps
 } from '../components/browser/BrowserGroup';
 import { PullRequestItem } from '../components/browser/PullRequestItem';
 import * as samplePRs from './sample-responses/samplepr.json';
@@ -13,7 +13,7 @@ describe('BrowserGroup', () => {
   const DEFAULT_PROPS: IBrowserGroupProps = {
     commands: {} as any,
     docRegistry: {} as any,
-    group: { name: 'group1', pullRequests: (samplePRs as any).default },
+    group: { name: 'group1', pullRequests: (samplePRs as any).default }
   };
 
   // Test render
@@ -27,9 +27,9 @@ describe('BrowserGroup', () => {
     it('should have a header with text props.header', () => {
       const component = shallow(<BrowserGroup {...DEFAULT_PROPS} />);
       expect(component.find('header h2')).toHaveLength(1);
-      expect(component.contains([<h2>{DEFAULT_PROPS.group.name}</h2>])).toEqual(
-        true
-      );
+      expect(
+        component.contains([<h2 key={1}>{DEFAULT_PROPS.group.name}</h2>])
+      ).toEqual(true);
     });
 
     it('should load group', () => {
@@ -54,7 +54,7 @@ describe('BrowserGroup', () => {
           group={{
             name: 'error',
             pullRequests: [],
-            error: 'There is an error',
+            error: 'There is an error'
           }}
         />
       );
@@ -70,7 +70,7 @@ describe('BrowserGroup', () => {
           group={{
             name: 'error',
             pullRequests: [],
-            error,
+            error
           }}
         />
       );
