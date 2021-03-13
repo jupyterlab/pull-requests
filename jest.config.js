@@ -14,7 +14,6 @@ const {
 } = jlabConfig;
 
 module.exports = {
-  coverageDirectory,
   moduleFileExtensions,
   moduleNameMapper,
   preset,
@@ -23,6 +22,10 @@ module.exports = {
   testPathIgnorePatterns,
   transform,
   automock: false,
+  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/*.d.ts'],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['lcov', 'text'],
+  reporters: ['default'],
   testRegex: 'src/tests/.*.spec.ts[x]?$',
   transformIgnorePatterns: ['/node_modules/(?!(@?jupyterlab.*|react-spinners)/)'],
   setupFiles: ['<rootDir>/setupJest.js'],
