@@ -159,10 +159,6 @@ jobs:
     - name: Install Python Lint/Test Dependencies
       run: python -m pip install -e '.[coverage]'
 
-    - name: Install JS Dependencies
-      if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
-      run: jlpm --prefer-offline --frozen-lockfile
-
     - name: Lint JS
       run: jlpm eslint:check
 
