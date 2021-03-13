@@ -1,60 +1,284 @@
-name: Build
+name: CI
 
 on:
   push:
-    branches: ["master"]
+    branches: [master, 2.x]
   pull_request:
-    branches: '*'
+    branches: [master, 2.x]
+
+env:
+  CACHE_EPOCH: 1
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}-latest
+
+    strategy:
+      matrix:
+        os: [ubuntu]
+        python-version: [3.9]
+        node-version: [14.x]
+        lab-version: [3]
+
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Install node
-      uses: actions/setup-node@v1
-      with:
-       node-version: '14.x'
+
     - name: Install Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.7'
-        architecture: 'x64'
-    
-    
-    - name: Setup pip cache
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache/pip
-        key: pip-3.7-${{ hashFiles('package.json') }}
-        restore-keys: |
-          pip-3.7-
-          pip-
+        python-version: ${{ matrix.python-version }}
 
-    - name: Get yarn cache directory path
-      id: yarn-cache-dir-path
-      run: echo "::set-output name=dir::$(yarn cache dir)"
-    - name: Setup yarn cache
-      uses: actions/cache@v2
-      id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+    - name: Install NodeJS
+      uses: actions/setup-node@v2
       with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: yarn-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          yarn-
-    
-    - name: Install dependencies
-      run: python -m pip install -U jupyterlab~=3.0 jupyter_packaging~=0.7.9
-    - name: Build the extension
+       node-version: ${{ matrix.node-version }}
+
+    - name: Cache JS
+      id: cache-node-modules
+      uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: |
+          ${{ env.CACHE_EPOCH }}-node-modules-${{ runner.os }}-${{ hashFiles('yarn.lock', '.yarnrc') }}
+
+    - name: Install Python Setup Dependencies
+      run: python -m pip install --upgrade pip wheel setuptools
+
+    - name: Get Python Cache
+      id: cache-pip
       run: |
-        jlpm
-        jlpm run eslint:check
-        # jlpm run test
+        echo "::set-output name=dir::$(pip cache dir)"
 
-        python -m pip install .[test]
-        python -m pytest
+    - name: Cache Python Dependencies
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.cache-pip.outputs.dir }}
+        key: |
+          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-build-${{ matrix.python-version }}-${{ hashFiles('setup.py', 'setup.cfg') }}
+        restore-keys: |
+          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-build-${{ matrix.python-version }}-
+          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-
 
-        jupyter server extension list 2>&1 | grep -ie "jupyterlab_pullrequests.*OK"
-        jupyter labextension list 2>&1 | grep -ie "@jupyterlab/pullrequests.*OK"
-        python -m jupyterlab.browser_check
+    - name: Install Python Packaging Dependencies
+      run: python -m pip install 'jupyterlab==${{ matrix.lab-version }}.*' twine
+
+    - name: Install JS Dependencies
+      if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+      run: jlpm --prefer-offline --frozen-lockfile
+
+    - name: Build JS Library
+      run: jlpm build:lib
+
+    - name: Build JupyterLab Extension
+      run: jlpm build:labextension
+
+    - name: Build PyPI Distributions
+      run: python setup.py sdist bdist_wheel
+
+    - name: Validate Python Distributions
+      run: twine check dist/*
+
+    - name: Collect JS Distribution
+      run: |
+        set -eux
+        cp jupyterlab_pullrequests/labextension/*.tgz dist
+
+    - name: Hash Distributions
+      run: |
+        set -eux
+        cd dist
+        sha256sum * | tee SHA256SUMS
+
+    - name: Upload Distributions
+      uses: actions/upload-artifact@v2
+      with:
+        name: pull-requests dist ${{ github.run_number }}
+        path: ./dist
+
+  lint:
+    runs-on: ${{ matrix.os }}-latest
+
+    strategy:
+      matrix:
+        os: [ubuntu]
+        python-version: [3.9]
+        node-version: [14.x]
+        lab-version: [3]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Install Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install NodeJS
+      uses: actions/setup-node@v2
+      with:
+       node-version: ${{ matrix.node-version }}
+
+    - name: Cache JS
+      id: cache-node-modules
+      uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: |
+          ${{ env.CACHE_EPOCH }}-node-modules-${{ runner.os }}-${{ hashFiles('yarn.lock', '.yarnrc') }}
+
+    - name: Install Python Setup Dependencies
+      run: python -m pip install --upgrade pip wheel setuptools
+
+    - name: Get Python Cache
+      id: cache-pip
+      run: |
+        echo "::set-output name=dir::$(pip cache dir)"
+
+    - name: Cache Python Dependencies
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.cache-pip.outputs.dir }}
+        key: |
+          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-lint-${{ matrix.python-version }}-${{ hashFiles('setup.py', 'setup.cfg') }}
+        restore-keys: |
+          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-lint-${{ matrix.python-version }}-
+          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-
+
+    - name: Install Setup Dependencies
+      run: python -m pip install 'jupyterlab==${{ matrix.lab-version }}.*'
+
+    - name: Install JS Dependencies
+      if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+      run: jlpm --prefer-offline --frozen-lockfile
+
+    - name: Build JS
+      run: jlpm build
+
+    - name: Install Python Lint/Test Dependencies
+      run: python -m pip install -e '.[coverage]'
+
+    - name: Lint JS
+      run: jlpm eslint:check
+
+    - name: Unit Test Server Extension
+      run: |
+        set -eux
+        python -m pytest --pyargs jupyterlab_pullrequests --cov jupyterlab_pullrequests --cov-report term-missing:skip-covered --no-cov-on-fail
+
+    - name: Unit Test JS (known to be broken)
+      run: jlpm test || echo "TODO"
+
+    - name: Upload Coverage
+      run: codecov
+
+  install:
+    runs-on: ${{ matrix.os }}-latest
+    needs: [build]
+
+    strategy:
+      # TODO: possibly put back
+      fail-fast: false
+      matrix:
+        os: [ubuntu, macos, windows]
+        python-version: [3.6, 3.9, pypy3]
+        lab-version: [3]
+        include:
+          # cover artifacts
+          - python-version: 3.6
+            dist: jupyterlab_pullrequests*.tar.gz
+          - python-version: 3.9
+            dist: jupyterlab_pullrequests*.whl
+          - python-version: pypy3
+            dist: jupyterlab_pullrequests*.tar.gz
+          # platform-specific pythons
+          - os: windows
+            py-cmd: python
+            shell: cmd
+          - os: macos
+            py-cmd: python3
+            shell: bash
+          - os: ubuntu
+            py-cmd: python
+            shell: bash
+        exclude:
+          # not supported
+          - os: windows
+            python-version: pypy3
+
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+
+    steps:
+    - name: Install Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: x64
+
+    - name: Install Setup Dependencies
+      run: ${{ matrix.py-cmd }} -m pip install --upgrade pip wheel setuptools
+
+    - name: Download Distributions
+      uses: actions/download-artifact@v2
+      with:
+        name: pull-requests dist ${{ github.run_number }}
+        path: ./dist
+
+    - name: Get Python Cache Location and Distribution
+      id: cache-pip
+      shell: bash -l {0}
+      run: |
+        set -eux
+        echo "::set-output name=dir::$(${{ matrix.py-cmd }} -m pip cache dir)"
+        echo "::set-output name=pydist::$(ls ./dist/${{ matrix.dist }})"
+
+    - name: Cache Python Dependencies
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.cache-pip.outputs.dir }}
+        key: |
+          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-install-${{ matrix.python-version }}-${{ hashFiles('setup.py', 'setup.cfg') }}
+        restore-keys: |
+          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-install-${{ matrix.python-version }}-
+          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-
+
+    - name: Install Package
+      run: ${{ matrix.py-cmd }} -m pip install ${{ steps.cache-pip.outputs.pydist }}
+
+    - name: List Python Environment
+      run: ${{ matrix.py-cmd }} -m pip freeze
+
+    - name: Validate Python Environment
+      run: ${{ matrix.py-cmd }} -m pip check
+
+    - name: List Server Extensions
+      run: |
+        jupyter serverextension list > serverextensions.txt 2>&1
+        jupyter server extension list > server_extensions.txt 2>&1
+
+    - name: Validate Server Extension
+      shell: bash -l {0}
+      run: |
+        cat serverextensions.txt
+        cat serverextensions.txt | grep -ie "jupyterlab_pullrequests.*enabled"
+        cat server_extensions.txt
+        cat server_extensions.txt | grep -ie "jupyterlab_pullrequests.*enabled"
+
+    - name: Install Python Test Dependencies
+      run: ${{ matrix.py-cmd }} -m pip install "mock>=4.0.0" pytest-asyncio pytest diff-match-patch
+
+    - name: Unit Test Server Extension
+      run: ${{ matrix.py-cmd }} -m pytest --pyargs jupyterlab_pullrequests -vv
+
+    - name: List JupyterLab Extensions
+      run: ${{ matrix.py-cmd }} -m jupyter labextension list > labextensions.txt 2>&1
+
+    - name: Validate JupyterLab Build
+      shell: bash -l {0}
+      run: |
+        cat labextensions.txt
+        cat labextensions.txt | grep -ie "jupyterlab/pullrequests.*enabled.*OK"
+        cat labextensions.txt | grep -v "jupyterlab/pullrequests needs to be included in build"

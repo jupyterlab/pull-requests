@@ -1,107 +1,63 @@
 """
 jupyterlab_pullrequests setup
+
+See ``setup.cfg`` and ``package.json`` for the rest of the packaging metadata
 """
 import json
 from pathlib import Path
 
-from jupyter_packaging import (
-    create_cmdclass,
-    install_npm,
-    ensure_targets,
-    combine_commands,
-    skip_if_exists,
-)
-import setuptools
-
 HERE = Path(__file__).parent.resolve()
 
 # The name of the project
-name = "jupyterlab_pullrequests"
+NAME = "jupyterlab_pullrequests"
 
-lab_path = HERE / name / "labextension"
+LAB_PATH = HERE / NAME / "labextension"
 
-# Representative files that should exist after a successful build
-jstargets = [
-    str(lab_path / "package.json"),
+__js__ = json.loads((LAB_PATH / "package.json").read_text())
+__version__ = __js__["version"]
+
+APPS = ["server", "notebook"]
+ETC = "etc/jupyter"
+SHARE = "share/jupyter"
+EXT = f"""{SHARE}/labextensions/{__js__[name]}"""
+
+DATA_FILES = []
+
+# add the serverextension config files
+DATA_FILES += [
+    (f"{ETC}/jupyter_{app}_config.d", [f"jupyter-config/{NAME}_{app}.json"])
+    for app in APPS
 ]
 
-package_data_spec = {
-    name: ["*"],
-}
+# add the labextension install.json metadata
+DATA_FILES += [(EXT, ["install.json"])]
 
-labext_name = "@jupyterlab/pullrequests"
-
-data_files_spec = [
-    ("share/jupyter/labextensions/%s" % labext_name, str(lab_path), "**"),
-    ("share/jupyter/labextensions/%s" % labext_name, str(HERE), "install.json"),
+# add the actual labextension assets
+DATA_FILES += [
     (
-        "etc/jupyter/jupyter_notebook_config.d",
-        "jupyter-config",
-        "jupyterlab_pullrequests_nb.json",
-    ),
-    (
-        "etc/jupyter/jupyter_server_config.d",
-        "jupyter-config",
-        "jupyterlab_pullrequests_server.json",
-    ),
+        EXT if p.parent == LAB_PATH else f"""{EXT}/{p.parent.relative_to(LAB_PATH).as_posix()}"""
+        [p.relative_to(LAB_PATH).as_posix()]
+    )
+    for p in LAB_PATH.rglob("*")
+    if not p.is_dir()
 ]
 
-cmdclass = create_cmdclass(
-    "jsdeps", package_data_spec=package_data_spec, data_files_spec=data_files_spec
-)
-
-js_command = combine_commands(
-    install_npm(HERE, build_cmd="build:prod", npm=["jlpm"]),
-    ensure_targets(jstargets),
-)
-
-is_repo = (HERE / ".git").exists()
-if is_repo:
-    cmdclass["jsdeps"] = js_command
-else:
-    cmdclass["jsdeps"] = skip_if_exists(jstargets, js_command)
-
-long_description = (HERE / "README.md").read_text()
-
-# Get the package info from package.json
-pkg_json = json.loads((HERE / "package.json").read_bytes())
-
-tests_require = ["mock>=4.0.0", "pytest", "pytest-asyncio"]
-
-setup_args = dict(
+SETUP_ARGS = dict(
     name=name,
-    version=pkg_json["version"],
-    url=pkg_json["homepage"],
-    author=pkg_json["author"]["name"],
-    description=pkg_json["description"],
-    license=pkg_json["license"],
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    cmdclass=cmdclass,
-    packages=setuptools.find_packages(),
-    install_requires=[
-        "jupyterlab~=3.0",
-        "nbdime",
-    ],
-    tests_require=tests_require,
-    extras_require={"test": tests_require, "gitlab": ["diff-match-patch"]},
-    zip_safe=False,
-    include_package_data=True,
-    python_requires=">=3.6",
-    platforms="Linux, Mac OS X, Windows",
-    keywords=["Jupyter", "JupyterLab", "JupyterLab3"],
-    classifiers=[
-        "License :: OSI Approved :: BSD License",
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Framework :: Jupyter",
-    ],
+    version=__js__["version"],
+    url=__js__["homepage"],
+    project_urls={
+        "Bug Tracker": f"{__js__['homepage']}/issues",
+        "CI": f"{__js__['homepage']}/actions",
+        "Releases": f"{__js__['homepage']}/releases",
+        "Source Code": f"{__js__['homepage']}",
+    }
+    author=__js__["author"]["name"],
+    description=__js__["description"],
+    license=__js__["license"],
+    data_files=DATA_FILES
 )
-
 
 if __name__ == "__main__":
+    import setuptools
     setuptools.setup(**setup_args)

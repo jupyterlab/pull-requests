@@ -10,6 +10,84 @@ The goal is to be transparent about these, so that anyone can see how to partici
 
 If you have suggestions on how these processes can be improved, please suggest that (see "Enhancement Request" below)!
 
+### Install
+
+For a development install, do the following in the repository directory:
+
+```bash
+# Install NodeJS dependencies
+jlpm
+# Build the Lab Extension
+jlpm build
+# Install package in development mode
+pip install -e .
+# Link your development version of the extension with JupyterLab
+jupyter labextension develop . --overwrite
+```
+
+To rebuild the extension:
+
+```bash
+jlpm run build
+```
+
+## Build
+
+To rebuild the frontend and your JupyterLab app:
+
+```bash
+jlpm run build
+```
+
+## Live Development
+
+After [installing](#Install), in one terminal start:
+
+```bash
+jlpm watch
+```
+
+In another terminal start:
+
+```bash
+jupyter lab
+```
+
+## Releasing
+
+Releases should be cut from the GitHub Actions archive
+
+> These steps require project permissions on github.com, npmjs.com and pypi.io.
+> It is recommened to start a new GitHub issue with this checklist of tasks to perform
+
+- [ ] On a GitHub PR
+  - [ ] bump the release numbers, as appropriate, in `_version.py` and `package.json`
+  - [ ] update the CHANGELOG
+- [ ] After review, merge to the `master` branch
+- [ ] From the `master` build, download the `pull-requests dist <an ever-increasing number>.zip`
+- [ ] Unpack the archive
+- [ ] Verify the hashsums in `SHA256SUMS` by running
+
+```bash
+# cd <where you unpacked the filees>
+sha256sum *
+```
+
+- [ ] In the GitHub UI
+  - [ ] Make a new release
+  - [ ] Name the tag `v<version to be released>`
+  - [ ] Drag all the files to the upload box
+- [ ] In your terminal, run the following
+
+```bash
+# cd <where you unpacked the filees>
+twine upload *.whl *.tar.gz    # login will be required
+npm publish *.tgz              # login will be required
+```
+
+- [ ] Smoke test the release on a simple binder gist
+- [ ] Add any lessons learned, potentially creating new GitHub issues
+
 ## Bug Report
 
 If you are using this software and encounter some behavior that is unexpected, then you may have come across a bug!
@@ -25,7 +103,7 @@ Hopefully, then some nice person will come by to fix your bug! This will likely 
 but it could be anyone.
 
 They will fix the bug locally, then push those changes to their fork. Then they will make a pull request, and in the description
-say "This fixes bug #xxx". 
+say "This fixes bug #xxx".
 
 Someone who maintains the repo will review this change, and this can lead to some more back and forth about the implementation.
 
@@ -38,7 +116,7 @@ Maybe the current behavior isn't wrong, but you still have an idea on how it cou
 
 The flow will be similar to opening a bug, but the process could be longer, as we all work together to agree on what
 behavior should be added. So when you open an issue, it's helpful to give some context around what you are trying to achieve,
-why that is important, where the current functionality falls short, and any ideas you have on how it could be improved. 
+why that is important, where the current functionality falls short, and any ideas you have on how it could be improved.
 
 These issues should get a `type:Enhancement` label. If the solution seems obvious enough and you think others will agree,
 then anyone is welcome to implement the solution and propose it in a pull request.

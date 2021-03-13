@@ -1,18 +1,7 @@
-import json
-from pathlib import Path
-
-from ._version import __version__
-from .base import PRConfig
-from .handlers import setup_handlers
-
-HERE = Path(__file__).parent.resolve()
-
-with (HERE / "labextension" / "package.json").open() as fid:
-    data = json.load(fid)
-
+from ._version import __version__, __js__
 
 def _jupyter_labextension_paths():
-    return [{"src": "labextension", "dest": data["name"]}]
+    return [{"src": "labextension", "dest": __js__["name"]}]
 
 
 def _jupyter_server_extension_points():
@@ -27,6 +16,9 @@ def _load_jupyter_server_extension(server_app):
     server_app: jupyterlab.labapp.LabApp
         JupyterLab application instance
     """
+    from .base import PRConfig
+    from .handlers import setup_handlers
+
     config = PRConfig(config=server_app.config)
     setup_handlers(server_app.web_app, config)
     server_app.log.info("Registered jupyterlab_pullrequests extension")

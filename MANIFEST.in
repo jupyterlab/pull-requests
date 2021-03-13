@@ -8,7 +8,8 @@ include install.json
 include ts*.json
 include yarn.lock
 
-graft jupyterlab_pullrequests/labextension
+include jupyterlab_pullrequests/labextension/*.tgz
+recursive-include jupyterlab_pullrequests/tests *.json
 
 # Javascript files
 graft src
