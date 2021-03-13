@@ -151,7 +151,7 @@ export class Discussion extends Panel {
    * @param comment Comment text
    */
   protected async handleAddComment(text: string): Promise<void> {
-    let body: object = { text };
+    let body: { [k: string]: string | number } = { text };
     if (this._thread.comments.length === 0) {
       body = {
         ...body,

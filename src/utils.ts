@@ -1,5 +1,6 @@
 import { URLExt } from '@jupyterlab/coreutils';
 import { ServerConnection } from '@jupyterlab/services';
+import { ReadonlyJSONObject } from '@lumino/coreutils';
 
 /**
  * API request wrapper
@@ -12,7 +13,7 @@ import { ServerConnection } from '@jupyterlab/services';
 export async function requestAPI<T>(
   url: string,
   method: string,
-  body?: object
+  body?: ReadonlyJSONObject
 ): Promise<T> {
   const fullRequest = {
     method: method,

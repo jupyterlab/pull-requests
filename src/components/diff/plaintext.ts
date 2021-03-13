@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Mode } from '@jupyterlab/codemirror';
 import { mergeView } from '@jupyterlab/git/lib/components/diff/mergeview';
 import { Widget } from '@lumino/widgets';
