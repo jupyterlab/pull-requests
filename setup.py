@@ -19,7 +19,7 @@ __version__ = __js__["version"]
 APPS = ["server", "notebook"]
 ETC = "etc/jupyter"
 SHARE = "share/jupyter"
-EXT = f"""{SHARE}/labextensions/{__js__[name]}"""
+EXT = f"{SHARE}/labextensions/{__js__['name']}"
 
 DATA_FILES = []
 
@@ -35,15 +35,17 @@ DATA_FILES += [(EXT, ["install.json"])]
 # add the actual labextension assets
 DATA_FILES += [
     (
-        EXT if p.parent == LAB_PATH else f"""{EXT}/{p.parent.relative_to(LAB_PATH).as_posix()}"""
-        [p.relative_to(LAB_PATH).as_posix()]
+        EXT
+        if p.parent == LAB_PATH
+        else f"""{EXT}/{p.parent.relative_to(LAB_PATH).as_posix()}""",
+        [f"{NAME}/labextension/{p.relative_to(LAB_PATH).as_posix()}"],
     )
     for p in LAB_PATH.rglob("*")
     if not p.is_dir()
 ]
 
 SETUP_ARGS = dict(
-    name=name,
+    name=NAME,
     version=__js__["version"],
     url=__js__["homepage"],
     project_urls={
@@ -51,13 +53,14 @@ SETUP_ARGS = dict(
         "CI": f"{__js__['homepage']}/actions",
         "Releases": f"{__js__['homepage']}/releases",
         "Source Code": f"{__js__['homepage']}",
-    }
+    },
     author=__js__["author"]["name"],
     description=__js__["description"],
     license=__js__["license"],
-    data_files=DATA_FILES
+    data_files=DATA_FILES,
 )
 
 if __name__ == "__main__":
     import setuptools
-    setuptools.setup(**setup_args)
+
+    setuptools.setup(**SETUP_ARGS)

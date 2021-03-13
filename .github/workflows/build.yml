@@ -82,7 +82,7 @@ jobs:
     - name: Collect JS Distribution
       run: |
         set -eux
-        cp jupyterlab_pullrequests/labextension/*.tgz dist
+        cd dist && npm pack ..
 
     - name: Hash Distributions
       run: |
