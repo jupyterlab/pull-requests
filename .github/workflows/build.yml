@@ -268,7 +268,7 @@ jobs:
         cat server_extensions.txt | grep -ie "jupyterlab_pullrequests.*enabled"
 
     - name: Install Python Test Dependencies
-      run: ${{ matrix.py-cmd }} -m pip install "mock>=4.0.0" pytest-asyncio pytest diff-match-patch
+      run: ${{ matrix.py-cmd }} -m pip install "mock>=4.0.0" pytest-asyncio pytest-tornasync diff-match-patch
 
     - name: Unit Test Server Extension
       run: ${{ matrix.py-cmd }} -m pytest --pyargs jupyterlab_pullrequests -vv
