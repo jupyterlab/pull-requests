@@ -3,6 +3,7 @@
         "id": "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1",
         "title": "Interesting PR for feature",
         "body": "This is a feature that tests a bunch of different types",
-        "internal_id": 457075994
+        "internal_id": 457075994,
+        "link": "https://github.com/timnlupo/juypterlabpr-test/pulls/1"
     }
 ]

@@ -167,8 +167,8 @@ jobs:
         set -eux
         python -m pytest --pyargs jupyterlab_pullrequests --cov jupyterlab_pullrequests --cov-report term-missing:skip-covered --no-cov-on-fail
 
-    - name: Unit Test JS (known to be broken)
-      run: jlpm test || echo "TODO"
+    - name: Unit Test JS
+      run: jlpm test
 
     - name: Upload Coverage
       run: codecov

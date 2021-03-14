@@ -6,7 +6,7 @@ import {
   linkIcon
 } from '@jupyterlab/ui-components';
 import { CommandRegistry } from '@lumino/commands';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { BeatLoader } from 'react-spinners';
 import { CommandIDs, IFile, IPullRequest } from '../../tokens';
 import { requestAPI } from '../../utils';
@@ -49,21 +49,21 @@ export function PullRequestItem(props: IPullRequestItemProps): JSX.Element {
   /**
    * Pull request modified files
    */
-  const [files, setFiles] = useState<IFile[] | null>(null);
+  const [files, setFiles] = React.useState<IFile[] | null>(null);
   /**
    * Is the file list expanded?
    */
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [isExpanded, setIsExpanded] = React.useState<boolean>(false);
   /**
    * Is the file list being loaded?
    */
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   /**
    * Error message
    */
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setFiles(null);
     setIsExpanded(false);
     setIsLoading(false);

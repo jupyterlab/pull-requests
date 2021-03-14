@@ -45,10 +45,10 @@
     "eslint": "eslint . --ext .ts,.tsx --fix",
     "eslint:check": "eslint . --ext .ts,.tsx",
     "install:extension": "jupyter labextension develop --overwrite .",
-    "test": "jest",
-    "watch": "run-p watch:src watch:labextension",
     "watch:labextension": "jupyter labextension watch .",
-    "watch:src": "tsc -w"
+    "watch:src": "tsc -w",
+    "test": "jest --coverage",
+    "watch": "run-p watch:src watch:labextension"
   },
   "dependencies": {
     "@jupyterlab/application": "^3.0.6",
