@@ -39,7 +39,7 @@
     "clean:labextension": "rimraf jupyterlab_pullrequests/labextension",
     "eslint": "eslint . --ext .ts,.tsx --fix",
     "eslint:check": "eslint . --ext .ts,.tsx",
-    "test": "jest",
+    "test": "jest --coverage",
     "watch": "tsc -w"
   },
   "dependencies": {

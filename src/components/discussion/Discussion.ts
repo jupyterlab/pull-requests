@@ -94,9 +94,11 @@ export class Discussion extends Panel {
       latestWidget.parent = null;
       latestWidget.dispose();
 
-      this.addWidget(
-        this._inputShown ? this.createCommentInput() : this.createReplyButton()
-      );
+      if (this._inputShown) {
+        this.addWidget(this.createCommentInput());
+      } else if (this._thread.singleton !== true) {
+        this.addWidget(this.createReplyButton());
+      }
     }
   }
 
@@ -141,7 +143,9 @@ export class Discussion extends Panel {
     if (this._inputShown) {
       this.addWidget(this.createCommentInput());
     } else {
-      this.addWidget(this.createReplyButton());
+      if (this._thread.singleton !== true) {
+        this.addWidget(this.createReplyButton());
+      }
     }
   }
 

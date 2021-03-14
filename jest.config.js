@@ -14,17 +14,20 @@ const {
 } = jlabConfig;
 
 module.exports = {
-  coverageDirectory,
   moduleFileExtensions,
-  moduleNameMapper: {...moduleNameMapper, "monaco-editor": "<rootDir>/node_modules/react-monaco-editor"},
+  moduleNameMapper,
   preset,
   setupFilesAfterEnv,
   setupFiles,
   testPathIgnorePatterns,
   transform,
   automock: false,
+  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/*.d.ts'],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['lcov', 'text'],
+  reporters: ['default'],
   testRegex: 'src/tests/.*.spec.ts[x]?$',
-  transformIgnorePatterns: ['/node_modules/(?!(@?jupyterlab.*)/)'],
+  transformIgnorePatterns: ['/node_modules/(?!(@?jupyterlab.*|react-spinners)/)'],
   setupFiles: ['<rootDir>/setupJest.js'],
   globals: {
     'ts-jest': {
