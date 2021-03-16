@@ -1,11 +1,12 @@
 import json
-from typing import Dict, List, NoReturn, Optional, Tuple, Union
+from itertools import chain
+from typing import Dict, List, Optional, Tuple, Union
 
 from notebook.utils import url_path_join
 from tornado.httputil import url_concat
 from tornado.web import HTTPError
 
-from ..base import NewComment, CommentReply
+from ..base import CommentReply, NewComment
 from .manager import PullRequestsManager
 
 
@@ -14,7 +15,7 @@ class GitHubManager(PullRequestsManager):
 
     def __init__(
         self, base_api_url: str = "https://api.github.com", access_token: str = ""
-    ) -> NoReturn:
+    ) -> None:
         """
         Args:
             base_api_url: Base REST API url for the versioning service
@@ -23,6 +24,17 @@ class GitHubManager(PullRequestsManager):
         super().__init__(base_api_url=base_api_url, access_token=access_token)
         self._pull_requests_cache = {}  # Dict[str, Dict]
 
+    @property
+    def per_page_argument(self) -> Optional[Tuple[str, int]]:
+        """Returns query argument to set number of items per page.
+
+        It returns None if the client does not support pagination.
+
+        Returns
+            [str, int]: (query argument name, value)
+        """
+        return ("per_page", 100)
+
     async def get_current_user(self) -> Dict[str, str]:
         """Get the current user information.
 
@@ -30,7 +42,7 @@ class GitHubManager(PullRequestsManager):
             JSON description of the user matching the access token
         """
         git_url = url_path_join(self._base_api_url, "user")
-        data = await self._call_github(git_url)
+        data = await self._call_github(git_url, has_pagination=False)
 
         return {"username": data["login"]}
 
@@ -178,10 +190,10 @@ class GitHubManager(PullRequestsManager):
             self._base_api_url, "/search/issues?q=+state:open+type:pr" + search_filter
         )
 
-        results = await self._call_github(git_url)
+        results = await self._call_github(git_url, has_pagination=True)
 
         data = []
-        for result in results["items"]:
+        for result in chain(*map(lambda r: r["items"], results)):
             data.append(
                 {
                     "id": result["pull_request"]["url"],
@@ -239,8 +251,14 @@ class GitHubManager(PullRequestsManager):
         body: Optional[dict] = None,
         params: Optional[Dict[str, str]] = None,
         media_type: str = "application/vnd.github.v3+json",
+        has_pagination: bool = True,
     ) -> Union[dict, str]:
         """Call GitHub
+
+        The request is presumed to support pagination by default if
+        - The method is GET
+        - load_json is True
+        - The provider returns not None per_page_argument property
 
         Args:
             url: Endpoint to request
@@ -249,8 +267,9 @@ class GitHubManager(PullRequestsManager):
             body: Request body; None if no body
             params: Query arguments as dictionary; None if no arguments
             media_type: Type of accepted content
+            has_pagination: Whether the pagination query arguments should be appended
         Returns:
-            Dict: Create from JSON response body if load_json is True
+            List or Dict: Create from JSON response body if load_json is True
             str: Raw response body if load_json is False
         """
         headers = {
@@ -265,6 +284,7 @@ class GitHubManager(PullRequestsManager):
             body=body,
             params=params,
             headers=headers,
+            has_pagination=has_pagination,
         )
 
     async def _get_pull_requests(self, pr_id: str) -> dict:
@@ -279,7 +299,7 @@ class GitHubManager(PullRequestsManager):
         """
         pull_request = self._pull_requests_cache.get(pr_id)
         if pull_request is None:
-            pull_request = await self._call_github(pr_id)
+            pull_request = await self._call_github(pr_id, has_pagination=False)
             self._pull_requests_cache[pr_id] = pull_request
         return pull_request
 

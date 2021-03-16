@@ -2,16 +2,15 @@ import difflib
 import json
 import pathlib
 from http import HTTPStatus
-from mock import AsyncMock, MagicMock, patch
 
 import pytest
+from mock import AsyncMock, MagicMock, patch
 from notebook.utils import url_path_join
-from tornado.web import HTTPError
 from tornado.httpclient import HTTPClientError
+from tornado.web import HTTPError
 
 from jupyterlab_pullrequests.base import CommentReply, NewComment
 from jupyterlab_pullrequests.managers.gitlab import GitLabManager
-
 
 HERE = pathlib.Path(__file__).parent.resolve()
 
@@ -63,7 +62,7 @@ async def test_GitLabManager_list_prs(mock_call_provider, user, filter, expected
     mock_call_provider.assert_called_once()
     assert (
         mock_call_provider.call_args[0][0].url
-        == f"{manager.base_api_url}merge_requests?state=opened&{expected}"
+        == f"{manager.base_api_url}merge_requests?state=opened&{expected}&per_page=100"
     )
 
     assert isinstance(result, list)
@@ -94,7 +93,9 @@ async def test_GitLabManager_list_files(mock_call_provider, user, filter, expect
 
     result = await manager.list_files(url)
     mock_call_provider.assert_called_once()
-    assert mock_call_provider.call_args[0][0].url == url_path_join(url, "changes")
+    assert mock_call_provider.call_args[0][0].url == url_path_join(
+        url, "changes?per_page=100"
+    )
 
     assert isinstance(result, list)
     for item in result:
@@ -167,7 +168,7 @@ async def test_GitLabManager_list_files(mock_call_provider, user, filter, expect
     new_callable=AsyncMock,
 )
 async def test_GitLabManager_list_files_status(mock_call_provider, change, status):
-    mock_call_provider.return_value = {"changes": [change]}
+    mock_call_provider.return_value = [{"changes": [change]}]
 
     manager = GitLabManager(access_token="valid")
     url = f"{manager.base_api_url}merge_requests/1"
@@ -308,7 +309,7 @@ async def test_GitLabManager_get_threads(mock_call_provider, filename, expected)
     mock_call_provider.assert_called_once()
     assert (
         mock_call_provider.call_args[0][0].url
-        == f"{manager.base_api_url}mergerequests-id/discussions"
+        == f"{manager.base_api_url}mergerequests-id/discussions?per_page=100"
     )
 
     assert result == expected

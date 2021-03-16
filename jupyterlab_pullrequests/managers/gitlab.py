@@ -4,16 +4,18 @@ import http
 import json
 import re
 from hashlib import sha1
-from typing import Dict, List, NoReturn, Optional, Tuple, Union
+from itertools import chain
+from typing import Dict, List, Optional, Tuple, Union
 from urllib.parse import quote
 
 from notebook.utils import url_path_join
+from packaging.version import parse
 from tornado.httputil import url_concat
 from tornado.web import HTTPError
 
 from ..base import CommentReply, NewComment
-from .manager import PullRequestsManager
 from ..log import get_logger
+from .manager import PullRequestsManager
 
 INVALID_LINE_CODE = re.compile(r'line_code=>\[.*"must be a valid line code".*\]')
 
@@ -21,9 +23,11 @@ INVALID_LINE_CODE = re.compile(r'line_code=>\[.*"must be a valid line code".*\]'
 class GitLabManager(PullRequestsManager):
     """Pull request manager for GitLab."""
 
+    MINIMAL_VERSION = "13.1"  # Due to pagination https://docs.gitlab.com/ee/api/README.html#pagination
+
     def __init__(
         self, base_api_url: str = "https://gitlab.com/api/v4/", access_token: str = ""
-    ) -> NoReturn:
+    ) -> None:
         """
         Args:
             base_api_url: Base REST API url for the versioning service
@@ -37,14 +41,47 @@ class GitLabManager(PullRequestsManager):
         # we cache the diff to speed up the process.
         self._file_diff_cache = {}  # Dict[Tuple[str, str], List[difflib.Match]]
 
+    @property
+    def per_page_argument(self) -> Optional[Tuple[str, int]]:
+        """Returns query argument to set number of items per page.
+
+        It returns None if the client does not support pagination.
+
+        Returns
+            [str, int]: (query argument name, value)
+        """
+        return ("per_page", 100)
+
+    async def check_server_version(self) -> bool:
+        """Check if the server is respecting the minimal version.
+
+        Returns:
+            Whether the server version is higher than the minimal supported version.
+        """
+        url = url_path_join(self._base_api_url, "version")
+        data = await self._call_gitlab(url, has_pagination=False)
+        server_version = data.get("version", "")
+        is_valid = True
+        if server_version.split(".") < GitLabManager.MINIMAL_VERSION.split("."):
+            is_valid = False
+            self.log.warning(
+                f"GitLab Server version {server_version} is lower than the minimal version "
+                f"supported: {GitLabManager.MINIMAL_VERSION}. Some features may not be supported."
+            )
+
+        return is_valid
+
     async def get_current_user(self) -> Dict[str, str]:
         """Get the current user information.
 
         Returns:
             JSON description of the user matching the access token
         """
+        # Check server compatibility
+        await self.check_server_version()
+
         git_url = url_path_join(self._base_api_url, "user")
-        data = await self._call_gitlab(git_url)
+        data = await self._call_gitlab(git_url, has_pagination=False)
 
         return {"username": data["username"]}
 
@@ -160,7 +197,7 @@ class GitLabManager(PullRequestsManager):
         results = await self._call_gitlab(git_url)
 
         data = []
-        for result in results["changes"]:
+        for result in chain(*map(lambda r: r["changes"], results)):
             status = "modified"
             if result["new_file"]:
                 status = "added"
@@ -316,8 +353,14 @@ class GitLabManager(PullRequestsManager):
         method: str = "GET",
         body: Optional[dict] = None,
         params: Optional[Dict[str, str]] = None,
+        has_pagination: bool = True,
     ) -> Union[dict, str]:
         """Call GitLab
+
+        The request is presumed to support pagination by default if
+        - The method is GET
+        - load_json is True
+        - The provider returns not None per_page_argument property
 
         Args:
             url: Endpoint to request
@@ -325,8 +368,9 @@ class GitLabManager(PullRequestsManager):
             method: HTTP method
             body: Request body; None if no body
             params: Query arguments as dictionary; None if no arguments
+            has_pagination: Whether the pagination query arguments should be appended
         Returns:
-            Dict: Create from JSON response body if load_json is True
+            List or Dict: Create from JSON response body if load_json is True
             str: Raw response body if load_json is False
         """
 
@@ -341,6 +385,7 @@ class GitLabManager(PullRequestsManager):
             body=body,
             params=params,
             headers=headers,
+            has_pagination=has_pagination,
         )
 
     async def _get_file_diff(self, pr_id: str, filename: str) -> List[difflib.Match]:
@@ -412,7 +457,7 @@ class GitLabManager(PullRequestsManager):
         """
         merge_request = self._merge_requests_cache.get(pr_id)
         if merge_request is None:
-            merge_request = await self._call_gitlab(pr_id)
+            merge_request = await self._call_gitlab(pr_id, has_pagination=False)
             self._merge_requests_cache[pr_id] = merge_request
         return merge_request
 
@@ -448,6 +493,6 @@ class GitLabManager(PullRequestsManager):
         )
 
         try:
-            return await self._call_gitlab(url, False)
+            return await self._call_gitlab(url, load_json=False)
         except HTTPError:
             return ""
