@@ -28,10 +28,9 @@ class GitHubManager(PullRequestsManager):
     def per_page_argument(self) -> Optional[Tuple[str, int]]:
         """Returns query argument to set number of items per page.
 
-        It returns None if the client does not support pagination.
-
         Returns
             [str, int]: (query argument name, value)
+            None: the provider does not support pagination
         """
         return ("per_page", 100)
 
@@ -190,7 +189,7 @@ class GitHubManager(PullRequestsManager):
             self._base_api_url, "/search/issues?q=+state:open+type:pr" + search_filter
         )
 
-        results = await self._call_github(git_url, has_pagination=True)
+        results = await self._call_github(git_url)
 
         data = []
         for result in chain(*map(lambda r: r["items"], results)):

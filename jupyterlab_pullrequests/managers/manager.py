@@ -41,7 +41,7 @@ class PullRequestsManager(abc.ABC):
 
         Returns
             [str, int]: (query argument name, value)
-            None: the client does not support pagination
+            None: the provider does not support pagination
         """
         return None
 

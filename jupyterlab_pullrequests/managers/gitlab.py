@@ -45,10 +45,9 @@ class GitLabManager(PullRequestsManager):
     def per_page_argument(self) -> Optional[Tuple[str, int]]:
         """Returns query argument to set number of items per page.
 
-        It returns None if the client does not support pagination.
-
         Returns
             [str, int]: (query argument name, value)
+            None: the provider does not support pagination
         """
         return ("per_page", 100)
 
