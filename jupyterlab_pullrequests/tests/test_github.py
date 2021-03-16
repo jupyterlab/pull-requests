@@ -51,7 +51,6 @@ async def test_GitHubManager_list_prs_created(mock_call_provider):
 
     mock_call_provider.assert_called_once_with(
         "https://api.github.com/search/issues?q=+state:open+type:pr+author:octocat",
-        has_pagination=True,
     )
 
 
@@ -67,7 +66,6 @@ async def test_GitHubManager_list_prs_assigned(mock_call_provider):
 
     mock_call_provider.assert_called_once_with(
         "https://api.github.com/search/issues?q=+state:open+type:pr+assignee:notoctocat",
-        has_pagination=True,
     )
 
 
