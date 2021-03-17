@@ -1,9 +1,9 @@
 import json
 import pathlib
 from http import HTTPStatus
-from mock import AsyncMock, MagicMock, call, patch
 
 import pytest
+from mock import AsyncMock, MagicMock, call, patch
 from tornado.web import HTTPError
 
 from jupyterlab_pullrequests.base import CommentReply, NewComment
@@ -50,7 +50,7 @@ async def test_GitHubManager_list_prs_created(mock_call_provider):
     await manager.list_prs("octocat", "created")
 
     mock_call_provider.assert_called_once_with(
-        "https://api.github.com/search/issues?q=+state:open+type:pr+author:octocat"
+        "https://api.github.com/search/issues?q=+state:open+type:pr+author:octocat",
     )
 
 
@@ -65,7 +65,7 @@ async def test_GitHubManager_list_prs_assigned(mock_call_provider):
     await manager.list_prs("notoctocat", "assigned")
 
     mock_call_provider.assert_called_once_with(
-        "https://api.github.com/search/issues?q=+state:open+type:pr+assignee:notoctocat"
+        "https://api.github.com/search/issues?q=+state:open+type:pr+assignee:notoctocat",
     )
 
 
@@ -101,7 +101,7 @@ async def test_GitHubManager_list_files_call(mock_call_provider):
     mock_call_provider.assert_called_once()
     assert (
         mock_call_provider.call_args[0][0].url
-        == "https://api.github.com/repos/octocat/repo/pulls/1/files"
+        == "https://api.github.com/repos/octocat/repo/pulls/1/files?per_page=100"
     )
     assert result == [{"name": "README.md", "status": "added"}]
 
@@ -144,7 +144,7 @@ async def test_GitHubManager_get_threads(mock_call_provider):
     mock_call_provider.assert_called_once()
     assert (
         mock_call_provider.call_args[0][0].url
-        == "https://api.github.com/repos/octocat/repo/pulls/1/comments"
+        == "https://api.github.com/repos/octocat/repo/pulls/1/comments?per_page=100"
     )
     expected_result = [
         {

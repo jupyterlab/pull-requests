@@ -11,7 +11,7 @@ import tornado.escape as escape
 from notebook.base.handlers import APIHandler
 from notebook.utils import url_path_join
 
-from .base import NewComment, CommentReply, PRConfig
+from .base import CommentReply, NewComment, PRConfig
 from .log import get_logger
 from .managers import MANAGERS
 from .managers.manager import PullRequestsManager
