@@ -5,85 +5,41 @@
 
 /* eslint-disable no-inner-declarations */
 
-import { INotebookContent } from '@jupyterlab/nbformat';
+import { NotebookDiff } from '@jupyterlab/git';
+import { DiffModel } from '@jupyterlab/git/lib/components/diff/model';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
-import { ServerConnection } from '@jupyterlab/services';
-import { JSONObject } from '@lumino/coreutils';
-import { Message } from '@lumino/messaging';
-import { Panel, Widget } from '@lumino/widgets';
 import jsonMap from 'json-source-map';
-import { IDiffEntry } from 'nbdime/lib/diff/diffentries';
 import { CellDiffModel, NotebookDiffModel } from 'nbdime/lib/diff/model';
+import { NotebookDiffWidget } from 'nbdime/lib/diff/widget';
 import {
   IDiffOptions,
   INotebookMapping,
   IThread,
   IThreadCell
 } from '../../tokens';
-import { generateNode, requestAPI } from '../../utils';
 import { NotebookCellsDiff } from './NotebookCellsDiff';
 
-/**
- * Class of the outermost widget, the draggable tab
- */
-const NBDIME_CLASS = 'nbdime-Widget';
-
-/**
- * Class of the root of the actual diff, the scroller element
- */
-const ROOT_CLASS = 'nbdime-root';
-
-export class NotebookDiff extends Panel {
+export class NotebookPRDiff extends NotebookDiff {
   constructor(props: IDiffOptions) {
-    super();
-    this.addClass(NBDIME_CLASS);
-    this.scroller = new Panel();
-    this.scroller.addClass(ROOT_CLASS);
-    this.scroller.node.tabIndex = -1;
-
-    const header = Private.diffHeader(
-      props.diff.base.label,
-      props.diff.head.label
+    super(
+      new DiffModel<string>({
+        challenger: {
+          content: (): Promise<string> =>
+            Promise.resolve(props.diff.head.content),
+          label: props.diff.head.label,
+          source: props.diff.head.sha
+        },
+        filename: props.filename,
+        reference: {
+          content: (): Promise<string> =>
+            Promise.resolve(props.diff.base.content),
+          label: props.diff.base.label,
+          source: props.diff.base.sha
+        }
+      }),
+      props.renderMime
     );
-    this.scroller.addWidget(header);
-
-    this.addWidget(this.scroller);
-
-    this.computeDiff(props.diff.base.content, props.diff.head.content)
-      .then(data => {
-        this.onData(
-          props.pullRequestId,
-          props.filename,
-          data,
-          props.renderMime,
-          props.threads
-        );
-      })
-      .catch(error => {
-        this.onError(error);
-      });
-  }
-
-  protected async computeDiff(
-    previousContent: string,
-    currentContent: string
-  ): Promise<JSONObject> {
-    const data = await requestAPI<JSONObject>('git/diffnotebook', 'POST', {
-      previousContent,
-      currentContent
-    });
-    data['baseMapping'] = Private.computeNotebookMapping(
-      previousContent || '{}'
-    ) as any;
-    data['headMapping'] = Private.computeNotebookMapping(
-      currentContent || '{}'
-    ) as any;
-    return data;
-  }
-
-  dispose(): void {
-    this.scroller.dispose();
-    super.dispose();
+    this._props = props;
   }
 
   protected static mapThreadsOnChunks(
@@ -204,73 +160,31 @@ export class NotebookDiff extends Panel {
     return threadsByChunk;
   }
 
-  /**
-   * Handle `'activate-request'` messages.
-   */
-  protected onActivateRequest(msg: Message): void {
-    this.scroller.node.focus();
-  }
-
-  /**
-   * Callback on diff and discussions requests
-   *
-   * @param pullRequestId Pull request ID
-   * @param filename Notebook filename
-   * @param data Notebook diff raw data
-   * @param renderMime Rendermime registry
-   * @param threads List of discussion on the file
-   */
-  protected onData(
-    pullRequestId: string,
-    filename: string,
-    data: JSONObject,
-    renderMime: IRenderMimeRegistry,
-    threads: IThread[]
-  ): void {
-    if (this.isDisposed) {
-      return;
-    }
-    const base = data['base'] as INotebookContent;
-    const diff = (data['diff'] as any) as IDiffEntry[];
-    const model = new NotebookDiffModel(base, diff);
-    const comments = NotebookDiff.mapThreadsOnChunks(
-      data.baseMapping as any,
-      data.headMapping as any,
-      NotebookDiff.reChunkCells(model.chunkedCells),
-      threads
+  protected createDiffView(
+    model: NotebookDiffModel,
+    renderMime: IRenderMimeRegistry
+  ): NotebookDiffWidget {
+    // return new NotebookDiffWidget(model, renderMime);
+    const baseMapping = Private.computeNotebookMapping(
+      this._props.diff.base.content || '{}'
     );
-    const nbdWidget = new NotebookCellsDiff({
-      pullRequestId,
-      filename,
+    const headMapping = Private.computeNotebookMapping(
+      this._props.diff.head.content || '{}'
+    );
+    const comments = NotebookPRDiff.mapThreadsOnChunks(
+      baseMapping,
+      headMapping,
+      NotebookPRDiff.reChunkCells(model.chunkedCells),
+      this._props.threads
+    );
+
+    return new NotebookCellsDiff({
+      pullRequestId: this._props.pullRequestId,
+      filename: this._props.filename,
       model,
       comments,
       renderMime
     });
-
-    this.scroller.addWidget(nbdWidget);
-    nbdWidget.init().catch(error => {
-      console.error('Failed to mark unchanged ranges', error);
-    });
-  }
-
-  /**
-   * Callback on error when requesting the diff or the discussions
-   *
-   * @param error Error
-   */
-  protected onError(
-    error: ServerConnection.NetworkError | ServerConnection.ResponseError
-  ): void {
-    if (this.isDisposed) {
-      return;
-    }
-    console.error(error);
-    const widget = new Widget();
-    widget.node.innerHTML = `<h2 class="jp-PullRequestTabError">
-    <span style="color: 'var(--jp-ui-font-color1)';">
-      Error Loading File:
-    </span> ${error.message}</h2>`;
-    this.scroller.addWidget(widget);
   }
 
   /**
@@ -319,7 +233,7 @@ export class NotebookDiff extends Panel {
     return newChunks;
   }
 
-  protected scroller: Panel;
+  protected _props: IDiffOptions;
 }
 
 namespace Private {
@@ -348,16 +262,5 @@ namespace Private {
         }
       )
     };
-  }
-  /**
-   * Create a header widget for the diff view.
-   */
-  export function diffHeader(baseLabel: string, remoteLabel: string): Widget {
-    const node = generateNode('div', { class: 'jp-git-diff-banner' });
-
-    node.innerHTML = `<span>${baseLabel}</span>
-        <span>${remoteLabel}</span>`;
-
-    return new Widget({ node });
   }
 }

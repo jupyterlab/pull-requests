@@ -6,8 +6,8 @@ import { PromiseDelegate } from '@lumino/coreutils';
 import { Panel } from '@lumino/widgets';
 import { IDiffOptions, IFileDiff, IThread } from '../../tokens';
 import { requestAPI } from '../../utils';
-import { NotebookDiff } from '../diff/NotebookDiff';
-import { PlainTextDiff } from '../diff/plaintext';
+import { NotebookPRDiff } from '../diff/NotebookDiff';
+import { PlainTextPRDiff } from '../diff/plaintext';
 
 /**
  * FileDiffWidget properties
@@ -98,10 +98,10 @@ export class FileDiffWidget extends MainAreaWidget<Panel> {
   protected showDiff(diffProps: IDiffOptions): void {
     const fileExtension = PathExt.extname(diffProps.filename).toLowerCase();
     if (fileExtension === '.ipynb') {
-      this.content.addWidget(new NotebookDiff(diffProps));
+      this.content.addWidget(new NotebookPRDiff(diffProps));
     } else {
       try {
-        this.content.addWidget(new PlainTextDiff(diffProps));
+        this.content.addWidget(new PlainTextPRDiff(diffProps));
       } catch (reason) {
         this.showError(reason.message || reason);
       }
