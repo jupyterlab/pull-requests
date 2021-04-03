@@ -68,14 +68,10 @@ export class NotebookDiff extends Panel {
     previousContent: string,
     currentContent: string
   ): Promise<JSONObject> {
-    const data = await requestAPI<JSONObject>(
-      'pullrequests/files/nbdiff',
-      'POST',
-      {
-        previousContent,
-        currentContent
-      }
-    );
+    const data = await requestAPI<JSONObject>('git/diffnotebook', 'POST', {
+      previousContent,
+      currentContent
+    });
     data['baseMapping'] = Private.computeNotebookMapping(
       previousContent || '{}'
     ) as any;

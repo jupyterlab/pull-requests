@@ -248,39 +248,3 @@ class TestPostPullRequestsCommentsHandlerID(TestPullRequest):
         )
         self.assertEqual(response.code, 400)
         self.assertIn("Invalid response", response.reason)
-
-
-# Test get PR comments
-class TestPostPullRequestsNBDiffHandler(TestPullRequest):
-
-    # Test empty body
-    def test_body_empty(self):
-        response = self.fetch("/pullrequests/files/nbdiff", method="POST", body="")
-        self.assertEqual(response.code, 400)
-        self.assertIn("Invalid POST body", response.reason)
-
-    # Test invalid body JSON
-    def test_body_invalid(self):
-        response = self.fetch("/pullrequests/files/nbdiff", method="POST", body="{)")
-        self.assertEqual(response.code, 400)
-        self.assertIn("Invalid POST body", response.reason)
-
-    # Test invalid body JSON
-    def test_body_missingkey(self):
-        response = self.fetch(
-            "/pullrequests/files/nbdiff",
-            method="POST",
-            body='{"body": 123, "currentContent": "test"}',
-        )
-        self.assertEqual(response.code, 400)
-        self.assertIn("Missing POST key", response.reason)
-
-    # Test invalid body JSON
-    def test_body_invalid_(self):
-        response = self.fetch(
-            "/pullrequests/files/nbdiff",
-            method="POST",
-            body='{"previousContent": "bad", "currentContent": "bad"}',
-        )
-        self.assertEqual(response.code, 500)
-        self.assertIn("Error diffing content", response.reason)
