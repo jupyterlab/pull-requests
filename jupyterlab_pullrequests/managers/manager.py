@@ -6,7 +6,6 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import nbformat
 import tornado
-from nbdime import diff_notebooks
 from notebook.utils import url_path_join
 
 from .._version import __version__
@@ -61,32 +60,6 @@ class PullRequestsManager(abc.ABC):
             The file diff description
         """
         raise NotImplementedError()
-
-    async def get_file_nbdiff(
-        self, prev_content: str, curr_content: str
-    ) -> Dict[str, str]:
-        """Compute the diff between two notebooks.
-
-        Args:
-            prev_content: Notebook previous content
-            curr_content: Notebook current content
-        Returns:
-            {"base": Dict, "diff": Dict}
-        """
-
-        def read_notebook(content):
-            if not content:
-                return nbformat.v4.new_notebook()
-            return nbformat.reads(content, as_version=4)
-
-        current_loop = tornado.ioloop.IOLoop.current()
-        prev_nb = await current_loop.run_in_executor(None, read_notebook, prev_content)
-        curr_nb = await current_loop.run_in_executor(None, read_notebook, curr_content)
-        thediff = await current_loop.run_in_executor(
-            None, diff_notebooks, prev_nb, curr_nb
-        )
-
-        return {"base": prev_nb, "diff": thediff}
 
     @abc.abstractmethod
     async def get_threads(

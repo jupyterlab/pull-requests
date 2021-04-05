@@ -19,24 +19,6 @@ def read_sample_response(filename):
 
 
 @pytest.mark.asyncio
-async def test_GitHubManager_get_file_nbdiff():
-    manager = GitHubManager(access_token="valid")
-    prev_content = (
-        HERE / "sample_responses" / "github" / "ipynb_base.json"
-    ).read_text()
-    curr_content = (
-        HERE / "sample_responses" / "github" / "ipynb_remote.json"
-    ).read_text()
-
-    result = await manager.get_file_nbdiff(prev_content, curr_content)
-
-    expected_result = json.loads(
-        (HERE / "sample_responses" / "github" / "ipynb_nbdiff.json").read_text()
-    )
-    assert result == expected_result
-
-
-@pytest.mark.asyncio
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
 async def test_GitHubManager_call_provider_bad_gitresponse(mock_fetch):
     manager = GitHubManager(access_token="valid")

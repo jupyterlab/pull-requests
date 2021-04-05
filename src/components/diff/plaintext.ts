@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
-import { Mode } from '@jupyterlab/codemirror';
-import { mergeView } from '@jupyterlab/git/lib/components/diff/mergeview';
+import { PlainTextDiff } from '@jupyterlab/git';
+import { DiffModel } from '@jupyterlab/git/lib/components/diff/model';
 import { Widget } from '@lumino/widgets';
-import { MergeView } from 'codemirror';
 import { IComment, IDiffOptions, IThread } from '../../tokens';
 import { generateNode } from '../../utils';
 import { Discussion } from '../discussion/Discussion';
@@ -10,14 +9,25 @@ import { Discussion } from '../discussion/Discussion';
 /**
  * Plain Text Diff widget
  */
-export class PlainTextDiff extends Widget {
+export class PlainTextPRDiff extends PlainTextDiff {
   constructor(props: IDiffOptions) {
-    super({
-      node: PlainTextDiff.createNode(
-        props.diff.base.label,
-        props.diff.head.label
-      )
-    });
+    super(
+      new DiffModel<string>({
+        challenger: {
+          content: (): Promise<string> =>
+            Promise.resolve(props.diff.head.content),
+          label: props.diff.head.label,
+          source: props.diff.head.sha
+        },
+        filename: props.filename,
+        reference: {
+          content: (): Promise<string> =>
+            Promise.resolve(props.diff.base.content),
+          label: props.diff.base.label,
+          source: props.diff.base.sha
+        }
+      })
+    );
     this._props = props;
   }
 
@@ -34,35 +44,6 @@ export class PlainTextDiff extends Widget {
       widget.dispose();
     }
     super.dispose();
-  }
-
-  /**
-   * Callback to create the diff widget once the widget
-   * is attached so CodeMirror get proper size.
-   */
-  onAfterAttach(): void {
-    this.createDiffView(this._props);
-  }
-
-  /**
-   * Create wrapper node
-   */
-  protected static createNode(
-    baseLabel: string,
-    remoteLabel: string
-  ): HTMLElement {
-    const head = generateNode('div', { class: 'jp-git-diff-root' });
-    head.innerHTML = `
-    <div class=jp-git-diff-banner>
-      <span>${baseLabel}</span>
-      <span>${remoteLabel}</span>
-    </div>`;
-    head.appendChild(
-      generateNode('div', {
-        class: 'jp-git-PlainText-diff jp-PullRequestTextDiff'
-      })
-    );
-    return head;
   }
 
   /**
@@ -87,7 +68,7 @@ export class PlainTextDiff extends Widget {
   ): void {
     editor.clearGutter('jp-PullRequestCommentDecoration');
     for (let lineIdx = from; lineIdx < to; lineIdx++) {
-      const div = PlainTextDiff.makeCommentDecoration();
+      const div = PlainTextPRDiff.makeCommentDecoration();
       div.addEventListener('click', () => {
         this.createThread(editor, lineIdx, side);
       });
@@ -100,60 +81,54 @@ export class PlainTextDiff extends Widget {
    *
    * @param props Plain Text diff options
    */
-  protected createDiffView(props: IDiffOptions): void {
-    const mode =
-      Mode.findByFileName(props.filename) || Mode.findBest(props.filename);
+  protected async createDiffView(): Promise<void> {
+    await super.createDiffView();
 
-    this._mergeView = mergeView(
-      this.node.getElementsByClassName(
-        'jp-git-PlainText-diff'
-      )[0] as HTMLElement,
+    if (this._mergeView) {
       {
-        value: props.diff.head.content,
-        orig: props.diff.base.content,
-        gutters: [
+        this._mergeView.leftOriginal().setOption('gutters', [
           'CodeMirror-linenumbers',
           // FIXME without this - the comment decoration does not show up
           //   But it add a single comment decoration on the first line of each editors
           'jp-PullRequestCommentDecoration',
           'CodeMirror-patchgutter'
-        ],
-        lineNumbers: true,
-        mode: mode.mime,
-        theme: 'jupyter',
-        connect: 'align',
-        collapseIdentical: true,
-        readOnly: true,
-        revertButtons: false,
-        lineWrapping: true
-      }
-    ) as MergeView.MergeViewEditor;
-
-    {
-      // @ts-ignore
-      const { from, to } = this._mergeView.left.orig.getViewport();
-      // @ts-ignore
-      this.updateView(this._mergeView.left.orig, from, to, 'originalLine');
-      // @ts-ignore
-      this._mergeView.left.orig.on(
-        'viewportChange',
-        (editor: CodeMirror.Editor, from: number, to: number) => {
-          this.updateView(editor, from, to, 'originalLine');
-        }
-      );
-    }
-
-    {
-      const { from, to } = this._mergeView.editor().getViewport();
-      this.updateView(this._mergeView.editor(), from, to, 'line');
-      this._mergeView
-        .editor()
-        .on(
-          'viewportChange',
-          (editor: CodeMirror.Editor, from: number, to: number) => {
-            this.updateView(editor, from, to, 'line');
-          }
+        ]);
+        const { from, to } = this._mergeView.leftOriginal().getViewport();
+        this.updateView(
+          this._mergeView.leftOriginal(),
+          from,
+          to,
+          'originalLine'
         );
+        this._mergeView
+          .leftOriginal()
+          .on(
+            'viewportChange',
+            (editor: CodeMirror.Editor, from: number, to: number) => {
+              this.updateView(editor, from, to, 'originalLine');
+            }
+          );
+      }
+
+      {
+        this._mergeView.editor().setOption('gutters', [
+          'CodeMirror-linenumbers',
+          // FIXME without this - the comment decoration does not show up
+          //   But it add a single comment decoration on the first line of each editors
+          'jp-PullRequestCommentDecoration',
+          'CodeMirror-patchgutter'
+        ]);
+        const { from, to } = this._mergeView.editor().getViewport();
+        this.updateView(this._mergeView.editor(), from, to, 'line');
+        this._mergeView
+          .editor()
+          .on(
+            'viewportChange',
+            (editor: CodeMirror.Editor, from: number, to: number) => {
+              this.updateView(editor, from, to, 'line');
+            }
+          );
+      }
     }
   }
 
@@ -246,7 +221,6 @@ export class PlainTextDiff extends Widget {
       .dispose();
   }
 
-  protected _mergeView: MergeView.MergeViewEditor;
   protected _props: IDiffOptions;
   // Keep track of discussion widgets to dispose them with this widget
   private _threadWidgets: Widget[] = [];

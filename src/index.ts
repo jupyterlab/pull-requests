@@ -3,11 +3,15 @@ import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
+import { PathExt } from '@jupyterlab/coreutils';
+import { diffIcon } from '@jupyterlab/git/lib/style/icons';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
-import { diffIcon } from '@jupyterlab/git/lib/style/icons';
 import { Widget } from '@lumino/widgets';
 import { PullRequestPanelWrapper } from './components/PullRequestPanel';
+import { DescriptionWidget } from './components/tab/DescriptionWidget';
+import { FileDiffWidget } from './components/tab/FileDiffWidget';
+import { pullRequestsIcon } from './style/icons';
 import {
   CommandIDs,
   IFile,
@@ -15,9 +19,6 @@ import {
   NAMESPACE,
   PLUGIN_ID
 } from './tokens';
-import { DescriptionWidget } from './components/tab/DescriptionWidget';
-import { FileDiffWidget } from './components/tab/FileDiffWidget';
-import { pullRequestsIcon } from './style/icons';
 
 // JupyterLab plugin props
 const pullRequestPlugin: JupyterFrontEndPlugin<void> = {
@@ -111,7 +112,7 @@ function activate(
           settingsRegistry
         });
         mainAreaItem.id = id;
-        mainAreaItem.title.label = file.name;
+        mainAreaItem.title.label = PathExt.basename(file.name);
         mainAreaItem.title.caption = file.name;
         mainAreaItem.title.icon = diffIcon;
         mainAreaItem.title.closable = true;
