@@ -1,22 +1,21 @@
 import abc
-import json
 import http
+import json
 import logging
-from typing import Dict, List, NoReturn, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import nbformat
 import tornado
-from nbdime import diff_notebooks
 from notebook.utils import url_path_join
 
-from ..log import get_logger
 from .._version import __version__
+from ..log import get_logger
 
 
 class PullRequestsManager(abc.ABC):
     """Abstract base class for pull requests manager."""
 
-    def __init__(self, base_api_url: str = "", access_token: str = "") -> NoReturn:
+    def __init__(self, base_api_url: str = "", access_token: str = "") -> None:
         """
         Args:
             base_api_url: Base REST API url for the versioning service
@@ -35,6 +34,16 @@ class PullRequestsManager(abc.ABC):
     def log(self) -> logging.Logger:
         return get_logger()
 
+    @property
+    def per_page_argument(self) -> Optional[Tuple[str, int]]:
+        """Returns query argument to set number of items per page.
+
+        Returns
+            [str, int]: (query argument name, value)
+            None: the provider does not support pagination
+        """
+        return None
+
     @abc.abstractmethod
     async def get_current_user(self) -> str:
         """Get the current user ID."""
@@ -51,32 +60,6 @@ class PullRequestsManager(abc.ABC):
             The file diff description
         """
         raise NotImplementedError()
-
-    async def get_file_nbdiff(
-        self, prev_content: str, curr_content: str
-    ) -> Dict[str, str]:
-        """Compute the diff between two notebooks.
-
-        Args:
-            prev_content: Notebook previous content
-            curr_content: Notebook current content
-        Returns:
-            {"base": Dict, "diff": Dict}
-        """
-
-        def read_notebook(content):
-            if not content:
-                return nbformat.v4.new_notebook()
-            return nbformat.reads(content, as_version=4)
-
-        current_loop = tornado.ioloop.IOLoop.current()
-        prev_nb = await current_loop.run_in_executor(None, read_notebook, prev_content)
-        curr_nb = await current_loop.run_in_executor(None, read_notebook, curr_content)
-        thediff = await current_loop.run_in_executor(
-            None, diff_notebooks, prev_nb, curr_nb
-        )
-
-        return {"base": prev_nb, "diff": thediff}
 
     @abc.abstractmethod
     async def get_threads(
@@ -138,8 +121,14 @@ class PullRequestsManager(abc.ABC):
         body: Optional[dict] = None,
         params: Optional[Dict[str, str]] = None,
         headers: Optional[Dict[str, str]] = None,
+        has_pagination: bool = True,
     ) -> Union[dict, str]:
         """Call the third party service
+
+        The request is presumed to support pagination by default if
+        - The method is GET
+        - load_json is True
+        - The provider returns not None per_page_argument property
 
         Args:
             url: Endpoint to request
@@ -148,8 +137,9 @@ class PullRequestsManager(abc.ABC):
             body: Request body; None if no body
             params: Query arguments as dictionary; None if no arguments
             headers: Request headers as dictionary; None if no headers
+            has_pagination: Whether the pagination query arguments should be appended
         Returns:
-            Dict: Create from JSON response body if load_json is True
+            List or Dict: Create from JSON response body if load_json is True
             str: Raw response body if load_json is False
         """
         if not self._access_token:
@@ -166,6 +156,17 @@ class PullRequestsManager(abc.ABC):
 
         if not url.startswith(self._base_api_url):
             url = url_path_join(self._base_api_url, url)
+
+        with_pagination = False
+        if (
+            load_json
+            and has_pagination
+            and method.lower() == "get"
+            and self.per_page_argument is not None
+        ):
+            with_pagination = True
+            params = params or {}
+            params.update([self.per_page_argument])
 
         if params is not None:
             url = tornado.httputil.url_concat(url, params)
@@ -184,7 +185,43 @@ class PullRequestsManager(abc.ABC):
             response = await self._client.fetch(request)
             result = response.body.decode("utf-8")
             if load_json:
-                return json.loads(result)
+                # Handle pagination
+                # Assume the link to be a comma separated list of <url>; rel="relation"
+                # where the next chunk has `relation`=next
+                link = response.headers.get("Link")
+                next_url = None
+                if link is not None:
+                    for e in link.split(","):
+                        args = e.strip().split(";")
+                        data = args[0]
+                        metadata = {
+                            k.strip(): v.strip().strip('"')
+                            for k, v in map(lambda s: s.strip().split("="), args[1:])
+                        }
+                        if metadata.get("rel", "") == "next":
+                            next_url = data[1:-1]
+                            break
+
+                new_ = json.loads(result)
+                if next_url is not None:
+                    next_ = await self._call_provider(
+                        next_url,
+                        load_json=load_json,
+                        method=method,
+                        body=body,
+                        headers=headers,
+                        has_pagination=False,  # Relevant query arguments should be part of the link header
+                    )
+                    if not isinstance(new_, list):
+                        new_ = [new_]
+                    if not isinstance(next_, list):
+                        next_ = [next_]
+                    return new_ + next_
+                else:
+                    if with_pagination and not isinstance(new_, list):
+                        return [new_]
+                    else:
+                        return new_
             else:
                 return result
         except tornado.httpclient.HTTPClientError as e:

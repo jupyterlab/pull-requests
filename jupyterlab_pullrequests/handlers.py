@@ -11,7 +11,7 @@ import tornado.escape as escape
 from notebook.base.handlers import APIHandler
 from notebook.utils import url_path_join
 
-from .base import NewComment, CommentReply, PRConfig
+from .base import CommentReply, NewComment, PRConfig
 from .log import get_logger
 from .managers import MANAGERS
 from .managers.manager import PullRequestsManager
@@ -152,33 +152,6 @@ class PullRequestsFileCommentsHandler(PullRequestsAPIHandler):
         self.finish(json.dumps(result))
 
 
-class PullRequestsFileNBDiffHandler(PullRequestsAPIHandler):
-    """
-    Returns nbdime diff of given notebook base content and remote content
-    """
-
-    @tornado.web.authenticated
-    async def post(self):
-        data = get_body_value(self)
-        try:
-            prev_content = data["previousContent"]
-            curr_content = data["currentContent"]
-        except KeyError as e:
-            self._jp_log.error(f"Missing key in POST request.", exc_info=e)
-            raise tornado.web.HTTPError(
-                status_code=HTTPStatus.BAD_REQUEST, reason=f"Missing POST key: {e}"
-            )
-        try:
-            content = await self._manager.get_file_nbdiff(prev_content, curr_content)
-        except Exception as e:
-            self._jp_log.error(f"Error computing notebook diff.", exc_info=e)
-            raise tornado.web.HTTPError(
-                status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-                reason=f"Error diffing content: {e}.",
-            ) from e
-        self.finish(json.dumps(content))
-
-
 # -----------------------------------------------------------------------------
 # Handler utilities
 # -----------------------------------------------------------------------------
@@ -222,7 +195,6 @@ default_handlers = [
     ("prs/files", ListPullRequestsFilesHandler),
     ("files/content", PullRequestsFileContentHandler),
     ("files/comments", PullRequestsFileCommentsHandler),
-    ("files/nbdiff", PullRequestsFileNBDiffHandler),
 ]
 
 

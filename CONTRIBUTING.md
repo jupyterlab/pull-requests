@@ -58,7 +58,7 @@ jupyter lab
 Releases should be cut from the GitHub Actions archive
 
 > These steps require project permissions on github.com, npmjs.com and pypi.io.
-> It is recommened to start a new GitHub issue with this checklist of tasks to perform
+> It is recommended to start a new GitHub issue with this checklist of tasks to perform
 
 - [ ] On a GitHub PR
   - [ ] bump the release numbers, as appropriate, in `_version.py` and `package.json`
@@ -69,7 +69,7 @@ Releases should be cut from the GitHub Actions archive
 - [ ] Verify the hashsums in `SHA256SUMS` by running
 
 ```bash
-# cd <where you unpacked the filees>
+# cd <where you unpacked the files>
 sha256sum *
 ```
 
@@ -80,7 +80,7 @@ sha256sum *
 - [ ] In your terminal, run the following
 
 ```bash
-# cd <where you unpacked the filees>
+# cd <where you unpacked the files>
 twine upload *.whl *.tar.gz    # login will be required
 npm publish *.tgz              # login will be required
 ```
