@@ -1,18 +1,16 @@
 include LICENSE
 include README.md
 include pyproject.toml
-
 include jupyter-config/jupyterlab_pullrequests.json
 
-include package.json
-include ts*.json
-include jupyterlab_pullrequests/labextension/*.tgz
 recursive-include jupyterlab_pullrequests/tests *.json
 
+recursive-include jupyterlab_pullrequests/labextension *
+exclude jupyterlab_pullrequests/labextension/build_log.json
 
 # Javascript files
-graft src
-graft style
+prune src
+prune style
 prune **/node_modules
 prune lib
 

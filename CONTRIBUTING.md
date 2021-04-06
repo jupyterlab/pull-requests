@@ -10,21 +10,25 @@ The goal is to be transparent about these, so that anyone can see how to partici
 
 If you have suggestions on how these processes can be improved, please suggest that (see "Enhancement Request" below)!
 
-## Install
+### Install
 
 For a development install, do the following in the repository directory:
 
 ```bash
-# Install dependencies
-pip install -e .[dev] --ignore-installed
 # Install NodeJS dependencies
 jlpm
 # Build the Lab Extension
 jlpm build
-# Activate the server extension
-jupyter serverextension enable --sys-prefix --py jupyterlab_pullrequests
+# Install package in development mode
+pip install -e .
 # Link your development version of the extension with JupyterLab
-jupyter labextension install .
+jupyter labextension develop . --overwrite
+```
+
+To rebuild the extension:
+
+```bash
+jlpm run build
 ```
 
 ## Build
@@ -33,7 +37,6 @@ To rebuild the frontend and your JupyterLab app:
 
 ```bash
 jlpm run build
-jupyter lab build
 ```
 
 ## Live Development
@@ -47,7 +50,7 @@ jlpm watch
 In another terminal start:
 
 ```bash
-jupyter lab --watch
+jupyter lab
 ```
 
 ## Releasing

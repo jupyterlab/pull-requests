@@ -13,8 +13,9 @@ For now, it supports GitHub and GitLab providers.
 
 ## Prerequisites
 
--   JupyterLab 2.x
--   [jupyterlab-git](https://github.com/jupyterlab/jupyterlab-git) >=0.24.0,<0.30.0
+- JupyterLab 3.x
+  - for JupyterLab 2.x, see the [`2.x` branch](https://github.com/jupyterlab/pull-requests/tree/2.x) 
+- [jupyterlab-git](https://github.com/jupyterlab/jupyterlab-git) >=0.30.0
 
 > For GitLab, you will need also `diff-match-patch`
 
@@ -30,14 +31,12 @@ With pip:
 
 ```bash
 pip install jupyterlab-pullrequests
-jupyter lab build
 ```
 
 Or with conda:
 
 ```bash
 conda install -c conda-forge jupyterlab-pullrequests
-jupyter lab build
 ```
 
 

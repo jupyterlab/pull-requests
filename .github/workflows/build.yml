@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [master, next]
+    branches: [master, 2.x]
   pull_request:
-    branches: '*'
+    branches: [master, 2.x]
 
 env:
   CACHE_EPOCH: 1
@@ -18,7 +18,7 @@ jobs:
         os: [ubuntu]
         python-version: [3.9]
         node-version: [14.x]
-        lab-version: [2]
+        lab-version: [3]
 
     steps:
     - name: Checkout
@@ -82,7 +82,7 @@ jobs:
     - name: Collect JS Distribution
       run: |
         set -eux
-        cp jupyterlab_pullrequests/labextension/*.tgz dist
+        cd dist && npm pack ..
 
     - name: Hash Distributions
       run: |
@@ -104,7 +104,7 @@ jobs:
         os: [ubuntu]
         python-version: [3.9]
         node-version: [14.x]
-        lab-version: [2]
+        lab-version: [3]
 
     steps:
     - name: Checkout
@@ -183,8 +183,7 @@ jobs:
       matrix:
         os: [ubuntu, macos, windows]
         python-version: [3.6, 3.9, pypy3]
-        node-version: [10.x, 14.x]
-        lab-version: [2]
+        lab-version: [3]
         include:
           # cover artifacts
           - python-version: 3.6
@@ -207,13 +206,6 @@ jobs:
           # not supported
           - os: windows
             python-version: pypy3
-          # don't need the full node/py matrix
-          - python-version: 3.6
-            node-version: 14.x
-          - python-version: 3.9
-            node-version: 10.x
-          - python-version: pypy3
-            node-version: 10.x
 
     defaults:
       run:
@@ -263,37 +255,23 @@ jobs:
       run: ${{ matrix.py-cmd }} -m pip check
 
     - name: List Server Extensions
-      run: jupyter serverextension list > serverextensions.txt 2>&1
+      run: |
+        jupyter serverextension list > serverextensions.txt 2>&1
+        jupyter server extension list > server_extensions.txt 2>&1
 
     - name: Validate Server Extension
       shell: bash -l {0}
       run: |
         cat serverextensions.txt
         cat serverextensions.txt | grep -ie "jupyterlab_pullrequests.*enabled"
+        cat server_extensions.txt
+        cat server_extensions.txt | grep -ie "jupyterlab_pullrequests.*enabled"
 
     - name: Install Python Test Dependencies
-      run: ${{ matrix.py-cmd }} -m pip install "mock>=4.0.0" pytest-asyncio pytest diff-match-patch
+      run: ${{ matrix.py-cmd }} -m pip install "mock>=4.0.0" pytest-asyncio pytest-tornasync diff-match-patch
 
     - name: Unit Test Server Extension
       run: ${{ matrix.py-cmd }} -m pytest --pyargs jupyterlab_pullrequests -vv
-
-    - name: Install NodeJS
-      uses: actions/setup-node@v2
-      with:
-       node-version: ${{ matrix.node-version }}
-
-    - name: List JupyterLab Extensions
-      run: ${{ matrix.py-cmd }} -m jupyter labextension list > labextensions.txt 2>&1
-
-    - name: Check JupyterLab Preconditions
-      shell: bash -l {0}
-      run: |
-        cat labextensions.txt
-        cat labextensions.txt | grep -ie "jupyterlab/pullrequests.*enabled.*OK"
-        cat labextensions.txt | grep "jupyterlab/pullrequests needs to be included in build"
-
-    - name: Rebuild JupyterLab
-      run: ${{ matrix.py-cmd }} -m jupyter lab build --debug
 
     - name: List JupyterLab Extensions
       run: ${{ matrix.py-cmd }} -m jupyter labextension list > labextensions.txt 2>&1
@@ -304,7 +282,3 @@ jobs:
         cat labextensions.txt
         cat labextensions.txt | grep -ie "jupyterlab/pullrequests.*enabled.*OK"
         cat labextensions.txt | grep -v "jupyterlab/pullrequests needs to be included in build"
-
-    - name: Run JupyterLab Browser Check
-      if: ${{ matrix.os != 'windows' && matrix.python-version != '3.6' }}
-      run: ${{ matrix.py-cmd }} -m jupyterlab.browser_check

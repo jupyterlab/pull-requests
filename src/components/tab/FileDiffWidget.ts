@@ -115,9 +115,7 @@ export class FileDiffWidget extends MainAreaWidget<Panel> {
    */
   protected showError(message: string): void {
     while (this.children().next()) {
-      this.children()
-        .next()
-        .dispose();
+      this.children().next().dispose();
     }
     this.node.innerHTML = `<h2 class="jp-PullRequestTabError"><span style="color: 'var(--jp-ui-font-color1)';">Error Loading File:</span> ${message}</h2>`;
   }

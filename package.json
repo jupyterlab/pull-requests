@@ -1,6 +1,6 @@
 {
   "name": "@jupyterlab/pullrequests",
-  "version": "2.1.0",
+  "version": "3.0.0-alpha.0",
   "description": "Pull Requests for JupyterLab",
   "keywords": [
     "jupyter",
@@ -18,7 +18,8 @@
   },
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
-    "style/**/*.{css,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
+    "style/**/*.{css,eot,gif,html,jpg,json,png,svg,woff2,ttf}",
+    "style/index.js"
   ],
   "directories": {
     "lib": "lib"
@@ -31,71 +32,82 @@
     "url": "https://github.com/jupyterlab/pull-requests.git"
   },
   "scripts": {
-    "build": "jlpm clean && jlpm build:lib && jlpm build:labextension",
-    "build:labextension": "cd jupyterlab_pullrequests && rimraf labextension && mkdirp labextension && cd labextension && npm pack ../..",
+    "build": "jlpm run build:lib && jlpm run build:labextension:dev",
+    "build:all": "jlpm run build:labextension",
+    "build:labextension": "jupyter labextension build .",
+    "build:labextension:dev": "jupyter labextension build --development True .",
     "build:lib": "tsc",
-    "clean": "jlpm clean:lib && jlpm clean:labextension",
-    "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
+    "build:prod": "jlpm run build:lib && jlpm run build:labextension",
+    "clean": "jlpm run clean:lib",
+    "clean:all": "jlpm run clean:lib && jlpm run clean:labextension",
     "clean:labextension": "rimraf jupyterlab_pullrequests/labextension",
+    "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
     "eslint": "eslint . --ext .ts,.tsx --fix",
     "eslint:check": "eslint . --ext .ts,.tsx",
+    "install:extension": "jupyter labextension develop --overwrite .",
+    "watch:labextension": "jupyter labextension watch .",
+    "watch:src": "tsc -w",
     "test": "jest --coverage",
-    "watch": "tsc -w"
+    "watch": "run-p watch:src watch:labextension"
   },
   "dependencies": {
-    "@jupyterlab/application": "^2.0.0",
-    "@jupyterlab/apputils": "^2.0.0",
-    "@jupyterlab/codemirror": "^2.0.0",
-    "@jupyterlab/coreutils": "^4.0.0",
-    "@jupyterlab/docregistry": "^2.0.0",
-    "@jupyterlab/filebrowser": "^2.0.0",
-    "@jupyterlab/git": "0.24.0 - 0.30.0",
-    "@jupyterlab/mainmenu": "^2.0.0",
-    "@jupyterlab/nbformat": "^2.0.0",
-    "@jupyterlab/rendermime": "^2.0.0",
-    "@jupyterlab/services": "^5.0.0",
-    "@jupyterlab/settingregistry": "^2.0.0",
-    "@jupyterlab/ui-components": "^2.0.0",
+    "@jupyterlab/application": "^3.0.6",
+    "@jupyterlab/apputils": "^3.0.5",
+    "@jupyterlab/codemirror": "^3.0.5",
+    "@jupyterlab/coreutils": "^5.0.3",
+    "@jupyterlab/docregistry": "^3.0.6",
+    "@jupyterlab/filebrowser": "^3.0.6",
+    "@jupyterlab/git": "0.30.0-beta.3 - 0.40.0",
+    "@jupyterlab/mainmenu": "^3.0.5",
+    "@jupyterlab/nbformat": "^3.0.3",
+    "@jupyterlab/rendermime": "^3.0.6",
+    "@jupyterlab/services": "^6.0.5",
+    "@jupyterlab/settingregistry": "^3.0.3",
+    "@jupyterlab/ui-components": "^3.0.4",
     "@lumino/commands": "^1.12.0",
     "@lumino/coreutils": "^1.5.3",
-    "@lumino/widgets": "^1.16.0",
-    "codemirror": "~5.53.2",
+    "@lumino/widgets": "^1.18.0",
+    "codemirror": "~5.57.0",
     "json-source-map": "^0.6.1",
     "moment": "^2.24.0",
-    "nbdime": "^6.0.0",
-    "react": "~16.9.0",
-    "react-dom": "~16.9.0",
+    "nbdime": "^6.1.0-beta.1",
+    "nbdime-jupyterlab": "2.1.0-beta.1",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
     "react-spinners": "^0.5.12"
   },
   "devDependencies": {
     "@babel/core": "^7.5.0",
     "@babel/preset-env": "^7.5.0",
-    "@jupyterlab/testutils": "^2.0.0",
-    "@types/codemirror": "^0.0.76",
+    "@jupyterlab/builder": "^3.0.0",
+    "@jupyterlab/testutils": "^3.0.0",
+    "@types/codemirror": "^0.0.97",
     "@types/enzyme": "^3.9.3",
-    "@types/jest": "^25.0.0",
+    "@types/jest": "^26.0.0",
     "@types/node": "^12.6.2",
-    "@types/react": "~16.8.19",
-    "@types/react-dom": "~16.0.5",
-    "@typescript-eslint/eslint-plugin": "^2.25.0",
-    "@typescript-eslint/parser": "^2.25.0",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "@typescript-eslint/eslint-plugin": "^4.8.1",
+    "@typescript-eslint/parser": "^4.8.1",
+    "@wojtekmaj/enzyme-adapter-react-17": "^0.4.1",
     "enzyme": "^3.9.0",
-    "enzyme-adapter-react-16": "^1.13.2",
-    "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.10.1",
-    "eslint-plugin-prettier": "^3.1.2",
+    "eslint": "^7.14.0",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "^7.18.3",
     "husky": "^3.0.1",
-    "jest": "^25.0.0",
+    "jest": "^26.0.0",
     "jest-fetch-mock": "^2.1.2",
     "mkdirp": "^1.0.3",
-    "prettier": "^1.16.4",
-    "rimraf": "^2.6.1",
-    "ts-jest": "^25.0.0",
-    "typescript": "~3.7.0"
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.1.1",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^26.0.0",
+    "typescript": "~4.1.3"
   },
   "sideEffects": [
-    "style/*.css"
+    "style/*.css",
+    "style/index.js"
   ],
   "jupyterlab": {
     "discovery": {
@@ -109,9 +121,31 @@
         }
       }
     },
-    "extension": true
+    "extension": true,
+    "outputDir": "jupyterlab_pullrequests/labextension",
+    "sharedPackages": {
+      "@jupyterlab/git": {
+        "singleton": true
+      },
+      "codemirror": {
+        "bundled": false,
+        "singleton": true
+      },
+      "nbdime": {
+        "singleton": true
+      },
+      "react": {
+        "bundled": false,
+        "singleton": true
+      },
+      "react-dom": {
+        "bundled": false,
+        "singleton": true
+      }
+    }
   },
+  "styleModule": "style/index.js",
   "resolutions": {
-    "@types/react": "~16.8.19"
+    "@types/react": "^17.0.0"
   }
 }

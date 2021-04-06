@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { PlainTextDiff } from '@jupyterlab/git';
 import { DiffModel } from '@jupyterlab/git/lib/components/diff/model';
 import { Widget } from '@lumino/widgets';
