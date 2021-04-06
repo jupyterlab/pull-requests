@@ -238,9 +238,7 @@ export class PlainTextPRDiff extends PlainTextDiff {
       .filter(
         inlineWidget =>
           inlineWidget.side === side &&
-          (!inlineWidget.id ||
-            inlineWidget.line < from ||
-            inlineWidget.line > to)
+          (inlineWidget.line < from || inlineWidget.line > to)
       )
       .forEach(inlineWidget =>
         this.removeThreadWidget(inlineWidget.discussion)
@@ -255,7 +253,7 @@ export class PlainTextPRDiff extends PlainTextDiff {
         const line = thread[side] - 1;
 
         if (
-          !thread.id ||
+          thread.id &&
           !this._threadWidgets.some(
             inlineWidget => inlineWidget.id === thread.id
           )
