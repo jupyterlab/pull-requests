@@ -1,8 +1,12 @@
 # Changelog
 
+## 3.0.0
+
+- Port to JupyterLab 3 (#29)
+
 ## 2.1.0 (2021-04-05)
 
-- Refactor code with latest @jupyterlab/git (more shared code) #39
+- Refactor code with latest @jupyterlab/git (more shared code) (#39)
 
 ## 2.0.1 (2021-03-17)
 
