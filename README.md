@@ -14,8 +14,8 @@ For now, it supports GitHub and GitLab providers.
 ## Prerequisites
 
 - JupyterLab 3.x
-  - for JupyterLab 2.x, see the `2.x` branch
-- nbdime 2.x
+  - for JupyterLab 2.x, see the `2.x` branch 
+- [jupyterlab-git](https://github.com/jupyterlab/jupyterlab-git) >=0.30.0
 
 > For GitLab, you will need also `diff-match-patch`
 
