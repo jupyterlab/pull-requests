@@ -2,9 +2,33 @@
 import { PlainTextDiff } from '@jupyterlab/git';
 import { DiffModel } from '@jupyterlab/git/lib/components/diff/model';
 import { Widget } from '@lumino/widgets';
+import { LineWidget } from 'codemirror';
 import { IComment, IDiffOptions, IThread } from '../../tokens';
 import { generateNode } from '../../utils';
 import { Discussion } from '../discussion/Discussion';
+
+interface IInlineDiscussions {
+  /**
+   * Discussion widget
+   */
+  discussion: Widget;
+  /**
+   * Thread ID
+   */
+  id?: string | number;
+  /**
+   * Line at which the widget is displayed
+   */
+  line: number;
+  /**
+   * Editor these discussions are related to
+   */
+  side: 'line' | 'originalLine';
+  /**
+   * CodeMirror widget wrapping the discussion widgets
+   */
+  wrapper?: LineWidget;
+}
 
 /**
  * Plain Text Diff widget
@@ -40,8 +64,9 @@ export class PlainTextPRDiff extends PlainTextDiff {
     }
     while (this._threadWidgets.length > 0) {
       const widget = this._threadWidgets.pop();
-      widget.node.remove();
-      widget.dispose();
+      widget.discussion.node.remove();
+      widget.discussion.dispose();
+      widget.wrapper?.clear();
     }
     super.dispose();
   }
@@ -59,6 +84,7 @@ export class PlainTextPRDiff extends PlainTextDiff {
    * @param editor CodeMirror editor
    * @param from First line in the view port
    * @param to Last line in the view port
+   * @param side Which side of the editor is modified
    */
   protected setCommentGutter(
     editor: CodeMirror.Editor,
@@ -78,8 +104,6 @@ export class PlainTextPRDiff extends PlainTextDiff {
 
   /**
    * Create the Plain Text Diff view
-   *
-   * @param props Plain Text diff options
    */
   protected async createDiffView(): Promise<void> {
     await super.createDiffView();
@@ -155,7 +179,18 @@ export class PlainTextPRDiff extends PlainTextDiff {
       };
       thread[side] = lineNo + 1;
       this._props.threads.push(thread);
-      editor.addLineWidget(lineNo, this.makeThreadWidget(thread));
+
+      const inlineDiscussions: IInlineDiscussions = {
+        line: lineNo,
+        side,
+        discussion: this.makeThreadWidget(thread)
+      };
+      this._threadWidgets.push(inlineDiscussions);
+
+      inlineDiscussions.wrapper = editor.addLineWidget(
+        lineNo,
+        inlineDiscussions.discussion.node
+      );
     }
   }
 
@@ -164,7 +199,7 @@ export class PlainTextPRDiff extends PlainTextDiff {
    *
    * @param thread Discussion
    */
-  protected makeThreadWidget(thread: IThread): HTMLElement {
+  protected makeThreadWidget(thread: IThread): Widget {
     const widget = new Discussion({
       renderMime: this._props.renderMime,
       thread,
@@ -176,8 +211,7 @@ export class PlainTextPRDiff extends PlainTextDiff {
         this.removeThreadWidget(widget);
       }
     });
-    this.addThreadWidget(widget);
-    return widget.node;
+    return widget;
   }
 
   /**
@@ -196,32 +230,64 @@ export class PlainTextPRDiff extends PlainTextDiff {
   ): void {
     // Add comment gutters
     this.setCommentGutter(editor, from, to, side);
+
     // Add comments
+
+    //   Clean first hidden discussions or those without id
+    this._threadWidgets
+      .filter(
+        inlineWidget =>
+          inlineWidget.side === side &&
+          (!inlineWidget.id ||
+            inlineWidget.line < from ||
+            inlineWidget.line > to)
+      )
+      .forEach(inlineWidget =>
+        this.removeThreadWidget(inlineWidget.discussion)
+      );
+
     this._props.threads
       .filter(
         thread =>
           thread[side] !== null && from < thread[side] && thread[side] <= to
       )
       .forEach(thread => {
-        editor.addLineWidget(thread[side] - 1, this.makeThreadWidget(thread));
+        const line = thread[side] - 1;
+
+        if (
+          !thread.id ||
+          !this._threadWidgets.some(
+            inlineWidget => inlineWidget.id === thread.id
+          )
+        ) {
+          const inlineDiscussions: IInlineDiscussions = {
+            line,
+            id: thread.id,
+            side,
+            discussion: this.makeThreadWidget(thread)
+          };
+          this._threadWidgets.push(inlineDiscussions);
+          inlineDiscussions.wrapper = editor.addLineWidget(
+            line,
+            inlineDiscussions.discussion.node
+          );
+        }
       });
   }
 
-  private addThreadWidget(widget: Widget): void {
-    this._threadWidgets.push(widget);
-  }
-
   private removeThreadWidget(widget: Widget): void {
-    widget.node.remove();
-    this._threadWidgets
-      .splice(
-        this._threadWidgets.findIndex(widget_ => widget_ === widget),
-        1
-      )[0]
-      .dispose();
+    const inlineDiscussion = this._threadWidgets.splice(
+      this._threadWidgets.findIndex(widget_ => widget_.discussion === widget),
+      1
+    )[0];
+
+    inlineDiscussion.discussion.node.remove();
+    inlineDiscussion.discussion.dispose();
+    inlineDiscussion.wrapper?.clear();
   }
 
   protected _props: IDiffOptions;
-  // Keep track of discussion widgets to dispose them with this widget
-  private _threadWidgets: Widget[] = [];
+  // Keep track of discussion widget to dispose them with this widget
+  // or when the editor view port is updated
+  private _threadWidgets: IInlineDiscussions[] = [];
 }

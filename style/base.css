@@ -419,10 +419,6 @@ p.jp-PullRequestCommentItemContentTitle {
 }
 
 /* Plain text diff */
-.jp-PullRequestTab .jp-git-diff-root {
-  height: auto;
-}
-
 .CodeMirror-gutter.jp-PullRequestCommentDecoration,
 .CodeMirror-gutter-elt > .jp-PullRequestCommentDecoration {
   background: transparent;
