@@ -7,7 +7,7 @@
 
 A JupyterLab extension for reviewing pull requests.
 
-![](gifs/demo.gif)
+![demo](https://raw.githubusercontent.com/jupyterlab/pull-requests/master/gifs/demo.gif)
 
 For now, it supports GitHub and GitLab providers.
 
@@ -93,6 +93,14 @@ This extension as [server settings](http://jupyter-notebook.readthedocs.io/en/st
 -   **PRConfig.access_token**: Access token to be authenticated by the provider
 -   **PRConfig.provider**: `github` (default) or `gitlab`
 -   **PRConfig.api_base_url**: Provider API base url (default to `https://api.github.com` except if provider is _gitlab_ then it defaults to `https://gitlab.com/api/v4/`)
+
+## Troubleshooting
+
+- If you are seeing the following error `[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self signed certificate in certificate chain` and the certificates are installed on your machine, you will need to set the `SSL_CERT_FILE` environment variable to point to your system certificates bundle. For example:
+
+```
+export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+```
 
 ## Development
 
