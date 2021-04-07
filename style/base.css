@@ -328,7 +328,7 @@ p.jp-PullRequestCommentItemContentTitle {
 .jp-PullRequestCommentItemContent > .CodeMirror,
 .CodeMirror-merge .jp-PullRequestCommentItemContent > .CodeMirror,
 .nbdime-root .jp-PullRequestCommentItemContent > .CodeMirror.cm-s-jupyter {
-  height: 140px;
+  height: 140px !important;
   border: var(--jp-border-width) solid var(--jp-cell-editor-border-color);
   border-radius: 0px;
   background-color: var(--jp-layout-color0);
@@ -419,10 +419,6 @@ p.jp-PullRequestCommentItemContentTitle {
 }
 
 /* Plain text diff */
-.jp-PullRequestTab .jp-git-diff-root {
-  height: auto;
-}
-
 .CodeMirror-gutter.jp-PullRequestCommentDecoration,
 .CodeMirror-gutter-elt > .jp-PullRequestCommentDecoration {
   background: transparent;
