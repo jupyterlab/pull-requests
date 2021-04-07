@@ -3,6 +3,7 @@
 ## 3.0.0
 
 - Port to JupyterLab 3 (#29)
+- Fixes comment duplication when code mirror viewport is updated (#43)
 
 ## 2.1.0 (2021-04-05)
 
