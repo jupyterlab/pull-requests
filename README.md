@@ -4,6 +4,8 @@
 [![NPM Version](https://img.shields.io/npm/v/@jupyterlab/pullrequests.svg)](https://www.npmjs.com/package/@jupyterlab/pullrequests)
 [![Pypi Version](https://img.shields.io/pypi/v/jupyterlab-pullrequests.svg)](https://pypi.org/project/jupyterlab-pullrequests/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/jupyterlab-pullrequests.svg)](https://anaconda.org/conda-forge/jupyterlab-pullrequests)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyterlab/pull-requests/HEAD?urlpath=lab)
+
 
 A JupyterLab extension for reviewing pull requests.
 
@@ -14,7 +16,7 @@ For now, it supports GitHub and GitLab providers.
 ## Prerequisites
 
 - JupyterLab 3.x
-  - for JupyterLab 2.x, see the [`2.x` branch](https://github.com/jupyterlab/pull-requests/tree/2.x) 
+  - for JupyterLab 2.x, see the [`2.x` branch](https://github.com/jupyterlab/pull-requests/tree/2.x)
 - [jupyterlab-git](https://github.com/jupyterlab/jupyterlab-git) >=0.30.0
 
 > For GitLab, you will need also `diff-match-patch`
