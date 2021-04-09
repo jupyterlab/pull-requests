@@ -1,0 +1,15 @@
+{
+  "LabApp": {
+    "tornado_settings": {
+      "page_config_data": {
+        "buildCheck": false,
+        "buildAvailable": false
+      }
+    }
+  },
+  "PRConfig": {
+    "provider": "github-anonymous",
+    "owner": "jupyterlab",
+    "repo": "jupyterlab"
+  }
+}

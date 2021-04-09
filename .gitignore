@@ -117,3 +117,5 @@ dmypy.json
 
 .DS_Store
 coverage/
+
+jupyter_config.json

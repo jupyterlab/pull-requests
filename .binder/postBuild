@@ -13,3 +13,6 @@ jupyter server extension enable --py jupyterlab_pullrequests --sys-prefix
 jupyter server extension list
 jupyter serverextension list
 jupyter labextension list
+
+# copy custom jupyter config out of binder
+cp .binder/jupyter_config.example.json ./jupyter_config.json
