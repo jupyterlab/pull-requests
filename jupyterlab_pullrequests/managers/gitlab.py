@@ -55,7 +55,7 @@ class GitLabManager(PullRequestsManager):
         Returns:
             Whether the server version is higher than the minimal supported version.
         """
-        url = url_path_join(self._base_api_url, "version")
+        url = url_path_join(self.base_api_url, "version")
         data = await self._call_gitlab(url, has_pagination=False)
         server_version = data.get("version", "")
         is_valid = True
@@ -77,7 +77,7 @@ class GitLabManager(PullRequestsManager):
         # Check server compatibility
         await self.check_server_version()
 
-        git_url = url_path_join(self._base_api_url, "user")
+        git_url = url_path_join(self.base_api_url, "user")
         data = await self._call_gitlab(git_url, has_pagination=False)
 
         return {"username": data["username"]}
@@ -225,7 +225,7 @@ class GitLabManager(PullRequestsManager):
 
         # Use search API to find matching pull requests and return
         git_url = url_path_join(
-            self._base_api_url, "/merge_requests?state=opened&" + search_filter
+            self.base_api_url, "/merge_requests?state=opened&" + search_filter
         )
 
         results = await self._call_gitlab(git_url)
@@ -233,7 +233,7 @@ class GitLabManager(PullRequestsManager):
         data = []
         for result in results:
             url = url_path_join(
-                self._base_api_url,
+                self.base_api_url,
                 "projects",
                 str(result["project_id"]),
                 "merge_requests",
@@ -479,7 +479,7 @@ class GitLabManager(PullRequestsManager):
     async def __get_content(self, project_id: int, filename: str, sha: str) -> str:
         url = url_concat(
             url_path_join(
-                self._base_api_url,
+                self.base_api_url,
                 "projects",
                 str(project_id),
                 "repository/files",

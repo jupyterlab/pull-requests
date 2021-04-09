@@ -20,21 +20,19 @@ def read_sample_response(filename):
 
 @pytest.mark.asyncio
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
-async def test_GitHubManager_user_pat_empty(mock_call_provider):
-    manager = GitHubManager(access_token="")
+async def test_GitHubManager_user_pat_empty(mock_call_provider, pr_github_manager):
     with (pytest.raises(HTTPError)) as e:
-        await manager.get_current_user()
+        await pr_github_manager.get_current_user()
     assert e.value.status_code == HTTPStatus.BAD_REQUEST
     assert "No access token specified" in e.value.reason
 
 
 @pytest.mark.asyncio
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
-async def test_GitHubManager_user_pat_valid(mock_call_provider):
-    manager = GitHubManager(access_token="valid")
+async def test_GitHubManager_user_pat_valid(mock_call_provider, pr_valid_github_manager):
     mock_call_provider.return_value = read_sample_response("github_current_user.json")
 
-    result = await manager.get_current_user()
+    result = await pr_valid_github_manager.get_current_user()
 
     assert result == {"username": "timnlupo"}
 
@@ -44,10 +42,8 @@ async def test_GitHubManager_user_pat_valid(mock_call_provider):
     "jupyterlab_pullrequests.managers.github.GitHubManager._call_github",
     new_callable=AsyncMock,
 )
-async def test_GitHubManager_list_prs_created(mock_call_provider):
-    manager = GitHubManager(access_token="valid")
-
-    await manager.list_prs("octocat", "created")
+async def test_GitHubManager_list_prs_created(mock_call_provider, pr_valid_github_manager):
+    await pr_valid_github_manager.list_prs("octocat", "created")
 
     mock_call_provider.assert_called_once_with(
         "https://api.github.com/search/issues?q=+state:open+type:pr+author:octocat",
@@ -59,10 +55,8 @@ async def test_GitHubManager_list_prs_created(mock_call_provider):
     "jupyterlab_pullrequests.managers.github.GitHubManager._call_github",
     new_callable=AsyncMock,
 )
-async def test_GitHubManager_list_prs_assigned(mock_call_provider):
-    manager = GitHubManager(access_token="valid")
-
-    await manager.list_prs("notoctocat", "assigned")
+async def test_GitHubManager_list_prs_assigned(mock_call_provider, pr_valid_github_manager):
+    await pr_valid_github_manager.list_prs("notoctocat", "assigned")
 
     mock_call_provider.assert_called_once_with(
         "https://api.github.com/search/issues?q=+state:open+type:pr+assignee:notoctocat",
@@ -71,11 +65,10 @@ async def test_GitHubManager_list_prs_assigned(mock_call_provider):
 
 @pytest.mark.asyncio
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
-async def test_GitHubManager_list_prs_result(mock_call_provider):
-    manager = GitHubManager(access_token="valid")
+async def test_GitHubManager_list_prs_result(mock_call_provider, pr_valid_github_manager):
     mock_call_provider.return_value = read_sample_response("github_list_prs.json")
 
-    result = await manager.list_prs("octocat", "assigned")
+    result = await pr_valid_github_manager.list_prs("octocat", "assigned")
 
     assert result == [
         {
@@ -90,11 +83,10 @@ async def test_GitHubManager_list_prs_result(mock_call_provider):
 
 @pytest.mark.asyncio
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
-async def test_GitHubManager_list_files_call(mock_call_provider):
-    manager = GitHubManager(access_token="valid")
+async def test_GitHubManager_list_files_call(mock_call_provider, pr_valid_github_manager):
     mock_call_provider.return_value = read_sample_response("github_list_files.json")
 
-    result = await manager.list_files(
+    result = await pr_valid_github_manager.list_files(
         "https://api.github.com/repos/octocat/repo/pulls/1"
     )
 
@@ -108,14 +100,13 @@ async def test_GitHubManager_list_files_call(mock_call_provider):
 
 @pytest.mark.asyncio
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
-async def test_GitHubManager_get_file_diff(mock_call_provider):
-    manager = GitHubManager(access_token="valid")
+async def test_GitHubManager_get_file_diff(mock_call_provider, pr_valid_github_manager):
     mock_call_provider.side_effect = [
         read_sample_response("github_pr_links.json"),
         MagicMock(body=b"test code content"),
         MagicMock(body=b"test new code content"),
     ]
-    result = await manager.get_file_diff("valid-prid", "valid-filename")
+    result = await pr_valid_github_manager.get_file_diff("valid-prid", "valid-filename")
     assert mock_call_provider.call_count == 3
     assert result == {
         "base": {
@@ -133,11 +124,10 @@ async def test_GitHubManager_get_file_diff(mock_call_provider):
 
 @pytest.mark.asyncio
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
-async def test_GitHubManager_get_threads(mock_call_provider):
-    manager = GitHubManager(access_token="valid")
+async def test_GitHubManager_get_threads(mock_call_provider, pr_valid_github_manager):
     mock_call_provider.return_value = read_sample_response("github_comments_get.json")
 
-    result = await manager.get_threads(
+    result = await pr_valid_github_manager.get_threads(
         "https://api.github.com/repos/octocat/repo/pulls/1", "test.ipynb"
     )
 
@@ -170,12 +160,11 @@ async def test_GitHubManager_get_threads(mock_call_provider):
 
 @pytest.mark.asyncio
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
-async def test_GitHubManager_post_comment_valid_reply(mock_call_provider):
-    manager = GitHubManager(access_token="valid")
+async def test_GitHubManager_post_comment_valid_reply(mock_call_provider, pr_valid_github_manager):
     mock_call_provider.return_value = read_sample_response("github_comments_post.json")
     body = CommentReply("test text", "test.ipynb", 123)
 
-    result = await manager.post_comment(
+    result = await pr_valid_github_manager.post_comment(
         "https://api.github.com/repos/octocat/repo/pulls/1", body
     )
 
@@ -203,8 +192,7 @@ async def test_GitHubManager_post_comment_valid_reply(mock_call_provider):
 
 @pytest.mark.asyncio
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
-async def test_GitHubManager_post_comment_valid_new(mock_call_provider):
-    manager = GitHubManager(access_token="valid")
+async def test_GitHubManager_post_comment_valid_new(mock_call_provider, pr_valid_github_manager):
     mock_call_provider.side_effect = [
         read_sample_response("github_pr_links.json"),
         read_sample_response("github_comments_post.json"),
@@ -213,7 +201,7 @@ async def test_GitHubManager_post_comment_valid_new(mock_call_provider):
         text="test text", filename="test.ipynb", line=3, originalLine=None
     )
 
-    result = await manager.post_comment(
+    result = await pr_valid_github_manager.post_comment(
         "https://api.github.com/repos/octocat/repo/pulls/1", body
     )
 

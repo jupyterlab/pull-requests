@@ -4,6 +4,7 @@ Module with all of the individual handlers, which return the results to the fron
 import json
 import logging
 import traceback
+from typing import Optional
 from http import HTTPStatus
 
 import tornado
@@ -198,17 +199,17 @@ default_handlers = [
 ]
 
 
-def setup_handlers(jupyter_app: "Application", config: PRConfig):
+def setup_handlers(web_app: tornado.web.Application, config: PRConfig, log: Optional[logging.Logger]=None):
     host_pattern = ".*$"
-    base_url = url_path_join(jupyter_app.web_app.settings["base_url"], NAMESPACE)
+    base_url = url_path_join(web_app.settings["base_url"], NAMESPACE)
 
-    logger = jupyter_app.log
+    log = log or logging.getLogger(__name__)
 
     manager_class = MANAGERS.get(config.provider)
     if manager_class is None:
-        logger.error(f"PR Manager: No manager defined for provider '{config.provider}'.")
+        log.error(f"PR Manager: No manager defined for provider '{config.provider}'.")
         raise NotImplementedError()
-    logger.info(f"PR Manager Class {manager_class}")
+    log.info(f"PR Manager Class {manager_class}")
     try:
         manager = manager_class(config)
     except Exception as err:
@@ -220,11 +221,11 @@ def setup_handlers(jupyter_app: "Application", config: PRConfig):
         (
             url_path_join(base_url, pat),
             handler,
-            {"logger": logger, "manager": manager},
+            {"logger": log, "manager": manager},
         )
         for pat, handler in default_handlers
     ]
 
-    logger.debug(f"PR Handlers: {handlers}")
+    log.debug(f"PR Handlers: {handlers}")
 
-    jupyter_app.web_app.add_handlers(host_pattern, handlers)
+    web_app.add_handlers(host_pattern, handlers)
