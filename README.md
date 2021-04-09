@@ -4,6 +4,8 @@
 [![NPM Version](https://img.shields.io/npm/v/@jupyterlab/pullrequests.svg)](https://www.npmjs.com/package/@jupyterlab/pullrequests)
 [![Pypi Version](https://img.shields.io/pypi/v/jupyterlab-pullrequests.svg)](https://pypi.org/project/jupyterlab-pullrequests/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/jupyterlab-pullrequests.svg)](https://anaconda.org/conda-forge/jupyterlab-pullrequests)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyterlab/pull-requests/HEAD?urlpath=lab)
+
 
 A JupyterLab extension for reviewing pull requests.
 
@@ -14,7 +16,7 @@ For now, it supports GitHub and GitLab providers.
 ## Prerequisites
 
 - JupyterLab 3.x
-  - for JupyterLab 2.x, see the [`2.x` branch](https://github.com/jupyterlab/pull-requests/tree/2.x) 
+  - for JupyterLab 2.x, see the [`2.x` branch](https://github.com/jupyterlab/pull-requests/tree/2.x)
 - [jupyterlab-git](https://github.com/jupyterlab/jupyterlab-git) >=0.30.0
 
 > For GitLab, you will need also `diff-match-patch`
@@ -49,6 +51,35 @@ Or with conda:
 
 ```bash
 conda install -c conda-forge diff-match-patch
+```
+
+### 1.5. Anonymous GitHub
+
+The `github-anonymous` is good for quick demos, as it doesn't require an _access token_.
+Combined with some binder configuration, this can be tailored for low-barrier, read-only
+access to PR discussions on e.g. Binder.
+
+The limitations:
+- at best, rate-limited to 60 requests on e.g. Binder
+- it cannot use the search APIs, and
+
+Because of these, it requires an `owner` and `repo` to list (the first) page of
+a particular repo's PRs:
+
+```python
+c.PRConfig.provider = 'github-anonymous'
+c.PRConfig.owner = 'jupyterlab'
+c.PRConfig.repo = 'pull-requests
+```
+
+> TODO: move to a deeper reference section
+```http
+GET https://api.github.com/repos/jupyterlab/pull-requests/pulls?state=all
+
+  x-ratelimit-limit: 60
+  x-ratelimit-remaining: 52
+  x-ratelimit-reset: 1617905825
+  x-ratelimit-used: 8
 ```
 
 ### 2. Getting your access token

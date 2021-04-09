@@ -4,6 +4,7 @@ Module with all of the individual handlers, which return the results to the fron
 import json
 import logging
 import traceback
+from typing import Optional
 from http import HTTPStatus
 
 import tornado
@@ -198,26 +199,33 @@ default_handlers = [
 ]
 
 
-def setup_handlers(web_app: "NotebookWebApplication", config: PRConfig):
+def setup_handlers(web_app: tornado.web.Application, config: PRConfig, log: Optional[logging.Logger]=None):
     host_pattern = ".*$"
     base_url = url_path_join(web_app.settings["base_url"], NAMESPACE)
 
-    logger = get_logger()
+    log = log or logging.getLogger(__name__)
 
     manager_class = MANAGERS.get(config.provider)
     if manager_class is None:
-        logger.error(f"No manager defined for provider '{config.provider}'.")
+        log.error(f"PR Manager: No manager defined for provider '{config.provider}'.")
         raise NotImplementedError()
-    manager = manager_class(config.api_base_url, config.access_token)
+    log.info(f"PR Manager Class {manager_class}")
+    try:
+        manager = manager_class(config)
+    except Exception as err:
+        import traceback
+        logging.error("PR Manager Exception", exc_info=1)
+        raise err
 
-    web_app.add_handlers(
-        host_pattern,
-        [
-            (
-                url_path_join(base_url, pat),
-                handler,
-                {"logger": logger, "manager": manager},
-            )
-            for pat, handler in default_handlers
-        ],
-    )
+    handlers = [
+        (
+            url_path_join(base_url, pat),
+            handler,
+            {"logger": log, "manager": manager},
+        )
+        for pat, handler in default_handlers
+    ]
+
+    log.debug(f"PR Handlers: {handlers}")
+
+    web_app.add_handlers(host_pattern, handlers)

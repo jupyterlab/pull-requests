@@ -30,16 +30,17 @@ def read_sample_response(filename):
     ),
 )
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
-async def test_GitLabManager_get_current_user(mock_call_provider, token, data, code):
+async def test_GitLabManager_get_current_user(mock_call_provider, token, data, code, pr_gitlab_manger):
     mock_call_provider.return_value = read_sample_response("get_user.json")
 
-    manager = GitLabManager(access_token=token)
+    pr_gitlab_manger._config.access_token = token
+
     if code is None:
-        result = await manager.get_current_user()
+        result = await pr_gitlab_manger.get_current_user()
         assert result == data
     else:
         with pytest.raises(HTTPError) as e:
-            await manager.get_current_user()
+            await pr_gitlab_manger.get_current_user()
         assert e.value.status_code == code
         assert data in e.value.reason
 
@@ -53,16 +54,15 @@ async def test_GitLabManager_get_current_user(mock_call_provider, token, data, c
     ),
 )
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
-async def test_GitLabManager_list_prs(mock_call_provider, user, filter, expected):
+async def test_GitLabManager_list_prs(mock_call_provider, user, filter, expected, pr_valid_gitlab_manager):
     mock_call_provider.return_value = read_sample_response("get_prs.json")
 
-    manager = GitLabManager(access_token="valid")
-    result = await manager.list_prs(user, filter)
+    result = await pr_valid_gitlab_manager.list_prs(user, filter)
 
     mock_call_provider.assert_called_once()
     assert (
         mock_call_provider.call_args[0][0].url
-        == f"{manager.base_api_url}merge_requests?state=opened&{expected}&per_page=100"
+        == f"{pr_valid_gitlab_manager.base_api_url}/merge_requests?state=opened&{expected}&per_page=100"
     )
 
     assert isinstance(result, list)
@@ -85,13 +85,12 @@ async def test_GitLabManager_list_prs(mock_call_provider, user, filter, expected
     ),
 )
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
-async def test_GitLabManager_list_files(mock_call_provider, user, filter, expected):
+async def test_GitLabManager_list_files(mock_call_provider, user, filter, expected, pr_valid_gitlab_manager):
     mock_call_provider.return_value = read_sample_response("get_pr_changes.json")
 
-    manager = GitLabManager(access_token="valid")
-    url = f"{manager.base_api_url}merge_requests/1"
+    url = f"{pr_valid_gitlab_manager.base_api_url}/merge_requests/1"
 
-    result = await manager.list_files(url)
+    result = await pr_valid_gitlab_manager.list_files(url)
     mock_call_provider.assert_called_once()
     assert mock_call_provider.call_args[0][0].url == url_path_join(
         url, "changes?per_page=100"
@@ -167,13 +166,12 @@ async def test_GitLabManager_list_files(mock_call_provider, user, filter, expect
     "jupyterlab_pullrequests.managers.gitlab.GitLabManager._call_gitlab",
     new_callable=AsyncMock,
 )
-async def test_GitLabManager_list_files_status(mock_call_provider, change, status):
+async def test_GitLabManager_list_files_status(mock_call_provider, change, status, pr_valid_gitlab_manager):
     mock_call_provider.return_value = [{"changes": [change]}]
 
-    manager = GitLabManager(access_token="valid")
-    url = f"{manager.base_api_url}merge_requests/1"
+    url = f"{pr_valid_gitlab_manager.base_api_url}/merge_requests/1"
 
-    result = await manager.list_files(url)
+    result = await pr_valid_gitlab_manager.list_files(url)
     assert result[0]["status"] == status
 
 
@@ -191,11 +189,10 @@ async def test_GitLabManager_list_files_status(mock_call_provider, change, statu
 )
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
 async def test_GitLabManager_get_file_diff(
-    mock_call_provider, old_content, new_content
+    mock_call_provider, old_content, new_content, pr_valid_gitlab_manager
 ):
     mock_call_provider.return_value = read_sample_response("get_pr_changes.json")
 
-    manager = GitLabManager(access_token="valid")
     mock_call_provider.side_effect = [
         read_sample_response("get_pr.json"),
         old_content
@@ -205,7 +202,7 @@ async def test_GitLabManager_get_file_diff(
         if isinstance(new_content, Exception)
         else MagicMock(body=bytes(new_content, encoding="utf-8")),
     ]
-    result = await manager.get_file_diff("valid-prid", "valid-filename")
+    result = await pr_valid_gitlab_manager.get_file_diff("valid-prid", "valid-filename")
     assert mock_call_provider.call_count == 3
     assert result == {
         "base": {
@@ -300,16 +297,15 @@ async def test_GitLabManager_get_file_diff(
     ),
 )
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
-async def test_GitLabManager_get_threads(mock_call_provider, filename, expected):
+async def test_GitLabManager_get_threads(mock_call_provider, filename, expected, pr_valid_gitlab_manager):
     mock_call_provider.return_value = read_sample_response("get_pr_comments.json")
-    manager = GitLabManager(access_token="valid")
 
-    result = await manager.get_threads("mergerequests-id", filename)
+    result = await pr_valid_gitlab_manager.get_threads("mergerequests-id", filename)
 
     mock_call_provider.assert_called_once()
     assert (
         mock_call_provider.call_args[0][0].url
-        == f"{manager.base_api_url}mergerequests-id/discussions?per_page=100"
+        == f"{pr_valid_gitlab_manager.base_api_url}/mergerequests-id/discussions?per_page=100"
     )
 
     assert result == expected
@@ -388,9 +384,8 @@ async def test_GitLabManager_get_threads(mock_call_provider, filename, expected)
 )
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
 async def test_GitLabManager_post_comment(
-    mock_call_provider, filename, body, position, response, expected
+    mock_call_provider, filename, body, position, response, expected, pr_valid_gitlab_manager
 ):
-    manager = GitLabManager(access_token="valid")
     side_effect = [
         read_sample_response(response),
     ]
@@ -401,17 +396,17 @@ async def test_GitLabManager_post_comment(
         )
     mock_call_provider.side_effect = side_effect
 
-    result = await manager.post_comment("mergerequest-id", body)
+    result = await pr_valid_gitlab_manager.post_comment("mergerequest-id", body)
 
     assert mock_call_provider.call_count == len(side_effect)
     # 1 = last call; 0 = args of call; 0 = first argument
     request = mock_call_provider.call_args_list[-1][0][0]
     if isinstance(body, NewComment):
-        assert request.url == f"{manager.base_api_url}mergerequest-id/discussions"
+        assert request.url == f"{pr_valid_gitlab_manager.base_api_url}/mergerequest-id/discussions"
     else:
         assert (
             request.url
-            == f"{manager.base_api_url}mergerequest-id/discussions/discussion-id/notes"
+            == f"{pr_valid_gitlab_manager.base_api_url}/mergerequest-id/discussions/discussion-id/notes"
         )
 
     assert json.loads(request.body.decode("utf-8")) == {"body": body.text, **position}
@@ -422,15 +417,14 @@ async def test_GitLabManager_post_comment(
 @pytest.mark.asyncio
 @patch("tornado.httpclient.AsyncHTTPClient.fetch", new_callable=AsyncMock)
 async def test_GitLabManager_post_comment_invalid_line_code(
-    mock_call_provider, monkeypatch
+    mock_call_provider, monkeypatch, pr_valid_gitlab_manager
 ):
-    manager = GitLabManager(access_token="valid")
 
     async def fake_file_diff(*args):
         # Fake that the 20 first lines are identical
         return [difflib.Match(a=0, b=0, size=20)]
 
-    monkeypatch.setattr(manager, "_get_file_diff", fake_file_diff)
+    monkeypatch.setattr(pr_valid_gitlab_manager, "_get_file_diff", fake_file_diff)
 
     body = NewComment("New discussion on plain text", "README.md", 17, None)
 
@@ -449,13 +443,13 @@ async def test_GitLabManager_post_comment_invalid_line_code(
         read_sample_response("posted_new_file_comment.json"),
     ]
 
-    result = await manager.post_comment("mergerequest-id", body)
+    result = await pr_valid_gitlab_manager.post_comment("mergerequest-id", body)
 
     assert mock_call_provider.call_count == 3
     # 1 = last call; 0 = args of call; 0 = first argument
     request = mock_call_provider.call_args_list[-1][0][0]
 
-    assert request.url == f"{manager.base_api_url}mergerequest-id/discussions"
+    assert request.url == f"{pr_valid_gitlab_manager.base_api_url}/mergerequest-id/discussions"
     assert json.loads(request.body.decode("utf-8")) == {
         "body": body.text,
         "position": {

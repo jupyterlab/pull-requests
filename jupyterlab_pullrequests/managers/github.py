@@ -6,23 +6,20 @@ from notebook.utils import url_path_join
 from tornado.httputil import url_concat
 from tornado.web import HTTPError
 
-from ..base import CommentReply, NewComment
+from ..base import CommentReply, NewComment, PRConfig
 from .manager import PullRequestsManager
 
 
 class GitHubManager(PullRequestsManager):
     """Pull request manager for GitHub."""
 
-    def __init__(
-        self, base_api_url: str = "https://api.github.com", access_token: str = ""
-    ) -> None:
-        """
-        Args:
-            base_api_url: Base REST API url for the versioning service
-            access_token: Versioning service access token
-        """
-        super().__init__(base_api_url=base_api_url, access_token=access_token)
-        self._pull_requests_cache = {}  # Dict[str, Dict]
+    def __init__(self, config: PRConfig) -> None:
+        super().__init__(config)
+        self._pull_requests_cache = {}
+
+    @property
+    def base_api_url(self):
+        return self._config.api_base_url or "https://api.github.com"
 
     @property
     def per_page_argument(self) -> Optional[Tuple[str, int]]:
@@ -40,7 +37,7 @@ class GitHubManager(PullRequestsManager):
         Returns:
             JSON description of the user matching the access token
         """
-        git_url = url_path_join(self._base_api_url, "user")
+        git_url = url_path_join(self.base_api_url, "user")
         data = await self._call_github(git_url, has_pagination=False)
 
         return {"username": data["login"]}
@@ -186,7 +183,7 @@ class GitHubManager(PullRequestsManager):
 
         # Use search API to find matching pull requests and return
         git_url = url_path_join(
-            self._base_api_url, "/search/issues?q=+state:open+type:pr" + search_filter
+            self.base_api_url, "/search/issues?q=+state:open+type:pr" + search_filter
         )
 
         results = await self._call_github(git_url)
@@ -204,7 +201,7 @@ class GitHubManager(PullRequestsManager):
             )
 
         # Reset cache
-        self._pull_requests_cache = {}
+        self._pull_requests_cache = None
 
         return data
 
@@ -251,6 +248,7 @@ class GitHubManager(PullRequestsManager):
         params: Optional[Dict[str, str]] = None,
         media_type: str = "application/vnd.github.v3+json",
         has_pagination: bool = True,
+        **headers
     ) -> Union[dict, str]:
         """Call GitHub
 
@@ -271,10 +269,11 @@ class GitHubManager(PullRequestsManager):
             List or Dict: Create from JSON response body if load_json is True
             str: Raw response body if load_json is False
         """
-        headers = {
-            "Accept": media_type,
-            "Authorization": f"token {self._access_token}",
-        }
+        headers = headers or {}
+        headers.update({"Accept": media_type})
+
+        if not self.anonymous:
+            headers.update({"Authorization": f"token {self._config.access_token}"})
 
         return await super()._call_provider(
             url,

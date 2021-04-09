@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -eux
+
+jlpm --prefer-optional --ignore-offline
+jlpm build:lib
+jlpm build:labextension:dev
+
+python -m pip install -e . --ignore-installed --no-deps
+
+jupyter labextension develop . --overwrite
+jupyter server extension enable --py jupyterlab_pullrequests --sys-prefix
+jupyter serverextension enable --py jupyterlab_pullrequests --sys-prefix
+
+jupyter server extension list
+jupyter serverextension list
+jupyter labextension list
+
+# copy custom jupyter config out of binder
+cp .binder/jupyter_config.example.json ./jupyter_config.json
+cp .binder/jupyter_config.example.json ./jupyter_notebook_config.json
+cp .binder/jupyter_config.example.json ./jupyter_server_config.json

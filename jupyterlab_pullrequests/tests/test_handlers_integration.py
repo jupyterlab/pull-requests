@@ -20,7 +20,8 @@ class TestPullRequest(AsyncHTTPTestCase):
         setup_handlers(
             app,
             PRConfig(
-                api_base_url=self.test_api_base_url, access_token=self.test_access_token
+                api_base_url=self.test_api_base_url,
+                access_token=self.test_access_token
             ),
         )
         return app
@@ -32,7 +33,7 @@ class TestListPullRequestsGithubUserHandlerEmptyPAT(TestPullRequest):
     # Test empty PAT
     def test_pat_empty(self):
         response = self.fetch("/pullrequests/prs/user?filter=created")
-        self.assertEqual(response.code, 400)
+        self.assertEqual(response.code, 400, f"{response.body}")
         self.assertIn("No access token specified", response.reason)
 
 
@@ -90,7 +91,7 @@ class TestListPullRequestsGithubFilesHandlerBadID(TestPullRequest):
     # Test invalid id
     def test_id_invalid(self):
         response = self.fetch("/pullrequests/prs/files?id=https://google.com")
-        self.assertEqual(response.code, 404)
+        assert response.code >= 400, f"{response.body}"
         self.assertIn("Invalid response", response.reason)
 
 
@@ -134,7 +135,7 @@ class TestGetPullRequestsGithubFileLinksHandlerID(TestPullRequest):
         response = self.fetch(
             f"/pullrequests/files/content?filename={valid_prfilename}&id=https://google.com"
         )
-        self.assertEqual(response.code, 400)
+        assert response.code >=400, f"{response.body}"
         self.assertIn("Invalid response", response.reason)
 
 
@@ -146,7 +147,7 @@ class TestGetPullRequestsCommentsHandler(TestPullRequest):
         response = self.fetch(
             f"/pullrequests/files/comments?filename={valid_prfilename}"
         )
-        self.assertEqual(response.code, 400)
+        assert response.code >=400, f"{response.body}"
         self.assertIn("Missing argument 'id'", response.reason)
 
     # Test no id
@@ -178,7 +179,7 @@ class TestGetPullRequestsCommentsHandler(TestPullRequest):
         response = self.fetch(
             f"/pullrequests/files/comments?filename={valid_prfilename}&id=https://google.com"
         )
-        self.assertEqual(response.code, 404)
+        assert response.code >=400, f"{response.body}"
         self.assertIn("Invalid response", response.reason)
 
 
@@ -246,5 +247,5 @@ class TestPostPullRequestsCommentsHandlerID(TestPullRequest):
             method="POST",
             body='{"in_reply_to": 123, "text": "test"}',
         )
-        self.assertEqual(response.code, 400)
+        assert response.code >=400, f"{response.body}"
         self.assertIn("Invalid response", response.reason)

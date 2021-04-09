@@ -1,0 +1,27 @@
+name: pull-requests
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  - git
+  - nodejs >=14,<15
+  - jupyterlab >=3,<4
+  - python >=3.7,<3.9
+  # gitlab
+  - diff-match-patch
+  # test
+  - codecov
+  - mock >=4.0.0
+  - pytest
+  - pytest-asyncio
+  - pytest-cov
+  - pytest-tornasync
+  # not-yet-on-conda-forge
+  - pip
+  # binder demo stuff
+  - nbgitpuller
+  - jupyterlab-tour
+  - pip:
+    - jupyterlab-git >=0.30.0b3,<0.40.0a0
