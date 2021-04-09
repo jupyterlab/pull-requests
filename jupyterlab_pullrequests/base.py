@@ -1,6 +1,6 @@
 from typing import List, NamedTuple, Optional
 
-from traitlets import Enum, Unicode, default
+from traitlets import Enum, Unicode, default, Bool
 from traitlets.config import Configurable
 
 
@@ -50,6 +50,24 @@ class PRConfig(Configurable):
         help="Base URL of the versioning service REST API.",
     )
 
+    anonymous = Bool(
+        config=True,
+        default=False,
+        help="Whether API request should be made without authorization headers",
+    )
+
+    repo = Unicode(
+        config=True,
+        allow_none=True,
+        help="An optional repo name to seed PR listing, used by github-anonymous"
+    )
+
+    owner = Unicode(
+        config=True,
+        allow_none=True,
+        help="An option user/organization to seed PR listing, used by github-anonymous"
+    )
+
     @default("api_base_url")
     def set_default_api_base_url(self):
         if self.provider == "gitlab":
@@ -58,7 +76,7 @@ class PRConfig(Configurable):
             return "https://api.github.com"
 
     provider = Enum(
-        ["github", "gitlab"],
+        ["github", "github-anonymous", "gitlab"],
         default_value="github",
         config=True,
         help="The source control provider.",

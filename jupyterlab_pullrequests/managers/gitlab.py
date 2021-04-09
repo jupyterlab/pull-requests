@@ -13,7 +13,7 @@ from packaging.version import parse
 from tornado.httputil import url_concat
 from tornado.web import HTTPError
 
-from ..base import CommentReply, NewComment
+from ..base import CommentReply, NewComment, PRConfig
 from ..log import get_logger
 from .manager import PullRequestsManager
 
@@ -25,21 +25,19 @@ class GitLabManager(PullRequestsManager):
 
     MINIMAL_VERSION = "13.1"  # Due to pagination https://docs.gitlab.com/ee/api/README.html#pagination
 
-    def __init__(
-        self, base_api_url: str = "https://gitlab.com/api/v4/", access_token: str = ""
-    ) -> None:
-        """
-        Args:
-            base_api_url: Base REST API url for the versioning service
-            access_token: Versioning service access token
-        """
-        super().__init__(base_api_url=base_api_url, access_token=access_token)
+    def __init__(self, config: PRConfig) -> None:
+        super().__init__(config)
+
         # Creating new file discussion required some commit sha's so we will cache them
         self._merge_requests_cache = {}  # Dict[str, Dict]
         # Creating discussion on unmodified line requires to figure out the line number
         # in the diff file for the original and the new file using Myers algorithm. So
         # we cache the diff to speed up the process.
         self._file_diff_cache = {}  # Dict[Tuple[str, str], List[difflib.Match]]
+
+    @property
+    def base_api_url(self):
+        return self._config.api_base_url or "https://gitlab.com/api/v4/"
 
     @property
     def per_page_argument(self) -> Optional[Tuple[str, int]]:
@@ -252,7 +250,7 @@ class GitLabManager(PullRequestsManager):
             )
 
         # Reset cache
-        self._merge_requests_cache = {}
+        self._merge_requests_cache = None
 
         return data
 
@@ -374,7 +372,7 @@ class GitLabManager(PullRequestsManager):
         """
 
         headers = {
-            "Authorization": f"Bearer {self._access_token}",
+            "Authorization": f"Bearer {self._config.access_token}",
             "Accept": "application/json",
         }
         return await super()._call_provider(

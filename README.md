@@ -53,6 +53,35 @@ Or with conda:
 conda install -c conda-forge diff-match-patch
 ```
 
+### 1.5. Anonymous GitHub
+
+The `github-anonymous` is good for quick demos, as it doesn't require an _access token_.
+Combined with some binder configuration, this can be tailored for low-barrier, read-only
+access to PR discussions on e.g. Binder.
+
+The limitations:
+- at best, rate-limited to 60 requests on e.g. Binder
+- it cannot use the search APIs, and
+
+Because of these, it requires an `owner` and `repo` to list (the first) page of
+a particular repo's PRs:
+
+```python
+c.PRConfig.provider = 'github-anonymous'
+c.PRConfig.owner = 'jupyterlab'
+c.PRConfig.repo = 'pull-requests
+```
+
+> TODO: move to a deeper reference section
+```http
+GET https://api.github.com/repos/jupyterlab/pull-requests/pulls?state=all
+
+  x-ratelimit-limit: 60
+  x-ratelimit-remaining: 52
+  x-ratelimit-reset: 1617905825
+  x-ratelimit-used: 8
+```
+
 ### 2. Getting your access token
 
 For GitHub, the documentation is [there](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token). The token scope must be **repo**.

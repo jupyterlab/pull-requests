@@ -10,25 +10,24 @@ from notebook.utils import url_path_join
 
 from .._version import __version__
 from ..log import get_logger
-
+from ..base import PRConfig
 
 class PullRequestsManager(abc.ABC):
     """Abstract base class for pull requests manager."""
 
-    def __init__(self, base_api_url: str = "", access_token: str = "") -> None:
-        """
-        Args:
-            base_api_url: Base REST API url for the versioning service
-            access_token: Versioning service access token
-        """
+    def __init__(self, config: PRConfig) -> None:
+        self._config = config
         self._client = tornado.httpclient.AsyncHTTPClient()
-        self._base_api_url = base_api_url
-        self._access_token = access_token
 
     @property
     def base_api_url(self) -> str:
         """The provider base REST API URL"""
-        return self._base_api_url
+        return self._config.api_base_url
+
+    @property
+    def anonymous(self) -> str:
+        """Whether the provider should use Authorization headers"""
+        return self._config.anonymous
 
     @property
     def log(self) -> logging.Logger:
@@ -142,10 +141,15 @@ class PullRequestsManager(abc.ABC):
             List or Dict: Create from JSON response body if load_json is True
             str: Raw response body if load_json is False
         """
-        if not self._access_token:
+
+        if not self.anonymous and not self._config.access_token:
             raise tornado.web.HTTPError(
                 status_code=http.HTTPStatus.BAD_REQUEST,
-                reason="No access token specified. Please set PRConfig.access_token in your user jupyter_server_config file.",
+                reason=(
+                    """No access token specified. """
+                    """Please set PRConfig.access_token (or an anonymous provider) """
+                    """in your user jupyter_server_config file."""
+                )
             )
 
         if body is not None:
@@ -154,8 +158,8 @@ class PullRequestsManager(abc.ABC):
             headers["Content-Type"] = "application/json"
             body = tornado.escape.json_encode(body)
 
-        if not url.startswith(self._base_api_url):
-            url = url_path_join(self._base_api_url, url)
+        if not url.startswith(self.base_api_url):
+            url = url_path_join(self.base_api_url, url)
 
         with_pagination = False
         if (
@@ -203,7 +207,7 @@ class PullRequestsManager(abc.ABC):
                             break
 
                 new_ = json.loads(result)
-                if next_url is not None:
+                if has_pagination and next_url is not None:
                     next_ = await self._call_provider(
                         next_url,
                         load_json=load_json,

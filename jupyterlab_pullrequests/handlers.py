@@ -198,26 +198,33 @@ default_handlers = [
 ]
 
 
-def setup_handlers(web_app: "NotebookWebApplication", config: PRConfig):
+def setup_handlers(jupyter_app: "Application", config: PRConfig):
     host_pattern = ".*$"
-    base_url = url_path_join(web_app.settings["base_url"], NAMESPACE)
+    base_url = url_path_join(jupyter_app.web_app.settings["base_url"], NAMESPACE)
 
-    logger = get_logger()
+    logger = jupyter_app.log
 
     manager_class = MANAGERS.get(config.provider)
     if manager_class is None:
-        logger.error(f"No manager defined for provider '{config.provider}'.")
+        logger.error(f"PR Manager: No manager defined for provider '{config.provider}'.")
         raise NotImplementedError()
-    manager = manager_class(config.api_base_url, config.access_token)
+    logger.info(f"PR Manager Class {manager_class}")
+    try:
+        manager = manager_class(config)
+    except Exception as err:
+        import traceback
+        logging.error("PR Manager Exception", exc_info=1)
+        raise err
 
-    web_app.add_handlers(
-        host_pattern,
-        [
-            (
-                url_path_join(base_url, pat),
-                handler,
-                {"logger": logger, "manager": manager},
-            )
-            for pat, handler in default_handlers
-        ],
-    )
+    handlers = [
+        (
+            url_path_join(base_url, pat),
+            handler,
+            {"logger": logger, "manager": manager},
+        )
+        for pat, handler in default_handlers
+    ]
+
+    logger.debug(f"PR Handlers: {handlers}")
+
+    jupyter_app.web_app.add_handlers(host_pattern, handlers)
