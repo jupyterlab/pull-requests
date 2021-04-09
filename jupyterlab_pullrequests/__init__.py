@@ -25,3 +25,8 @@ def _load_jupyter_server_extension(server_app):
     setup_handlers(server_app.web_app, config, log=log)
 
     log.info("Registered jupyterlab_pullrequests extension")
+
+
+# for legacy launching with notebok (e.g. Binder)
+_jupyter_server_extension_paths = _jupyter_server_extension_points
+load_jupyter_server_extension = _load_jupyter_server_extension
