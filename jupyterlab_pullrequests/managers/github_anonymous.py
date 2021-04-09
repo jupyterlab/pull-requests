@@ -15,7 +15,7 @@ class AnonymousGithubManager(GitHubManager):
     @property
     def anonymous(self) -> bool:
         """Whether the provider should use Authorization headers"""
-        return False
+        return True
 
 
     async def get_current_user(self) -> Dict[str, str]:
