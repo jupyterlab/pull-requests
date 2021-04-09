@@ -16,3 +16,5 @@ jupyter labextension list
 
 # copy custom jupyter config out of binder
 cp .binder/jupyter_config.example.json ./jupyter_config.json
+cp .binder/jupyter_config.example.json ./jupyter_notebook_config.json
+cp .binder/jupyter_config.example.json ./jupyter_server_config.json
