@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.0.0
+## 3.0.0 (2021-04-18)
 
 - Port to JupyterLab 3 (#29)
 - Fixes comment duplication when code mirror viewport is updated (#43)
