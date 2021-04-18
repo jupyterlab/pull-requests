@@ -1,13 +1,32 @@
 /*-----------------------------------------------------------------------------
 | JupyterLab Pull Requests Style
 |----------------------------------------------------------------------------*/
-@import url('~@jupyterlab/git/style/index.css');
 
 .jp-PullRequestPanel {
   height: 100%;
   display: flex;
   flex-direction: column;
   background-color: var(--jp-layout-color0);
+}
+
+.jp-PullRequestButton {
+  flex: 0 0 auto;
+  background: none;
+  line-height: 0px;
+  padding: 0px 4px;
+  width: 16px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.jp-PullRequestButton:active {
+  transform: scale(1.272019649);
+  overflow: hidden;
+}
+
+.jp-PullRequestButton:disabled {
+  cursor: default;
 }
 
 .jp-PullRequestToolbar {

@@ -2,7 +2,7 @@
 import { PlainTextDiff } from '@jupyterlab/git';
 import { DiffModel } from '@jupyterlab/git/lib/components/diff/model';
 import { Widget } from '@lumino/widgets';
-import { LineWidget } from 'codemirror';
+import { LineWidget, MergeView } from 'codemirror';
 import { IComment, IDiffOptions, IThread } from '../../tokens';
 import { generateNode } from '../../utils';
 import { Discussion } from '../discussion/Discussion';
@@ -101,22 +101,17 @@ export class PlainTextPRDiff extends PlainTextDiff {
       editor.setGutterMarker(lineIdx, 'jp-PullRequestCommentDecoration', div);
     }
   }
-
   /**
    * Create the Plain Text Diff view
    */
-  protected async createDiffView(): Promise<void> {
-    await super.createDiffView();
+  protected async createDiffView(
+    challengerContent: string,
+    referenceContent: string
+  ): Promise<void> {
+    await super.createDiffView(challengerContent, referenceContent);
 
     if (this._mergeView) {
       {
-        this._mergeView.leftOriginal().setOption('gutters', [
-          'CodeMirror-linenumbers',
-          // FIXME without this - the comment decoration does not show up
-          //   But it add a single comment decoration on the first line of each editors
-          'jp-PullRequestCommentDecoration',
-          'CodeMirror-patchgutter'
-        ]);
         const { from, to } = this._mergeView.leftOriginal().getViewport();
         this.updateView(
           this._mergeView.leftOriginal(),
@@ -135,13 +130,6 @@ export class PlainTextPRDiff extends PlainTextDiff {
       }
 
       {
-        this._mergeView.editor().setOption('gutters', [
-          'CodeMirror-linenumbers',
-          // FIXME without this - the comment decoration does not show up
-          //   But it add a single comment decoration on the first line of each editors
-          'jp-PullRequestCommentDecoration',
-          'CodeMirror-patchgutter'
-        ]);
         const { from, to } = this._mergeView.editor().getViewport();
         this.updateView(this._mergeView.editor(), from, to, 'line');
         this._mergeView
@@ -192,6 +180,24 @@ export class PlainTextPRDiff extends PlainTextDiff {
         inlineDiscussions.discussion.node
       );
     }
+  }
+
+  /**
+   * Returns default CodeMirror editor options
+   *
+   * @returns CodeMirror editor options
+   */
+  protected getDefaultOptions(): Partial<MergeView.MergeViewEditorConfiguration> {
+    return {
+      ...super.getDefaultOptions(),
+      gutters: [
+        'CodeMirror-linenumbers',
+        // without this - the comment decoration does not show up
+        //   But it add a single comment decoration on the first line of each editors
+        'jp-PullRequestCommentDecoration',
+        'CodeMirror-patchgutter'
+      ]
+    };
   }
 
   /**

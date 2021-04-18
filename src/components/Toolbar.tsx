@@ -1,6 +1,6 @@
 import React from 'react';
 import { refreshIcon } from '@jupyterlab/ui-components';
-import { ActionButton } from '@jupyterlab/git/lib/components/ActionButton';
+import { ActionButton } from './ActionButton';
 
 /**
  * Toolbar properties

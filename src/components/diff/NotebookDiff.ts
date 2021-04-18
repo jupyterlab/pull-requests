@@ -7,8 +7,9 @@
 
 import { NotebookDiff } from '@jupyterlab/git';
 import { DiffModel } from '@jupyterlab/git/lib/components/diff/model';
-import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { INotebookContent } from '@jupyterlab/nbformat';
 import jsonMap from 'json-source-map';
+import { IDiffEntry } from 'nbdime/lib/diff/diffentries';
 import { CellDiffModel, NotebookDiffModel } from 'nbdime/lib/diff/model';
 import { NotebookDiffWidget } from 'nbdime/lib/diff/widget';
 import {
@@ -17,7 +18,22 @@ import {
   IThread,
   IThreadCell
 } from '../../tokens';
+import { requestAPI } from '../../utils';
 import { NotebookCellsDiff } from './NotebookCellsDiff';
+
+/**
+ * Data return by the ndbime api endpoint
+ */
+interface INbdimeDiff {
+  /**
+   * Base notebook content
+   */
+  base: INotebookContent;
+  /**
+   * Diff to obtain challenger from base
+   */
+  diff: IDiffEntry[];
+}
 
 export class NotebookPRDiff extends NotebookDiff {
   constructor(props: IDiffOptions) {
@@ -160,16 +176,22 @@ export class NotebookPRDiff extends NotebookDiff {
     return threadsByChunk;
   }
 
-  protected createDiffView(
-    model: NotebookDiffModel,
-    renderMime: IRenderMimeRegistry
-  ): NotebookDiffWidget {
-    // return new NotebookDiffWidget(model, renderMime);
+  protected async createDiffView(
+    challengerContent: string,
+    referenceContent: string
+  ): Promise<NotebookDiffWidget> {
+    const data = await requestAPI<INbdimeDiff>('git/diffnotebook', 'POST', {
+      currentContent: challengerContent,
+      previousContent: referenceContent
+    });
+
+    const model = new NotebookDiffModel(data.base, data.diff);
+
     const baseMapping = Private.computeNotebookMapping(
-      this._props.diff.base.content || '{}'
+      referenceContent || '{}'
     );
     const headMapping = Private.computeNotebookMapping(
-      this._props.diff.head.content || '{}'
+      challengerContent || '{}'
     );
     const comments = NotebookPRDiff.mapThreadsOnChunks(
       baseMapping,
@@ -183,7 +205,7 @@ export class NotebookPRDiff extends NotebookDiff {
       filename: this._props.filename,
       model,
       comments,
-      renderMime
+      renderMime: this._props.renderMime
     });
   }
 
