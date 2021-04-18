@@ -1,5 +1,4 @@
 import { DocumentRegistry } from '@jupyterlab/docregistry';
-import { ActionButton } from '@jupyterlab/git/lib/components/ActionButton';
 import {
   caretDownIcon,
   caretUpIcon,
@@ -10,6 +9,7 @@ import React from 'react';
 import { BeatLoader } from 'react-spinners';
 import { CommandIDs, IFile, IPullRequest } from '../../tokens';
 import { requestAPI } from '../../utils';
+import { ActionButton } from '../ActionButton';
 import { FileItem } from './FileItem';
 
 /**
