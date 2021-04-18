@@ -61,7 +61,7 @@ Releases should be cut from the GitHub Actions archive
 > It is recommended to start a new GitHub issue with this checklist of tasks to perform
 
 - [ ] On a GitHub PR
-  - [ ] bump the release numbers, as appropriate, in `_version.py` and `package.json`
+  - [ ] bump the release numbers, as appropriate, in `package.json`
   - [ ] update the CHANGELOG
 - [ ] After review, merge to the `master` branch
 - [ ] From the `master` build, download the `pull-requests dist <an ever-increasing number>.zip`
