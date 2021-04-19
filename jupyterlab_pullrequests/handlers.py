@@ -208,7 +208,7 @@ def setup_handlers(web_app: "NotebookWebApplication", config: PRConfig):
     if manager_class is None:
         logger.error(f"No manager defined for provider '{config.provider}'.")
         raise NotImplementedError()
-    manager = manager_class(config.api_base_url, config.access_token)
+    manager = manager_class(config)
 
     web_app.add_handlers(
         host_pattern,
