@@ -13,7 +13,7 @@ from packaging.version import parse
 from tornado.httputil import url_concat
 from tornado.web import HTTPError
 
-from ..base import CommentReply, NewComment
+from ..base import CommentReply, NewComment, PRConfig
 from ..log import get_logger
 from .manager import PullRequestsManager
 
@@ -25,21 +25,19 @@ class GitLabManager(PullRequestsManager):
 
     MINIMAL_VERSION = "13.1"  # Due to pagination https://docs.gitlab.com/ee/api/README.html#pagination
 
-    def __init__(
-        self, base_api_url: str = "https://gitlab.com/api/v4/", access_token: str = ""
-    ) -> None:
-        """
-        Args:
-            base_api_url: Base REST API url for the versioning service
-            access_token: Versioning service access token
-        """
-        super().__init__(base_api_url=base_api_url, access_token=access_token)
+    def __init__(self, config: PRConfig) -> None:
+        super().__init__(config)
+
         # Creating new file discussion required some commit sha's so we will cache them
         self._merge_requests_cache = {}  # Dict[str, Dict]
         # Creating discussion on unmodified line requires to figure out the line number
         # in the diff file for the original and the new file using Myers algorithm. So
         # we cache the diff to speed up the process.
         self._file_diff_cache = {}  # Dict[Tuple[str, str], List[difflib.Match]]
+
+    @property
+    def base_api_url(self):
+        return self._config.api_base_url or "https://gitlab.com/api/v4/"
 
     @property
     def per_page_argument(self) -> Optional[Tuple[str, int]]:
@@ -57,7 +55,7 @@ class GitLabManager(PullRequestsManager):
         Returns:
             Whether the server version is higher than the minimal supported version.
         """
-        url = url_path_join(self._base_api_url, "version")
+        url = url_path_join(self.base_api_url, "version")
         data = await self._call_gitlab(url, has_pagination=False)
         server_version = data.get("version", "")
         is_valid = True
@@ -79,7 +77,7 @@ class GitLabManager(PullRequestsManager):
         # Check server compatibility
         await self.check_server_version()
 
-        git_url = url_path_join(self._base_api_url, "user")
+        git_url = url_path_join(self.base_api_url, "user")
         data = await self._call_gitlab(git_url, has_pagination=False)
 
         return {"username": data["username"]}
@@ -227,7 +225,7 @@ class GitLabManager(PullRequestsManager):
 
         # Use search API to find matching pull requests and return
         git_url = url_path_join(
-            self._base_api_url, "/merge_requests?state=opened&" + search_filter
+            self.base_api_url, "/merge_requests?state=opened&" + search_filter
         )
 
         results = await self._call_gitlab(git_url)
@@ -235,7 +233,7 @@ class GitLabManager(PullRequestsManager):
         data = []
         for result in results:
             url = url_path_join(
-                self._base_api_url,
+                self.base_api_url,
                 "projects",
                 str(result["project_id"]),
                 "merge_requests",
@@ -374,7 +372,7 @@ class GitLabManager(PullRequestsManager):
         """
 
         headers = {
-            "Authorization": f"Bearer {self._access_token}",
+            "Authorization": f"Bearer {self._config.access_token}",
             "Accept": "application/json",
         }
         return await super()._call_provider(
@@ -481,7 +479,7 @@ class GitLabManager(PullRequestsManager):
     async def __get_content(self, project_id: int, filename: str, sha: str) -> str:
         url = url_concat(
             url_path_join(
-                self._base_api_url,
+                self.base_api_url,
                 "projects",
                 str(project_id),
                 "repository/files",
