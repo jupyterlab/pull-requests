@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.1 (2021-04-22)
+
+- Add backport extension entrypoints to classical notebook server (#48)
+- Pass directly the configuration object to manager (#47)  
+  This breaks an internal API 
+
 ## 3.0.0 (2021-04-18)
 
 - Port to JupyterLab 3 (#29)
