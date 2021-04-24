@@ -2,9 +2,6 @@ import pytest
 
 from ..base import PRConfig
 
-# the preferred method for loading jupyter_server (because entry_points)
-pytest_plugins = ["jupyter_server.pytest_plugin"]
-
 
 @pytest.fixture
 def pr_base_config():
