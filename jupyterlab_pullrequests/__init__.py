@@ -19,8 +19,7 @@ def _load_jupyter_server_extension(server_app):
     from .base import PRConfig
     from .handlers import setup_handlers
 
-    config = PRConfig(config=server_app.config)
-    setup_handlers(server_app.web_app, config)
+    setup_handlers(server_app.web_app, server_app.config)
     server_app.log.info("Registered jupyterlab_pullrequests extension")
 
 

@@ -4,17 +4,17 @@ Module with all of the individual handlers, which return the results to the fron
 import json
 import logging
 import traceback
-from typing import Optional
 from http import HTTPStatus
+from typing import Optional
 
 import tornado
 import tornado.escape as escape
-from notebook.base.handlers import APIHandler
-from notebook.utils import url_path_join
+import traitlets
+from jupyter_server.base.handlers import APIHandler
+from jupyter_server.utils import url_path_join
 
-from .base import CommentReply, NewComment, PRConfig
+from .base import MANAGERS, CommentReply, NewComment, PRConfig
 from .log import get_logger
-from .managers import MANAGERS
 from .managers.manager import PullRequestsManager
 
 NAMESPACE = "pullrequests"
@@ -199,16 +199,18 @@ default_handlers = [
 ]
 
 
-def setup_handlers(web_app: tornado.web.Application, config: PRConfig, log: Optional[logging.Logger]=None):
+def setup_handlers(web_app: tornado.web.Application, config: traitlets.config.Config, log: Optional[logging.Logger]=None):
     host_pattern = ".*$"
     base_url = url_path_join(web_app.settings["base_url"], NAMESPACE)
 
     log = log or logging.getLogger(__name__)
 
-    manager_class = MANAGERS.get(config.provider)
-    if manager_class is None:
-        log.error(f"PR Manager: No manager defined for provider '{config.provider}'.")
+    provider = PRConfig(config=config).provider
+    entry_point = MANAGERS.get(provider)
+    if entry_point is None:
+        log.error(f"PR Manager: No manager defined for provider '{provider}'.")
         raise NotImplementedError()
+    manager_class = entry_point.load()
     log.info(f"PR Manager Class {manager_class}")
     try:
         manager = manager_class(config)

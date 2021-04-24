@@ -8,7 +8,8 @@ from itertools import chain
 from typing import Dict, List, Optional, Tuple, Union
 from urllib.parse import quote
 
-from notebook.utils import url_path_join
+import traitlets
+from jupyter_server.utils import url_path_join
 from packaging.version import parse
 from tornado.httputil import url_concat
 from tornado.web import HTTPError
@@ -25,8 +26,8 @@ class GitLabManager(PullRequestsManager):
 
     MINIMAL_VERSION = "13.1"  # Due to pagination https://docs.gitlab.com/ee/api/README.html#pagination
 
-    def __init__(self, config: PRConfig) -> None:
-        super().__init__(config)
+    def __init__(self, config: traitlets.config.Config) -> None:
+        super().__init__(PRConfig(config=config))
 
         # Creating new file discussion required some commit sha's so we will cache them
         self._merge_requests_cache = {}  # Dict[str, Dict]

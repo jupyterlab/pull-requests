@@ -1,7 +1,14 @@
+from importlib import metadata
 from typing import List, NamedTuple, Optional
 
 from traitlets import Enum, Unicode, default
 from traitlets.config import Configurable
+
+# Supported third-party services
+MANAGERS = {}
+
+for entry in metadata.entry_points()["pull_requests_manager"]:
+    MANAGERS[entry.name] = entry
 
 
 class CommentReply(NamedTuple):
@@ -58,7 +65,7 @@ class PRConfig(Configurable):
             return "https://api.github.com"
 
     provider = Enum(
-        ["github", "gitlab"],
+        MANAGERS,
         default_value="github",
         config=True,
         help="The source control provider.",

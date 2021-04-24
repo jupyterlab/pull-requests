@@ -2,7 +2,8 @@ import json
 from itertools import chain
 from typing import Dict, List, Optional, Tuple, Union
 
-from notebook.utils import url_path_join
+import traitlets
+from jupyter_server.utils import url_path_join
 from tornado.httputil import url_concat
 from tornado.web import HTTPError
 
@@ -13,8 +14,8 @@ from .manager import PullRequestsManager
 class GitHubManager(PullRequestsManager):
     """Pull request manager for GitHub."""
 
-    def __init__(self, config: PRConfig) -> None:
-        super().__init__(config)
+    def __init__(self, config: traitlets.config.Config) -> None:
+        super().__init__(PRConfig(config=config))
         self._pull_requests_cache = {}
 
     @property
