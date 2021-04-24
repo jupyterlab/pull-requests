@@ -1,13 +1,13 @@
-from importlib import metadata
 from typing import List, NamedTuple, Optional
 
+import entrypoints
 from traitlets import Enum, Unicode, default
 from traitlets.config import Configurable
 
 # Supported third-party services
 MANAGERS = {}
 
-for entry in metadata.entry_points()["pull_requests_manager"]:
+for entry in entrypoints.get_group_all("pull_requests_manager"):
     MANAGERS[entry.name] = entry
 
 
