@@ -1,6 +1,6 @@
 import pytest
+from traitlets.config import Config
 
-from ..base import PRConfig
 
 pytest_plugins = ["jupyter_server.pytest_plugin"]
 
@@ -15,7 +15,7 @@ def jp_server_config(jp_server_config):
 
 @pytest.fixture
 def pr_base_config():
-    return PRConfig()
+    return Config()
 
 
 @pytest.fixture
