@@ -58,17 +58,19 @@ What do you need to do:
 
 1. Create a manager inheriting of `jupyterlab_pullrequests.managers.manager.PullRequestsManager`
 2. Implement the abstract methods
-3. Add the following entry point in the Python package setup:
+3. Create a factory that takes a `traitlets.config.Config` object as argument and returns
+ an instance of your manager.
+4. Add the following entry point in the Python package setup:
 
 ```
 [options.entry_points]
 pull_requests_manager =
-    <provider name> = <python.fullname.module>:<class name>
+    <provider name> = <python.module>:<provider factory>
 ```
 
 > Examples can be seen in `setup.cfg`
 
-4. Test it by running:
+5. Test it by running:
 
 ```sh
 jupyter lab --PRConfig.provider=<provider name>

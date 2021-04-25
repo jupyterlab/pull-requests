@@ -210,10 +210,10 @@ def setup_handlers(web_app: tornado.web.Application, config: traitlets.config.Co
     if entry_point is None:
         log.error(f"PR Manager: No manager defined for provider '{provider}'.")
         raise NotImplementedError()
-    manager_class = entry_point.load()
-    log.info(f"PR Manager Class {manager_class}")
+    manager_factory = entry_point.load()
+    log.info(f"PR Manager Class {manager_factory}")
     try:
-        manager = manager_class(config)
+        manager = manager_factory(config)
     except Exception as err:
         import traceback
         logging.error("PR Manager Exception", exc_info=1)
