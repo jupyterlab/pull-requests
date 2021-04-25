@@ -65,7 +65,7 @@ class PRConfig(Configurable):
             return "https://api.github.com"
 
     provider = Enum(
-        MANAGERS,
+        MANAGERS.keys(),
         default_value="github",
         config=True,
         help="The source control provider.",
