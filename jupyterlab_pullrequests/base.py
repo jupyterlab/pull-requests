@@ -7,7 +7,7 @@ from traitlets.config import Configurable
 # Supported third-party services
 MANAGERS = {}
 
-for entry in entrypoints.get_group_all("pull_requests_manager"):
+for entry in entrypoints.get_group_all("jupyterlab_pullrequests.manager_v1"):
     MANAGERS[entry.name] = entry
 
 
