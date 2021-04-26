@@ -1,5 +1,3 @@
-from tornado.web import Application
-
 from .. import (
     _jupyter_labextension_paths,
     _jupyter_server_extension_points,

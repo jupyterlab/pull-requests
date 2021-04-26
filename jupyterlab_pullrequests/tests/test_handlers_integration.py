@@ -1,251 +1,292 @@
-import tornado.web
-from tornado.testing import AsyncHTTPTestCase
+from unittest.mock import patch
 
-import jupyterlab_pullrequests.handlers
-from jupyterlab_pullrequests.base import PRConfig
-from jupyterlab_pullrequests.handlers import setup_handlers
+import pytest
+import tornado
 
 valid_prid = "https://api.github.com/repos/timnlupo/juypterlabpr-test/pulls/1"
 valid_prfilename = "test.ipynb"
 
 
-# Base class for PullRequest test cases
-class TestPullRequest(AsyncHTTPTestCase):
-    test_api_base_url = "https://api.github.com"
-    test_access_token = "valid"
-
-    def get_app(self):
-        app = tornado.web.Application()
-        app.settings["base_url"] = "/"
-        setup_handlers(
-            app,
-            PRConfig(
-                api_base_url=self.test_api_base_url,
-                access_token=self.test_access_token
-            ),
-        )
-        return app
+@patch("jupyterlab_pullrequests.base.PRConfig.access_token", "")
+async def test_ListPullRequests_pat_empty(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"No access token specified"
+    ) as exc_info:
+        await jp_fetch("pullrequests", "prs", "user", params={"filter": "created"})
+    assert exc_info.value.code == 400
 
 
-class TestListPullRequestsGithubUserHandlerEmptyPAT(TestPullRequest):
-    test_access_token = ""
-
-    # Test empty PAT
-    def test_pat_empty(self):
-        response = self.fetch("/pullrequests/prs/user?filter=created")
-        self.assertEqual(response.code, 400, f"{response.body}")
-        self.assertIn("No access token specified", response.reason)
-
-
-class TestListPullRequestsGithubUserHandlerInvalidPAT(TestPullRequest):
-    test_access_token = "invalid"
-
-    # Test invalid PAT
-    def test_pat_invalid(self):
-        response = self.fetch("/pullrequests/prs/user?filter=created")
-        self.assertEqual(response.code, 401)
-        self.assertIn("Invalid response in", response.reason)
+@patch("jupyterlab_pullrequests.base.PRConfig.access_token", "invalid")
+async def test_ListPullRequests_pat_invalid(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Invalid response in"
+    ) as exc_info:
+        await jp_fetch("pullrequests", "prs", "user", params={"filter": "created"})
+    assert exc_info.value.code == 401
 
 
 # Test list pull requests params
-class TestListPullRequestsGithubUserHandlerParam(TestPullRequest):
 
-    # Test missing parameter
-    def test_param_missing(self):
-        response = self.fetch("/pullrequests/prs/user")
-        self.assertEqual(response.code, 400)
-        self.assertIn("Missing argument 'filter'", response.reason)
+# Test missing parameter
+async def test_ListPullRequests_param_missing(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Missing argument 'filter'"
+    ) as exc_info:
+        await jp_fetch("pullrequests", "prs", "user")
+    assert exc_info.value.code == 400
 
-    # Test no parameter
-    def test_param_none(self):
-        response = self.fetch("/pullrequests/prs/user?filter=")
-        self.assertEqual(response.code, 400)
-        self.assertIn("Invalid argument 'filter'", response.reason)
 
-    # Test invalid parameter
-    def test_param_invalid(self):
-        response = self.fetch("/pullrequests/prs/user?filter=invalid")
-        self.assertEqual(response.code, 400)
-        self.assertIn("Invalid parameter 'filter'", response.reason)
+# Test no parameter
+async def test_ListPullRequests_param_none(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Invalid argument 'filter'"
+    ) as exc_info:
+        await jp_fetch("pullrequests", "prs", "user", params={"filter": ""})
+    assert exc_info.value.code == 400
+
+
+# Test invalid parameter
+async def test_ListPullRequests_param_invalid(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Invalid parameter 'filter'"
+    ) as exc_info:
+        await jp_fetch("pullrequests", "prs", "user", params={"filter": "invalid"})
+    assert exc_info.value.code == 400
 
 
 # Test list files
-class TestListPullRequestsGithubFilesHandler(TestPullRequest):
 
-    # Test missing id
-    def test_id_missing(self):
-        response = self.fetch("/pullrequests/prs/files")
-        self.assertEqual(response.code, 400)
-        self.assertIn("Missing argument 'id'", response.reason)
-
-    # Test no id
-    def test_id_none(self):
-        response = self.fetch("/pullrequests/prs/files?id=")
-        self.assertEqual(response.code, 400)
-        self.assertIn("Invalid argument 'id'", response.reason)
+# Test missing id
+async def test_ListPullRequests_id_missing(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Missing argument 'id'"
+    ) as exc_info:
+        await jp_fetch("pullrequests", "prs", "files")
+    assert exc_info.value.code == 400
 
 
-class TestListPullRequestsGithubFilesHandlerBadID(TestPullRequest):
-    test_api_base_url = ""
+# Test no id
+async def test_ListPullRequests_id_none(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Invalid argument 'id'"
+    ) as exc_info:
+        await jp_fetch("pullrequests", "prs", "files", params={"id": ""})
+    assert exc_info.value.code == 400
 
-    # Test invalid id
-    def test_id_invalid(self):
-        response = self.fetch("/pullrequests/prs/files?id=https://google.com")
-        assert response.code >= 400, f"{response.body}"
-        self.assertIn("Invalid response", response.reason)
+
+# Test invalid id
+@patch("jupyterlab_pullrequests.base.PRConfig.api_base_url", "")
+async def test_ListPullRequests_id_invalid(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Invalid response"
+    ) as exc_info:
+        await jp_fetch(
+            "pullrequests", "prs", "files", params={"id": "https://google.com"}
+        )
+    assert exc_info.value.code >= 400
 
 
 # Test get file links
-class TestGetPullRequestsGithubFileLinksHandler(TestPullRequest):
 
-    # Test missing id
-    def test_id_missing(self):
-        response = self.fetch(
-            f"/pullrequests/files/content?filename={valid_prfilename}"
+# Test missing id
+async def test_GetPullRequests_id_missing(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Missing argument 'id'"
+    ) as exc_info:
+        await jp_fetch(
+            "pullrequests", "files", "content", params={"filename": valid_prfilename}
         )
-        self.assertEqual(response.code, 400)
-        self.assertIn("Missing argument 'id'", response.reason)
+    assert exc_info.value.code == 400
 
-    # Test no id
-    def test_id_none(self):
-        response = self.fetch(
-            f"/pullrequests/files/content?filename={valid_prfilename}&id="
+
+# Test no id
+async def test_GetPullRequests_id_none(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Invalid argument 'id'"
+    ) as exc_info:
+        await jp_fetch(
+            "pullrequests",
+            "files",
+            "content",
+            params={"filename": valid_prfilename, "id": ""},
         )
-        self.assertEqual(response.code, 400)
-        self.assertIn("Invalid argument 'id'", response.reason)
-
-    # Test missing id
-    def test_filename_missing(self):
-        response = self.fetch(f"/pullrequests/files/content?id={valid_prid}")
-        self.assertEqual(response.code, 400)
-        self.assertIn("Missing argument 'filename'", response.reason)
-
-    # Test no id
-    def test_filename_none(self):
-        response = self.fetch(f"/pullrequests/files/content?id={valid_prid}&filename=")
-        self.assertEqual(response.code, 400)
-        self.assertIn("Invalid argument 'filename'", response.reason)
+    assert exc_info.value.code == 400
 
 
-class TestGetPullRequestsGithubFileLinksHandlerID(TestPullRequest):
-    test_api_base_url = ""
+# Test missing id
+async def test_GetPullRequests_filename_missing(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Missing argument 'filename'"
+    ) as exc_info:
+        await jp_fetch("pullrequests", "files", "content", params={"id": valid_prid})
+    assert exc_info.value.code == 400
 
-    # Test invalid id
-    def test_id_invalid(self):
-        response = self.fetch(
-            f"/pullrequests/files/content?filename={valid_prfilename}&id=https://google.com"
+
+# Test no id
+async def test_GetPullRequests_filename_none(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Invalid argument 'filename'"
+    ) as exc_info:
+        await jp_fetch(
+            "pullrequests",
+            "files",
+            "content",
+            params={"id": valid_prid, "filename": ""},
         )
-        assert response.code >=400, f"{response.body}"
-        self.assertIn("Invalid response", response.reason)
+    assert exc_info.value.code == 400
+
+
+# Test invalid id
+@patch("jupyterlab_pullrequests.base.PRConfig.api_base_url", "")
+async def test_GetFiles_id_invalid(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Invalid response"
+    ) as exc_info:
+        await jp_fetch(
+            "pullrequests",
+            "files",
+            "content",
+            params={"filename": valid_prfilename, "id": "https://google.com"},
+        )
+    assert exc_info.value.code >= 400
 
 
 # Test get PR comments
-class TestGetPullRequestsCommentsHandler(TestPullRequest):
 
-    # Test missing id
-    def test_id_missing(self):
-        response = self.fetch(
-            f"/pullrequests/files/comments?filename={valid_prfilename}"
+# Test missing id
+async def test_comments_id_missing(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Missing argument 'id'"
+    ) as exc_info:
+        await jp_fetch(
+            "pullrequests", "files", "comments", params={"filename": valid_prfilename}
         )
-        assert response.code >=400, f"{response.body}"
-        self.assertIn("Missing argument 'id'", response.reason)
+    assert exc_info.value.code >= 400
 
-    # Test no id
-    def test_id_none(self):
-        response = self.fetch(
-            f"/pullrequests/files/comments?filename={valid_prfilename}&id="
+
+# Test no id
+async def test_comments_id_none(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Invalid argument 'id'"
+    ) as exc_info:
+        await jp_fetch(
+            "pullrequests",
+            "files",
+            "comments",
+            params={"filename": valid_prfilename, "id": ""},
         )
-        self.assertEqual(response.code, 400)
-        self.assertIn("Invalid argument 'id'", response.reason)
-
-    # Test missing id
-    def test_filename_missing(self):
-        response = self.fetch(f"/pullrequests/files/comments?id={valid_prid}")
-        self.assertEqual(response.code, 400)
-        self.assertIn("Missing argument 'filename'", response.reason)
-
-    # Test no id
-    def test_filename_none(self):
-        response = self.fetch(f"/pullrequests/files/comments?id={valid_prid}&filename=")
-        self.assertEqual(response.code, 400)
-        self.assertIn("Invalid argument 'filename'", response.reason)
+    assert exc_info.value.code == 400
 
 
-class TestGetPullRequestsCommentsHandler(TestPullRequest):
-    test_api_base_url = ""
-
-    # Test invalid id
-    def test_id_invalid(self):
-        response = self.fetch(
-            f"/pullrequests/files/comments?filename={valid_prfilename}&id=https://google.com"
+# Test invalid id
+@patch("jupyterlab_pullrequests.base.PRConfig.api_base_url", "")
+async def test_comments_id_invalid(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Invalid response"
+    ) as exc_info:
+        await jp_fetch(
+            "pullrequests",
+            "files",
+            "comments",
+            params={"filename": valid_prfilename, "id": "https://google.com"},
         )
-        assert response.code >=400, f"{response.body}"
-        self.assertIn("Invalid response", response.reason)
+    assert exc_info.value.code >= 400
 
 
 # Test get PR comments
-class TestPostPullRequestsCommentsHandler(TestPullRequest):
 
-    # Test missing id
-    def test_id_missing(self):
-        response = self.fetch(
-            f"/pullrequests/files/comments?filename={valid_prfilename}",
+# Test missing id
+async def test_post_comments_id_missing(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Missing argument 'id'"
+    ) as exc_info:
+        await jp_fetch(
+            "pullrequests",
+            "files",
+            "comments",
+            params={"filename": valid_prfilename},
             method="POST",
             body="{}",
         )
-        self.assertEqual(response.code, 400)
-        self.assertIn("Missing argument 'id'", response.reason)
+    assert exc_info.value.code == 400
 
-    # Test no id
-    def test_id_none(self):
-        response = self.fetch(
-            f"/pullrequests/files/comments?filename={valid_prfilename}&id=",
+
+# Test no id
+async def test_post_comment_id_none(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Invalid argument 'id'"
+    ) as exc_info:
+        await jp_fetch(
+            "pullrequests",
+            "files",
+            "comments",
+            params={"filename": valid_prfilename, "id": ""},
             method="POST",
             body="{}",
         )
-        self.assertEqual(response.code, 400)
-        self.assertIn("Invalid argument 'id'", response.reason)
+    assert exc_info.value.code == 400
 
-    # Test empty body
-    def test_body_empty(self):
-        response = self.fetch(
-            f"/pullrequests/files/comments?id={valid_prid}&filename={valid_prfilename}",
+
+# Test empty body
+async def test_post_comment_body_empty(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Invalid POST body"
+    ) as exc_info:
+        await jp_fetch(
+            "pullrequests",
+            "files",
+            "comments",
+            params={"id": valid_prid, "filename": valid_prfilename},
             method="POST",
             body="",
         )
-        self.assertEqual(response.code, 400)
-        self.assertIn("Invalid POST body", response.reason)
+    assert exc_info.value.code == 400
 
-    # Test invalid body JSON
-    def test_body_invalid(self):
-        response = self.fetch(
-            f"/pullrequests/files/comments?id={valid_prid}&filename={valid_prfilename}",
+
+# Test invalid body JSON
+async def test_post_comment_body_invalid(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Invalid POST body"
+    ) as exc_info:
+        await jp_fetch(
+            "pullrequests",
+            "files",
+            "comments",
+            params={"id": valid_prid, "filename": valid_prfilename},
             method="POST",
             body="{)",
         )
-        self.assertEqual(response.code, 400)
-        self.assertIn("Invalid POST body", response.reason)
+    assert exc_info.value.code == 400
 
-    # Test invalid body JSON
-    def test_body_missingkey(self):
-        response = self.fetch(
-            f"/pullrequests/files/comments?id={valid_prid}&filename={valid_prfilename}",
+
+# Test invalid body JSON
+async def test_post_comment_body_missingkey(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Missing POST key"
+    ) as exc_info:
+        await jp_fetch(
+            "pullrequests",
+            "files",
+            "comments",
+            params={"id": valid_prid, "filename": valid_prfilename},
             method="POST",
             body='{"discussionId": 123, "tex": "test"}',
         )
-        self.assertEqual(response.code, 400)
-        self.assertIn("Missing POST key", response.reason)
+    assert exc_info.value.code == 400
 
 
-class TestPostPullRequestsCommentsHandlerID(TestPullRequest):
-    test_api_base_url = ""
-
-    # Test invalid id
-    def test_id_invalid(self):
-        response = self.fetch(
-            f"/pullrequests/files/comments?filename={valid_prfilename}&id=https://google.com",
+# Test invalid id
+@patch("jupyterlab_pullrequests.base.PRConfig.api_base_url", "")
+async def test_post_comment_id_invalid(jp_fetch):
+    with pytest.raises(
+        tornado.httpclient.HTTPClientError, match=r"Invalid response"
+    ) as exc_info:
+        await jp_fetch(
+            "pullrequests",
+            "files",
+            "comments",
+            params={"filename": valid_prfilename, "id": "https://google.com"},
             method="POST",
             body='{"in_reply_to": 123, "text": "test"}',
         )
-        assert response.code >=400, f"{response.body}"
-        self.assertIn("Invalid response", response.reason)
+    assert exc_info.value.code >= 400
