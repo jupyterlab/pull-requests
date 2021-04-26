@@ -6,14 +6,26 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import nbformat
 import tornado
-from notebook.utils import url_path_join
+import traitlets
+from jupyter_server.utils import url_path_join
 
 from .._version import __version__
 from ..log import get_logger
 from ..base import PRConfig
 
 class PullRequestsManager(abc.ABC):
-    """Abstract base class for pull requests manager."""
+    """Abstract base class for pull requests manager.
+    
+    Args:
+        config : Server extension configuration object
+
+    .. note::
+    
+        The manager will receive the global server configuration object;
+        so it can add configuration parameters if needed.
+        It needs them to extract the ``PRConfig`` from it to pass it to this
+        parent class (see ``GitHubManager`` or ``GitLabManager`` for an example).
+    """
 
     def __init__(self, config: PRConfig) -> None:
         self._config = config

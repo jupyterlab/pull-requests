@@ -5,7 +5,7 @@ from http import HTTPStatus
 
 import pytest
 from mock import AsyncMock, MagicMock, patch
-from notebook.utils import url_path_join
+from jupyter_server.utils import url_path_join
 from tornado.httpclient import HTTPClientError
 from tornado.web import HTTPError
 
