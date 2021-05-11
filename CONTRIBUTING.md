@@ -64,7 +64,7 @@ What do you need to do:
 
 ```
 [options.entry_points]
-pull_requests_manager =
+jupyterlab_pullrequests.manager_v1 =
     <provider name> = <python.module>:<provider factory>
 ```
 
