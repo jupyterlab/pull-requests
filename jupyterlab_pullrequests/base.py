@@ -1,7 +1,14 @@
 from typing import List, NamedTuple, Optional
 
+import entrypoints
 from traitlets import Enum, Unicode, default
 from traitlets.config import Configurable
+
+# Supported third-party services
+MANAGERS = {}
+
+for entry in entrypoints.get_group_all("jupyterlab_pullrequests.manager_v1"):
+    MANAGERS[entry.name] = entry
 
 
 class CommentReply(NamedTuple):
@@ -58,7 +65,7 @@ class PRConfig(Configurable):
             return "https://api.github.com"
 
     provider = Enum(
-        ["github", "gitlab"],
+        MANAGERS.keys(),
         default_value="github",
         config=True,
         help="The source control provider.",
