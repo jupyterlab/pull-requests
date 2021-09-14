@@ -160,7 +160,7 @@ class PullRequestsManager(abc.ABC):
             headers["Content-Type"] = "application/json"
             body = tornado.escape.json_encode(body)
 
-        if not url.startswith(self.base_api_url):
+        if (not url.startswith(self.base_api_url)) and (not url.startswith("http")):
             url = url_path_join(self.base_api_url, url)
 
         with_pagination = False
