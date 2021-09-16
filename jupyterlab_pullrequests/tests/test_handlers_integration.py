@@ -18,6 +18,7 @@ async def test_ListPullRequests_pat_empty(jp_fetch):
     assert exc_info.value.code == 400
 
 
+@pytest.mark.skipif(sys.platform == "win32" and (3, 9) <= sys.version_info < (3, 10), reason="Event loop error on Windows Python 3.9")
 @patch("jupyterlab_pullrequests.base.PRConfig.access_token", "invalid")
 async def test_ListPullRequests_pat_invalid(jp_fetch):
     with pytest.raises(
