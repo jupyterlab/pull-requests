@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.2 (2021-09-16)
+
+- Fix bug for GitHub Entreprise (#61)
+- Add PyPI classifiers
+
 ## 3.0.1 (2021-04-22)
 
 - Add backport extension entrypoints to classical notebook server (#48)
