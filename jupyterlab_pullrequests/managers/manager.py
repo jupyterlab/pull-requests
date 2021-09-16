@@ -13,6 +13,8 @@ from .._version import __version__
 from ..log import get_logger
 from ..base import PRConfig
 
+import re
+
 class PullRequestsManager(abc.ABC):
     """Abstract base class for pull requests manager.
     
@@ -160,7 +162,7 @@ class PullRequestsManager(abc.ABC):
             headers["Content-Type"] = "application/json"
             body = tornado.escape.json_encode(body)
 
-        if not url.startswith(self.base_api_url):
+        if (not url.startswith(self.base_api_url)) and (not re.search("^https?:", url)):
             url = url_path_join(self.base_api_url, url)
 
         with_pagination = False
