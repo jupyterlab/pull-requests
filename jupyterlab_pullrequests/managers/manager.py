@@ -13,6 +13,8 @@ from .._version import __version__
 from ..log import get_logger
 from ..base import PRConfig
 
+import re
+
 class PullRequestsManager(abc.ABC):
     """Abstract base class for pull requests manager.
     
