@@ -36,7 +36,7 @@ interface IInlineDiscussions {
 export class PlainTextPRDiff extends PlainTextDiff {
   constructor(props: IDiffOptions) {
     super(
-      new DiffModel<string>({
+      new DiffModel({
         challenger: {
           content: (): Promise<string> =>
             Promise.resolve(props.diff.head.content),
