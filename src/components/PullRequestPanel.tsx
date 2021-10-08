@@ -93,30 +93,28 @@ async function fetchPullRequests(
   filters: IFilter[]
 ): Promise<IPullRequestGroup[]> {
   return Promise.all(
-    filters.map(
-      async (filter: IFilter): Promise<IPullRequestGroup> => {
-        try {
-          const pullRequests = await requestAPI<IPullRequest[]>(
-            'pullrequests/prs/user?filter=' + filter.filter,
-            'GET'
-          );
-          return {
-            name: filter.name,
-            pullRequests
-          };
-        } catch (err) {
-          let error = 'Unknown Error';
-          if (err.response?.status && err.message) {
-            error = `${err.response.status} (${err.message})`;
-          }
-          return {
-            name: filter.name,
-            pullRequests: [],
-            error
-          };
+    filters.map(async (filter: IFilter): Promise<IPullRequestGroup> => {
+      try {
+        const pullRequests = await requestAPI<IPullRequest[]>(
+          'pullrequests/prs/user?filter=' + filter.filter,
+          'GET'
+        );
+        return {
+          name: filter.name,
+          pullRequests
+        };
+      } catch (err) {
+        let error = 'Unknown Error';
+        if (err.response?.status && err.message) {
+          error = `${err.response.status} (${err.message})`;
         }
+        return {
+          name: filter.name,
+          pullRequests: [],
+          error
+        };
       }
-    )
+    })
   );
 }
 

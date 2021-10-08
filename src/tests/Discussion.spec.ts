@@ -130,12 +130,14 @@ describe('Discussion', () => {
   });
 
   describe('#isExpanded', () => {
-    ([
-      [[(sampleComment as any).default], false],
-      [[], false],
-      [[(sampleComment as any).default], true],
-      [[], true]
-    ] as Array<[Array<IComment>, boolean]>).forEach(([comments, singleton]) => {
+    (
+      [
+        [[(sampleComment as any).default], false],
+        [[], false],
+        [[(sampleComment as any).default], true],
+        [[], true]
+      ] as Array<[Array<IComment>, boolean]>
+    ).forEach(([comments, singleton]) => {
       it(`should hide comments widget if not expanded with ${
         comments.length
       } comments and ${singleton ? '' : 'not '}singleton`, () => {

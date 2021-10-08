@@ -78,17 +78,15 @@ export function PullRequestItem(props: IPullRequestItemProps): JSX.Element {
         'GET'
       )) as any[];
       setFiles(
-        results.map(
-          (rawFile: any): IFile => {
-            const path = rawFile.name;
-            return {
-              ...rawFile,
-              fileType:
-                docRegistry.getFileTypesForPath(path)[0] ||
-                DocumentRegistry.getDefaultTextFileType()
-            };
-          }
-        )
+        results.map((rawFile: any): IFile => {
+          const path = rawFile.name;
+          return {
+            ...rawFile,
+            fileType:
+              docRegistry.getFileTypesForPath(path)[0] ||
+              DocumentRegistry.getDefaultTextFileType()
+          };
+        })
       );
     } finally {
       setIsLoading(false);

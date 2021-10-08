@@ -63,7 +63,7 @@ function activate(
     label: 'Open Pull Request Description',
     caption: 'Open Pull Request Description in a New Tab',
     execute: args => {
-      const pullRequest = (args.pullRequest as any) as IPullRequest;
+      const pullRequest = args.pullRequest as any as IPullRequest;
       if (!pullRequest) {
         return;
       }
@@ -92,7 +92,7 @@ function activate(
     label: 'Open Pull Request File Diff',
     caption: 'Open Pull Request File Diff in a New Tab',
     execute: args => {
-      const { pullRequest, file } = (args as any) as {
+      const { pullRequest, file } = args as any as {
         pullRequest: IPullRequest;
         file: IFile;
       };
