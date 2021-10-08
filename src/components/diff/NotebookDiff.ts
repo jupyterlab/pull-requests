@@ -38,7 +38,7 @@ interface INbdimeDiff {
 export class NotebookPRDiff extends NotebookDiff {
   constructor(props: IDiffOptions) {
     super(
-      new DiffModel<string>({
+      new DiffModel({
         challenger: {
           content: (): Promise<string> =>
             Promise.resolve(props.diff.head.content),
