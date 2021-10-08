@@ -1578,7 +1578,7 @@
     "@lumino/widgets" "^1.19.0"
     react "^17.0.1"
 
-"@jupyterlab/git@0.30.0 - 0.40.0":
+"@jupyterlab/git@0.33.0 - 0.40.0":
   version "0.33.0"
   resolved "https://registry.yarnpkg.com/@jupyterlab/git/-/git-0.33.0.tgz#9e454b02207afc5d9a09ac45c49a07bfd79d66b2"
   integrity sha512-UrknRpHwmFePxEK3LjRLQS11QpmCjlpKzh2S8W5liLOHbvc/O1DizQ9atoyTXJwnSBQSKC8ptZv4f/g4k0UEqg==
